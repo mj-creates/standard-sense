@@ -8,11 +8,14 @@ Extracts structured procurement data from tender text:
 - Technical specifications (list of clauses/requirements)
 - Technical parameters (power, IP rating, lifespan, voltage, etc.)
 - Explicit Indian Standard codes (e.g., IS 10322, IS 1786, IS 456)
+- Consolidated natural-language spec_text for Semantic Search
+- Unique spec_id derived from filename or document identifier
 """
 
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Any
 
 from nlp_extraction.parser import clean_text, extract_text_from_pdf
@@ -362,7 +365,68 @@ def extract_specifications(text: str) -> list[str]:
     return specs
 
 
-def extract_from_text(text: str) -> dict[str, Any]:
+def build_spec_text(
+    product: str,
+    parameters: dict[str, str],
+    specs: list[str],
+    explicit_standards: list[str],
+) -> str:
+    """
+    Combine product, extracted parameters, specifications, and explicit IS standards
+    into ONE consolidated natural-language string suitable for semantic search.
+
+    Format:
+    "Product, Param1 Value, Param2 Value, ..., Standard1, Standard2"
+
+    Parameters
+    ----------
+    product : str
+        Extracted product or tender title.
+    parameters : dict[str, str]
+        Key-value dictionary of extracted technical parameters.
+    specs : list[str]
+        List of extracted specification bullet points/clauses.
+    explicit_standards : list[str]
+        List of explicitly cited Indian Standard codes.
+
+    Returns
+    -------
+    str
+        Natural-language specification string for semantic search.
+    """
+    parts: list[str] = []
+
+    if product:
+        parts.append(product.strip())
+
+    if parameters:
+        for key, val in parameters.items():
+            if not val:
+                continue
+            val_clean = val.strip()
+            label = key.replace("_", " ").capitalize()
+            # If value already starts with label (e.g., "Grade Fe 500D"), don't duplicate
+            if val_clean.lower().startswith(label.lower()):
+                parts.append(val_clean)
+            else:
+                parts.append(f"{label} {val_clean}")
+    elif specs:
+        # Fallback to raw specs if no parameters were extracted
+        for item in specs:
+            cleaned_item = item.strip()
+            if cleaned_item and cleaned_item not in parts:
+                parts.append(cleaned_item)
+
+    if explicit_standards:
+        for std in explicit_standards:
+            std_clean = std.strip()
+            if std_clean and std_clean not in parts:
+                parts.append(std_clean)
+
+    return ", ".join(parts)
+
+
+def extract_from_text(text: str, spec_id: str = "") -> dict[str, Any]:
     """
     Primary extraction entry point. Processes raw text through cleaning and rule-based
     extraction routines.
@@ -371,11 +435,15 @@ def extract_from_text(text: str) -> dict[str, Any]:
     ----------
     text : str
         The raw or cleaned text extracted from a procurement/tender document.
+    spec_id : str
+        Optional identifier for the specification. Defaults to "spec_001" if empty.
 
     Returns
     -------
     dict[str, Any]
         Structured dictionary containing:
+        - "spec_id": str
+        - "spec_text": str
         - "product": str
         - "specs": list[str]
         - "parameters": dict[str, str]
@@ -387,8 +455,11 @@ def extract_from_text(text: str) -> dict[str, Any]:
     specs = extract_specifications(cleaned)
     parameters = extract_parameters(cleaned)
     standards = extract_standards(cleaned)
+    spec_text = build_spec_text(product, parameters, specs, standards)
 
     return {
+        "spec_id": spec_id or "spec_001",
+        "spec_text": spec_text,
         "product": product,
         "specs": specs,
         "parameters": parameters,
@@ -396,19 +467,27 @@ def extract_from_text(text: str) -> dict[str, Any]:
     }
 
 
-def extract_from_pdf(pdf_path: str) -> dict[str, Any]:
+def extract_from_pdf(pdf_path: str, spec_id: str | None = None) -> dict[str, Any]:
     """
     Convenience function to extract structured tender specifications directly from a PDF file.
+
+    Derives spec_id from the PDF filename if not explicitly provided.
+    (e.g., "sample_tender_01.pdf" -> "sample_tender_01")
 
     Parameters
     ----------
     pdf_path : str
         Path to the PDF file on disk.
+    spec_id : str | None
+        Optional identifier. If omitted, derived from the PDF filename stem.
 
     Returns
     -------
     dict[str, Any]
         Structured extraction output dictionary.
     """
+    if spec_id is None:
+        spec_id = Path(pdf_path).stem
+
     raw_text = extract_text_from_pdf(pdf_path)
-    return extract_from_text(raw_text)
+    return extract_from_text(raw_text, spec_id=spec_id)
