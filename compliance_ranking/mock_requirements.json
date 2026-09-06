@@ -1,0 +1,99 @@
+[
+  {
+    "is_code": "IS 1554",
+    "title": "PVC Insulated (Heavy Duty) Electric Cables for Working Voltages up to and including 1100 V",
+    "category": "electrical",
+    "requirements": {
+      "voltage":   { "max": "1100V" },
+      "material":  { "required": true },
+      "protection":{ "min": "IP44" },
+      "warranty":  { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 694",
+    "title": "PVC Insulated Cables for Voltages not Exceeding 1100 V",
+    "category": "electrical",
+    "requirements": {
+      "voltage":   { "max": "1100V" },
+      "material":  { "required": true },
+      "warranty":  { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 8828",
+    "title": "Electrical Accessories — Circuit Breakers for Overcurrent Protection",
+    "category": "electrical",
+    "requirements": {
+      "voltage":   { "min": "230V" },
+      "power":     { "min": "1W" },
+      "warranty":  { "required": true },
+      "protection":{ "min": "IP20" }
+    }
+  },
+  {
+    "is_code": "IS 302",
+    "title": "Safety of Household and Similar Electrical Appliances",
+    "category": "electrical",
+    "requirements": {
+      "voltage":              { "max": "250V" },
+      "protection":           { "min": "IP20" },
+      "operating_temperature":{ "required": true },
+      "warranty":             { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 1786",
+    "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
+    "category": "structural",
+    "requirements": {
+      "grade":    { "min": "Fe415" },
+      "material": { "required": true },
+      "dimensions":{ "required": true }
+    }
+  },
+  {
+    "is_code": "IS 2062",
+    "title": "Hot Rolled Medium and High Tensile Structural Steel",
+    "category": "structural",
+    "requirements": {
+      "grade":    { "min": "E250" },
+      "material": { "required": true },
+      "dimensions":{ "required": true },
+      "warranty": { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 8112",
+    "title": "43 Grade Ordinary Portland Cement",
+    "category": "structural",
+    "requirements": {
+      "grade":    { "min": "43" },
+      "material": { "required": true },
+      "warranty": { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 9873",
+    "title": "Safety Requirements for Toys",
+    "category": "consumer_goods",
+    "requirements": {
+      "material":             { "required": true },
+      "operating_temperature":{ "max": "50" },
+      "warranty":             { "required": true },
+      "protection":           { "min": "IP20" }
+    }
+  },
+  {
+    "is_code": "IS 1293",
+    "title": "Plugs and Socket-Outlets of Rated Voltage up to 250 V and Rated Current up to 16 A",
+    "category": "consumer_goods",
+    "requirements": {
+      "voltage":   { "max": "250V" },
+      "power":     { "max": "3680W" },
+      "protection":{ "min": "IP20" },
+      "warranty":  { "required": true },
+      "material":  { "required": true }
+    }
+  }
+]
