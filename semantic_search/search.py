@@ -102,7 +102,7 @@ def is_ambiguous(
 
 # ── Clarifying question generation ───────────────────────────────────────────
 
-_GROQ_MODEL = "llama-3.1-8b-instant"
+_GROQ_MODEL = "groq/compound-mini"
 _FALLBACK_QUESTION = (
     "Could you provide more detail about the material, application, or specific use case?"
 )
