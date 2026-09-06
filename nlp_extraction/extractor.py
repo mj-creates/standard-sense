@@ -145,18 +145,49 @@ def extract_parameters(text: str) -> dict[str, str]:
 
     parameters: dict[str, str] = {}
 
-    # 1. Power (e.g., "100-150W", "150W", "25 kW")
-    power_label = re.search(
-        r"(?:power(?:\s*rating|\s*consumption)?|wattage)\s*[:\-–]\s*([^\n\r,;]+)",
+    # 1. Power (e.g., "100-150W", "100W-150W", "150W", "25 kW")
+    # Range pattern first (e.g., "wattage range 100W-150W", "100W-150W", "100-150W", "100 - 150 W")
+    power_range = re.search(
+        r"\b(\d+)\s*(?:W|kW|MW|Watts?|hp)?\s*[-–]\s*(\d+)\s*(W|kW|MW|Watts?|hp)\b",
         text,
         re.IGNORECASE,
     )
-    if power_label:
-        parameters["power"] = power_label.group(1).strip()
+    if power_range:
+        start, end, unit = power_range.groups()
+        unit_str = unit.upper() if len(unit) <= 2 else unit
+        parameters["power"] = f"{start}-{end}{unit_str}"
     else:
-        power_inline = re.search(r"\b(\d+(?:\s*-\s*\d+)?\s*(?:W|kW|MW|Watts?|hp))\b", text, re.IGNORECASE)
-        if power_inline:
-            parameters["power"] = power_inline.group(1).strip()
+        # Labeled with colon/dash: e.g. 'Power: 150W'
+        power_label = re.search(
+            r"(?:power(?:\s*(?:rating|consumption|range))?|wattage(?:\s*range)?)\s*[:\-–]\s*([^\n\r,;]+)",
+            text,
+            re.IGNORECASE,
+        )
+        if power_label:
+            val = power_label.group(1).strip()
+            m_single = re.search(r"\b(\d+(?:\.\d+)?\s*(?:W|kW|MW|Watts?|hp))\b", val, re.IGNORECASE)
+            if m_single:
+                parameters["power"] = m_single.group(1).strip()
+            else:
+                parameters["power"] = val
+        else:
+            # Labeled without colon but followed by numeric value: e.g. 'wattage 150W'
+            power_label_no_colon = re.search(
+                r"(?:power(?:\s*(?:rating|consumption|range))?|wattage(?:\s*range)?)\s+(\d+(?:\.\d+)?\s*(?:W|kW|MW|Watts?|hp))\b",
+                text,
+                re.IGNORECASE,
+            )
+            if power_label_no_colon:
+                parameters["power"] = power_label_no_colon.group(1).strip()
+            else:
+                # Inline standalone power value: e.g. '150W', '25 kW'
+                power_inline = re.search(
+                    r"\b(\d+(?:\.\d+)?\s*(?:W|kW|MW|Watts?|hp))\b",
+                    text,
+                    re.IGNORECASE,
+                )
+                if power_inline:
+                    parameters["power"] = power_inline.group(1).strip()
 
     # 2. Protection / IP Rating (e.g., "IP65", "IP67")
     protection_label = re.search(
@@ -184,22 +215,39 @@ def extract_parameters(text: str) -> dict[str, str]:
         if lifespan_inline:
             parameters["lifespan"] = lifespan_inline.group(1).strip()
 
-    # 4. Voltage (e.g., "230V AC", "220-240 V", "11kV")
+    # 4. Voltage (e.g., "working voltage up to 1100V", "Operating voltage: 230V AC", "220-240 V", "11kV")
     voltage_label = re.search(
-        r"(?:operating\s*voltage|rated\s*voltage|input\s*voltage|voltage)\s*[:\-–]\s*([^\n\r,;]+)",
+        r"(?:operating\s*voltage|rated\s*voltage|input\s*voltage|working\s*voltage|voltage)\s*[:\-–]\s*([^\n\r,;]+)",
         text,
         re.IGNORECASE,
     )
     if voltage_label:
-        parameters["voltage"] = voltage_label.group(1).strip()
+        val = voltage_label.group(1).strip()
+        m_volt = re.search(
+            r"(\d+(?:\s*[-–]\s*\d+)?\s*(?:V|kV|Volts?)(?:\s*(?:AC|DC))?)",
+            val,
+            re.IGNORECASE,
+        )
+        if m_volt:
+            parameters["voltage"] = m_volt.group(1).strip()
+        else:
+            parameters["voltage"] = val
     else:
-        voltage_inline = re.search(
-            r"\b(\d+(?:\s*-\s*\d+)?\s*(?:V|kV|Volts?)(?:\s*(?:AC|DC))?)\b",
+        inline_label = re.search(
+            r"(?:working\s+voltage|operating\s+voltage|rated\s+voltage|voltage)\s+(?:up\s+to\s+)?(\d+(?:\s*[-–]\s*\d+)?\s*(?:V|kV|Volts?)(?:\s*(?:AC|DC))?)",
             text,
             re.IGNORECASE,
         )
-        if voltage_inline:
-            parameters["voltage"] = voltage_inline.group(1).strip()
+        if inline_label:
+            parameters["voltage"] = inline_label.group(1).strip()
+        else:
+            voltage_inline = re.search(
+                r"\b(\d+(?:\s*[-–]\s*\d+)?\s*(?:V|kV|Volts?)(?:\s*(?:AC|DC))?)\b",
+                text,
+                re.IGNORECASE,
+            )
+            if voltage_inline:
+                parameters["voltage"] = voltage_inline.group(1).strip()
 
     # 5. Color Temperature (e.g., "4000K", "5700 K", "3000K-6500K")
     cct_label = re.search(
@@ -261,22 +309,23 @@ def extract_parameters(text: str) -> dict[str, str]:
         if grade_inline:
             parameters["grade"] = grade_inline.group(1).strip()
 
-    # 9. Material (e.g., "die-cast aluminium", "mild steel", "polycarbonate")
+    # 9. Material (e.g., "die-cast aluminium", "aluminium die-cast", "mild steel", "polycarbonate", "PVC")
+    # Only extracted when an explicit material requirement/label is present (e.g. "Material: PVC", "housing material PVC")
     material_label = re.search(
-        r"(?:housing\s*material|construction\s*material|body\s*material|material)\s*[:\-–]\s*([^\n\r,;]+)",
+        r"(?:(?:housing|construction|body|insulation|sheath)?\s*material)\s*[:\-–]\s*([^\n\r,;]+)",
         text,
         re.IGNORECASE,
     )
     if material_label:
         parameters["material"] = material_label.group(1).strip()
     else:
-        material_inline = re.search(
-            r"\b(die[- ]cast alumini?um|polycarbonate|stainless steel|mild steel|galvanized steel|copper|alumini?um|cast iron|pvc)\b",
+        material_prefixed = re.search(
+            r"(?:(?:housing|construction|body|insulation|sheath)?\s*material)\s+(?:is\s+|shall\s+be\s+)?([a-zA-Z0-9]+(?:[- ][a-zA-Z0-9]+){0,3})\b",
             text,
             re.IGNORECASE,
         )
-        if material_inline:
-            parameters["material"] = material_inline.group(1).strip()
+        if material_prefixed:
+            parameters["material"] = material_prefixed.group(1).strip()
 
     # 10. Dimensions (e.g., "12mm x 6m", "150mm x 200mm x 50mm")
     dimensions_label = re.search(
@@ -365,6 +414,89 @@ def extract_specifications(text: str) -> list[str]:
     return specs
 
 
+SEMANTIC_QUALIFIERS = {
+    "up", "to", "min", "max", "minimum", "maximum", "at", "least",
+    "exceeding", "not", "between", "less", "more", "greater", "plus", "minus",
+    "approx", "approximately", "class", "type",
+}
+
+LABEL_BOILERPLATE = {
+    "power", "wattage", "range", "rating", "consumption",
+    "voltage", "operating", "working", "rated", "input", "supply",
+    "protection", "ip", "class", "ingress",
+    "lifespan", "lifetime", "life", "hours", "hrs",
+    "color", "temperature", "cct", "temp",
+    "warranty", "guarantee", "period",
+    "grade", "steel", "concrete",
+    "material", "housing", "body", "construction", "insulation", "sheath",
+    "dimensions", "dimension", "size", "physical",
+}
+
+
+def _normalize_tokens(text: str) -> set[str]:
+    """Normalize text into a set of alphanumeric lowercase tokens, splitting ranges."""
+    expanded = re.sub(
+        r"(\d+)\s*(?:w|kw|mw|hp|watts?)?\s*[-–]\s*(\d+)\s*(w|kw|mw|hp|watts?)?",
+        r"\1 \2 \3",
+        text,
+        flags=re.IGNORECASE,
+    )
+    tokens = re.sub(r"[^a-zA-Z0-9]+", " ", expanded).strip().lower().split()
+    return set(tokens)
+
+
+def is_spec_redundant(
+    spec_item: str,
+    product: str,
+    parameters: dict[str, str],
+    explicit_standards: list[str],
+) -> bool:
+    """
+    Determine whether a specification clause is already represented by
+    product, parameters, or explicit standards without contributing unique
+    semantic requirements.
+    """
+    item_tokens = _normalize_tokens(spec_item)
+    item_norm = re.sub(r"[^a-zA-Z0-9]+", " ", spec_item).strip().lower()
+
+    # 1. Redundant if identical to product name
+    if product:
+        prod_norm = re.sub(r"[^a-zA-Z0-9]+", " ", product).strip().lower()
+        if item_norm == prod_norm:
+            return True
+
+    # 2. Redundant if it is solely a standard reference (e.g. 'The fixture shall conform to IS 10322.')
+    for std in explicit_standards:
+        std_num = re.search(r"\d+", std)
+        if std_num and std_num.group(0) in item_tokens and any(
+            k in item_tokens for k in ["is", "standard", "conform", "conforming", "as", "per"]
+        ):
+            non_std_tokens = item_tokens - {
+                "the", "fixture", "shall", "conform", "conforming", "to",
+                "as", "per", "is", "standard", "standards", std_num.group(0).lower(),
+            }
+            if not non_std_tokens:
+                return True
+
+    # 3. Check if captured by an extracted parameter
+    for k, v in parameters.items():
+        if not v:
+            continue
+        v_tokens = _normalize_tokens(v)
+        if v_tokens and v_tokens.issubset(item_tokens):
+            remainder_tokens = item_tokens - v_tokens
+            # If remainder has semantic qualifiers like 'up', 'to', 'min', 'max',
+            # it conveys critical semantic criteria (e.g., 'working voltage up to 1100V')
+            # and is therefore NOT redundant.
+            if remainder_tokens & SEMANTIC_QUALIFIERS:
+                continue
+            # If all remainder words are just boilerplate labels (like 'operating', 'voltage', 'power')
+            if remainder_tokens.issubset(LABEL_BOILERPLATE):
+                return True
+
+    return False
+
+
 def build_spec_text(
     product: str,
     parameters: dict[str, str],
@@ -376,7 +508,7 @@ def build_spec_text(
     into ONE consolidated natural-language string suitable for semantic search.
 
     Format:
-    "Product, Param1 Value, Param2 Value, ..., Standard1, Standard2"
+    "Product, Param1 Value, Param2 Value, ..., Spec1, Spec2, Standard1, Standard2"
 
     Parameters
     ----------
@@ -404,18 +536,23 @@ def build_spec_text(
             if not val:
                 continue
             val_clean = val.strip()
-            label = key.replace("_", " ").capitalize()
-            # If value already starts with label (e.g., "Grade Fe 500D"), don't duplicate
-            if val_clean.lower().startswith(label.lower()):
+            key_name = key.replace("_", " ").lower()
+            # If value already contains key name (e.g. "working voltage up to 1100V", "Grade Fe 500D")
+            if key_name in val_clean.lower():
                 parts.append(val_clean)
             else:
+                label = key.replace("_", " ").capitalize()
                 parts.append(f"{label} {val_clean}")
-    elif specs:
-        # Fallback to raw specs if no parameters were extracted
+
+    # Preserve important specification clauses not already captured in parameters or standards
+    if specs:
         for item in specs:
             cleaned_item = item.strip()
-            if cleaned_item and cleaned_item not in parts:
-                parts.append(cleaned_item)
+            if not cleaned_item:
+                continue
+            if not is_spec_redundant(cleaned_item, product, parameters, explicit_standards):
+                if cleaned_item not in parts:
+                    parts.append(cleaned_item)
 
     if explicit_standards:
         for std in explicit_standards:
