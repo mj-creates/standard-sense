@@ -1,0 +1,152 @@
+[
+  {
+    "is_code": "IS 1554",
+    "title": "PVC Insulated (Heavy Duty) Electric Cables for Working Voltages up to and including 1100 V",
+    "description": "Specifies requirements for PVC insulated electric cables with copper or aluminium conductors for use in general wiring, power distribution, and industrial applications at voltages up to 1100 V. Covers conductor sizes, insulation thickness, sheath material, and electrical test requirements."
+  },
+  {
+    "is_code": "IS 694",
+    "title": "PVC Insulated Cables for Voltages not Exceeding 1100 V",
+    "description": "Covers light-duty PVC insulated cables used for internal wiring of electrical appliances, switchgear panels, and control circuits. Specifies requirements for conductor resistance, insulation resistance, voltage withstand, and flexibility under low temperature conditions."
+  },
+  {
+    "is_code": "IS 732",
+    "title": "Code of Practice for Electrical Wiring Installations",
+    "description": "Provides guidelines for design, installation, and inspection of electrical wiring in residential, commercial, and industrial buildings. Covers selection of cables, earthing arrangements, protection against overcurrent and electric shock, and layout of distribution boards."
+  },
+  {
+    "is_code": "IS 3043",
+    "title": "Code of Practice for Earthing",
+    "description": "Specifies methods and materials for earthing electrical systems and equipment to ensure safety against electric shock and fault currents. Covers earth electrode types, earth continuity conductors, measurement of earth resistance, and equipotential bonding in installations."
+  },
+  {
+    "is_code": "IS 8828",
+    "title": "Electrical Accessories — Circuit Breakers for Overcurrent Protection for Household and Similar Installations",
+    "description": "Specifies performance, dimensional, and testing requirements for miniature circuit breakers (MCBs) used to protect household and commercial electrical circuits from overload and short-circuit conditions. Includes requirements for tripping characteristics, mechanical endurance, and marking."
+  },
+  {
+    "is_code": "IS 2062",
+    "title": "Hot Rolled Medium and High Tensile Structural Steel",
+    "description": "Specifies requirements for hot-rolled steel plates, strips, shapes, and sections used in structural applications such as bridges, buildings, transmission towers, and general engineering fabrication. Covers chemical composition, mechanical properties including yield strength and elongation, and weldability grades E250 to E650."
+  },
+  {
+    "is_code": "IS 456",
+    "title": "Plain and Reinforced Concrete — Code of Practice",
+    "description": "Provides comprehensive guidelines for design and construction of plain and reinforced concrete structures. Covers materials quality including cement and aggregate, mix design, durability requirements, structural design principles, formwork, curing, and inspection of concrete works."
+  },
+  {
+    "is_code": "IS 383",
+    "title": "Coarse and Fine Aggregate for Concrete — Specification",
+    "description": "Specifies grading, physical properties, and deleterious substance limits for natural and manufactured coarse and fine aggregates used in concrete production. Covers sieve analysis requirements, flakiness index, water absorption, soundness, and alkali-silica reactivity testing."
+  },
+  {
+    "is_code": "IS 1786",
+    "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
+    "description": "Covers requirements for deformed steel bars and wires used as reinforcement in reinforced concrete construction. Specifies chemical composition, mechanical properties including tensile strength and bend test, rib geometry for bond strength, and mass tolerances for grades Fe415, Fe500, and Fe550."
+  },
+  {
+    "is_code": "IS 8112",
+    "title": "43 Grade Ordinary Portland Cement",
+    "description": "Specifies physical and chemical requirements for 43 grade ordinary portland cement used in general construction work. Covers fineness, soundness, setting time, compressive strength at 3, 7, and 28 days, and limits on chemical constituents including tricalcium aluminate and free lime content."
+  },
+  {
+    "is_code": "IS 1489",
+    "title": "Portland Pozzolana Cement — Specification",
+    "description": "Specifies requirements for portland pozzolana cement produced by intergrinding or blending portland cement clinker with pozzolanic materials such as fly ash. Covers fly ash and calcined clay variants, strength requirements, soundness, and setting time for use in mass concrete and marine structures."
+  },
+  {
+    "is_code": "IS 875",
+    "title": "Code of Practice for Design Loads (other than Earthquake) for Buildings and Structures",
+    "description": "Prescribes design loads for structural analysis and design of buildings. Part 1 covers dead loads based on unit weights of materials. Part 2 covers imposed loads on floors and roofs. Part 3 covers wind loads with zoning maps and pressure coefficients for various building shapes."
+  },
+  {
+    "is_code": "IS 5382",
+    "title": "Rubber Sealing Rings for Gas Mains, Water Mains and Sewers",
+    "description": "Specifies dimensional and performance requirements for rubber O-rings and profile gaskets used to seal joints in pipelines carrying gas, potable water, and sewage. Covers hardness, tensile strength, compression set, resistance to chemicals, and low-temperature flexibility."
+  },
+  {
+    "is_code": "IS 1239",
+    "title": "Mild Steel Tubes, Tubulars and Other Wrought Steel Fittings",
+    "description": "Covers requirements for welded and seamless mild steel tubes used in water supply, gas distribution, steam, and structural applications. Specifies outside diameter tolerances, wall thickness, hydrostatic test pressure, and thread form for light, medium, and heavy classes."
+  },
+  {
+    "is_code": "IS 4736",
+    "title": "Hot-Dip Zinc Coatings on Mild Steel Tubes",
+    "description": "Specifies requirements for hot-dip galvanized zinc coatings applied to mild steel tubes for corrosion protection in outdoor, underground, and wet service conditions. Covers minimum coating mass, adhesion, uniformity, and the Preece test for verification of coating continuity."
+  },
+  {
+    "is_code": "IS 1070",
+    "title": "Drinking Water — Specification",
+    "description": "Prescribes physical, chemical, and bacteriological quality requirements for water intended for human consumption. Covers turbidity, pH, total dissolved solids, hardness, nitrates, heavy metals including arsenic and lead, residual chlorine, and absence of coliform organisms."
+  },
+  {
+    "is_code": "IS 2490",
+    "title": "Tolerance for Processed Cereal Foods — Specification",
+    "description": "Specifies quality and safety requirements for processed cereal-based foods including wheat flour products, semolina, and breakfast cereals. Covers moisture content limits, ash content, crude fibre, heavy metal contaminants, pesticide residue limits, and packaging and labelling requirements."
+  },
+  {
+    "is_code": "IS 1797",
+    "title": "Methods of Test for Spices and Condiments",
+    "description": "Describes standard analytical methods for testing spices, condiments, and culinary herbs including determination of moisture, total ash, acid-insoluble ash, volatile oil content, and detection of adulteration. Applicable to products such as turmeric powder, chilli powder, and coriander."
+  },
+  {
+    "is_code": "IS 14543",
+    "title": "Packaged Drinking Water (Other than Packaged Natural Mineral Water) — Specification",
+    "description": "Specifies requirements for packaged drinking water processed by reverse osmosis, distillation, or other purification methods. Covers microbiological standards, chemical parameters, labelling requirements, container material safety, and traceability of source water."
+  },
+  {
+    "is_code": "IS 13428",
+    "title": "Packaged Natural Mineral Water — Specification",
+    "description": "Covers requirements for natural mineral water sourced from underground springs and bottled at source without chemical treatment. Specifies permitted minerals, bacteriological purity, labelling of source and mineral composition, and container integrity requirements."
+  },
+  {
+    "is_code": "IS 1960",
+    "title": "Cotton Fabrics for Apparel — Specification",
+    "description": "Specifies quality requirements for woven cotton fabrics used in the manufacture of garments and apparel. Covers thread count per centimetre in warp and weft, tensile strength, tear strength, colour fastness to washing and rubbing, shrinkage limits, and fabric weight tolerances."
+  },
+  {
+    "is_code": "IS 1848",
+    "title": "Powerloom Grey Cotton Fabrics — Specification",
+    "description": "Covers requirements for grey (unbleached, undyed) cotton fabrics produced on power looms for further processing into bleached or dyed cloth. Specifies count of yarn, weave construction, width tolerances, and inspection procedures for identifying weaving defects."
+  },
+  {
+    "is_code": "IS 7016",
+    "title": "Methods of Test for Rubber Coated Fabrics",
+    "description": "Prescribes test methods for evaluating physical properties of rubber or plastic coated textile fabrics used in industrial, protective clothing, and consumer applications. Covers coating adhesion, thickness, breaking strength, elongation, flex cracking resistance, and resistance to cold."
+  },
+  {
+    "is_code": "IS 6005",
+    "title": "Code of Practice for Phosphating of Metals",
+    "description": "Provides guidelines for phosphate conversion coating processes applied to steel, iron, and zinc surfaces for corrosion protection and as a base for paint adhesion. Covers process sequence, bath composition control, coating weight measurement, and quality inspection methods."
+  },
+  {
+    "is_code": "IS 302",
+    "title": "Safety of Household and Similar Electrical Appliances",
+    "description": "Specifies safety requirements for electrically operated household appliances such as mixers, fans, irons, and heaters. Covers protection against electric shock, mechanical hazards, overheating, moisture resistance, insulation requirements, and marking and instruction labelling obligations."
+  },
+  {
+    "is_code": "IS 1293",
+    "title": "Plugs and Socket-Outlets of Rated Voltage up to 250 V and Rated Current up to 16 A",
+    "description": "Specifies dimensional, mechanical, and electrical safety requirements for two-pin and three-pin domestic plugs and socket-outlets. Covers pin dimensions for interchangeability, contact resistance, current-carrying capacity, mechanical strength, and resistance to abnormal heat and fire."
+  },
+  {
+    "is_code": "IS 1521",
+    "title": "Method for Tensile Testing of Steel Wire",
+    "description": "Describes the procedure for conducting tensile strength tests on steel wire to determine breaking force, tensile strength, and elongation at fracture. Specifies gauge length, gripping methods, speed of testing, and reporting requirements for wire diameters from 0.1 mm to 14 mm."
+  },
+  {
+    "is_code": "IS 9873",
+    "title": "Safety Requirements for Toys",
+    "description": "Specifies safety requirements for toys intended for children up to 14 years of age. Covers mechanical and physical safety including sharp edges and small parts hazards, flammability of materials, chemical safety limits for heavy metals in surface coatings, and electrical safety for battery-operated toys."
+  },
+  {
+    "is_code": "IS 4011",
+    "title": "Specification for Synthetic Detergents (Household) — Powder Form",
+    "description": "Specifies compositional and performance requirements for synthetic detergent powders used for household laundry and general cleaning. Covers total active matter content, free alkalinity, phosphate content, biodegradability of surfactants, foaming power, and packaging and labelling."
+  },
+  {
+    "is_code": "IS 2477",
+    "title": "Enamelled Copper Winding Wires",
+    "description": "Specifies requirements for round and rectangular enamelled copper conductors used in the winding of electric motors, transformers, and inductors. Covers enamel coating thickness, breakdown voltage, flexibility and adherence, thermal class, and resistance to solvents and chemical agents."
+  }
+]
