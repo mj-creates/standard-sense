@@ -21,7 +21,7 @@
   },
   "4": {
     "is_code": "IS 8828",
-    "title": "Electrical Accessories — Circuit Breakers for Overcurrent Protection for Household and Similar Installations",
+    "title": "Electrical Accessories ΓÇö Circuit Breakers for Overcurrent Protection for Household and Similar Installations",
     "description": "Specifies performance, dimensional, and testing requirements for miniature circuit breakers (MCBs) used to protect household and commercial electrical circuits from overload and short-circuit conditions. Includes requirements for tripping characteristics, mechanical endurance, and marking."
   },
   "5": {
@@ -31,12 +31,12 @@
   },
   "6": {
     "is_code": "IS 456",
-    "title": "Plain and Reinforced Concrete — Code of Practice",
+    "title": "Plain and Reinforced Concrete ΓÇö Code of Practice",
     "description": "Provides comprehensive guidelines for design and construction of plain and reinforced concrete structures. Covers materials quality including cement and aggregate, mix design, durability requirements, structural design principles, formwork, curing, and inspection of concrete works."
   },
   "7": {
     "is_code": "IS 383",
-    "title": "Coarse and Fine Aggregate for Concrete — Specification",
+    "title": "Coarse and Fine Aggregate for Concrete ΓÇö Specification",
     "description": "Specifies grading, physical properties, and deleterious substance limits for natural and manufactured coarse and fine aggregates used in concrete production. Covers sieve analysis requirements, flakiness index, water absorption, soundness, and alkali-silica reactivity testing."
   },
   "8": {
@@ -51,7 +51,7 @@
   },
   "10": {
     "is_code": "IS 1489",
-    "title": "Portland Pozzolana Cement — Specification",
+    "title": "Portland Pozzolana Cement ΓÇö Specification",
     "description": "Specifies requirements for portland pozzolana cement produced by intergrinding or blending portland cement clinker with pozzolanic materials such as fly ash. Covers fly ash and calcined clay variants, strength requirements, soundness, and setting time for use in mass concrete and marine structures."
   },
   "11": {
@@ -76,12 +76,12 @@
   },
   "15": {
     "is_code": "IS 1070",
-    "title": "Drinking Water — Specification",
+    "title": "Drinking Water ΓÇö Specification",
     "description": "Prescribes physical, chemical, and bacteriological quality requirements for water intended for human consumption. Covers turbidity, pH, total dissolved solids, hardness, nitrates, heavy metals including arsenic and lead, residual chlorine, and absence of coliform organisms."
   },
   "16": {
     "is_code": "IS 2490",
-    "title": "Tolerance for Processed Cereal Foods — Specification",
+    "title": "Tolerance for Processed Cereal Foods ΓÇö Specification",
     "description": "Specifies quality and safety requirements for processed cereal-based foods including wheat flour products, semolina, and breakfast cereals. Covers moisture content limits, ash content, crude fibre, heavy metal contaminants, pesticide residue limits, and packaging and labelling requirements."
   },
   "17": {
@@ -91,22 +91,22 @@
   },
   "18": {
     "is_code": "IS 14543",
-    "title": "Packaged Drinking Water (Other than Packaged Natural Mineral Water) — Specification",
+    "title": "Packaged Drinking Water (Other than Packaged Natural Mineral Water) ΓÇö Specification",
     "description": "Specifies requirements for packaged drinking water processed by reverse osmosis, distillation, or other purification methods. Covers microbiological standards, chemical parameters, labelling requirements, container material safety, and traceability of source water."
   },
   "19": {
     "is_code": "IS 13428",
-    "title": "Packaged Natural Mineral Water — Specification",
+    "title": "Packaged Natural Mineral Water ΓÇö Specification",
     "description": "Covers requirements for natural mineral water sourced from underground springs and bottled at source without chemical treatment. Specifies permitted minerals, bacteriological purity, labelling of source and mineral composition, and container integrity requirements."
   },
   "20": {
     "is_code": "IS 1960",
-    "title": "Cotton Fabrics for Apparel — Specification",
+    "title": "Cotton Fabrics for Apparel ΓÇö Specification",
     "description": "Specifies quality requirements for woven cotton fabrics used in the manufacture of garments and apparel. Covers thread count per centimetre in warp and weft, tensile strength, tear strength, colour fastness to washing and rubbing, shrinkage limits, and fabric weight tolerances."
   },
   "21": {
     "is_code": "IS 1848",
-    "title": "Powerloom Grey Cotton Fabrics — Specification",
+    "title": "Powerloom Grey Cotton Fabrics ΓÇö Specification",
     "description": "Covers requirements for grey (unbleached, undyed) cotton fabrics produced on power looms for further processing into bleached or dyed cloth. Specifies count of yarn, weave construction, width tolerances, and inspection procedures for identifying weaving defects."
   },
   "22": {
@@ -141,12 +141,82 @@
   },
   "28": {
     "is_code": "IS 4011",
-    "title": "Specification for Synthetic Detergents (Household) — Powder Form",
+    "title": "Specification for Synthetic Detergents (Household) ΓÇö Powder Form",
     "description": "Specifies compositional and performance requirements for synthetic detergent powders used for household laundry and general cleaning. Covers total active matter content, free alkalinity, phosphate content, biodegradability of surfactants, foaming power, and packaging and labelling."
   },
   "29": {
     "is_code": "IS 2477",
     "title": "Enamelled Copper Winding Wires",
     "description": "Specifies requirements for round and rectangular enamelled copper conductors used in the winding of electric motors, transformers, and inductors. Covers enamel coating thickness, breakdown voltage, flexibility and adherence, thermal class, and resistance to solvents and chemical agents."
+  },
+  "30": {
+    "is_code": "IS 10322",
+    "title": "Luminaires - Specification for LED Street Lighting and General Lighting Requirements",
+    "description": "Specifies performance, safety, and testing requirements for luminaires including LED-based street lighting fixtures. Covers ingress protection IP65 minimum for outdoor use, thermal management, photometric performance, power factor minimum 0.90, surge protection 10 kV, and operating temperature -20 to 50 degrees C. Part 5 Section 3 specifically addresses LED road and street luminaires for municipal and highway applications with rated life 50000 hours."
+  },
+  "31": {
+    "is_code": "IS 16102",
+    "title": "Self-Ballasted LED Lamps for General Lighting Services - Safety Requirements",
+    "description": "Specifies safety requirements for self-ballasted LED lamps for general lighting operating at supply voltages up to 250 V AC. Covers thermal protection, electric shock prevention, insulation requirements, protection against moisture rated IP20 minimum, and marking of rated wattage and luminous flux. Applicable to retrofit LED lamps replacing incandescent or CFL lamps with warranty of at least 2 years."
+  },
+  "32": {
+    "is_code": "IS 16103",
+    "title": "Self-Ballasted LED Lamps for General Lighting Services - Performance Requirements",
+    "description": "Specifies performance requirements including luminous flux, luminous efficacy minimum 75 lm/W, power factor minimum 0.85, colour rendering index CRI minimum 80, correlated colour temperature CCT, and lumen maintenance L70 at 25000 hours for self-ballasted LED lamps for indoor applications at operating voltage 220-240V AC."
+  },
+  "33": {
+    "is_code": "IS 15885",
+    "title": "LED Drivers and Control Gear - Safety and Performance Requirements",
+    "description": "Specifies safety and performance requirements for electronic LED drivers used to power LED modules in luminaires. Covers input voltage range 85-305 V AC, output current regulation, efficiency minimum 88 percent, power factor correction PFC minimum 0.90, thermal derating, protection against short circuit and open circuit, surge protection 4 kV, and EMI compliance. Operating temperature -20 to 55 degrees C."
+  },
+  "34": {
+    "is_code": "IS 10322-5-3",
+    "title": "Luminaires Part 5 Section 3 - LED Road and Street Luminaires",
+    "description": "Particular requirements for LED road and street luminaires for outdoor public lighting on highways and municipal streets. Specifies photometric classification, luminous intensity distribution, power consumption 40-250W, ingress protection IP65 or higher, IK08 mechanical impact rating, surge protection 10 kV line to earth, operating voltage 180-270V AC, and rated life L80 at 50000 hours minimum."
+  },
+  "35": {
+    "is_code": "IS 12063",
+    "title": "Degrees of Protection Provided by Enclosures (IP Code)",
+    "description": "Specifies the classification system for degrees of protection provided by enclosures of electrical equipment against ingress of solid foreign objects, dust, and water. IP65 indicates complete dust-tight protection and protection against low-pressure water jets from any direction. IP66 protects against powerful water jets. IP67 protects against temporary immersion. Covers test methods and marking requirements."
+  },
+  "36": {
+    "is_code": "IS 6882",
+    "title": "Electric Light Fittings - General Requirements and Tests",
+    "description": "Specifies general construction, safety requirements, and test methods for electric light fittings and luminaires used in indoor and outdoor applications. Covers insulation resistance minimum 2 MOhm, dielectric strength test at 2000V, creepage distances, maximum surface temperature, material requirements for lamp holders, wiring, and protection against electric shock and fire hazards. Applicable to LED luminaires."
+  },
+  "37": {
+    "is_code": "IS 9000",
+    "title": "Basic Environmental Testing Procedures for Electronic and Electrical Items",
+    "description": "Specifies environmental test procedures for electronic and electrical equipment to evaluate performance under conditions of temperature extremes from -40 to 85 degrees C, humidity up to 95 percent RH, vibration, shock, solar radiation, and salt mist exposure. Used to validate durability of LED luminaires and drivers in outdoor road lighting deployments and tropical climates."
+  },
+  "38": {
+    "is_code": "IS 16107",
+    "title": "LED Module for General Lighting - Safety Requirements",
+    "description": "Specifies safety requirements for LED modules for incorporation into luminaires for general lighting. Covers maximum case temperature 105 degrees C, electrical insulation, protection against accidental contact with live parts, module identification, and compatibility with LED drivers. Operating voltage up to 250V AC with warranty minimum 3 years for outdoor modules."
+  },
+  "39": {
+    "is_code": "IS 16108",
+    "title": "LED Module for General Lighting - Performance Requirements",
+    "description": "Specifies performance requirements for LED modules in luminaires, including initial luminous flux, forward voltage, colour rendering index CRI minimum 70, correlated colour temperature 4000K typical for street lighting, lumen maintenance L80 at 50000 hours, and colour consistency within 3-step MacAdam ellipse. Ensures long-term photometric stability at operating temperatures -20 to 50 degrees C."
+  },
+  "40": {
+    "is_code": "IS 3646",
+    "title": "Code of Practice for Interior Illumination",
+    "description": "Provides design guidelines for lighting installations in industrial, commercial, and public buildings. Specifies maintained illuminance levels in lux for various visual tasks, luminance ratios, unified glare rating UGR, and maintenance factors. Applicable as reference standard for LED luminaire selection in municipal procurement tenders where minimum lux levels and uniformity ratios on road surfaces must be specified."
+  },
+  "41": {
+    "is_code": "IS 1944",
+    "title": "Code of Practice for Lighting of Public Thoroughfares",
+    "description": "Specifies design criteria and maintained illuminance levels for public road lighting on national highways, arterial roads, local streets, and pedestrian areas in India. Covers average road luminance, overall uniformity ratio minimum 0.40, longitudinal uniformity, threshold increment for glare control, and recommended mounting heights for LED street lighting poles. Provides photometric design basis for LED street lighting procurement."
+  },
+  "42": {
+    "is_code": "IS 16520",
+    "title": "Solid State Lighting Products - LED Street Lights Performance Requirements",
+    "description": "Specifies minimum performance requirements for complete LED street light systems. Covers minimum system efficacy 90 lm/W, CRI minimum 70, correlated colour temperature 2700K to 6500K, power factor minimum 0.90, total harmonic distortion THD below 20 percent, surge protection 10 kV line to earth, rated life 50000 hours at L80, ingress protection IP66 for complete luminaire, and operating voltage 180-270V AC."
+  },
+  "43": {
+    "is_code": "IS 13118",
+    "title": "High Voltage Alternating Current Circuit Breakers for Street Lighting Panels",
+    "description": "Specifies requirements for high voltage AC circuit breakers used in outdoor power distribution networks and street lighting feeder panels. Covers rated voltage up to 11 kV, rated normal current, rated short circuit breaking capacity, mechanical endurance 10000 operations, and protection class IP54 for outdoor panels. Relevant to protection of street lighting feeder circuits at pole-mounted distribution boards."
   }
 }
