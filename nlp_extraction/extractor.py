@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from nlp_extraction.parser import clean_text, extract_text_from_pdf
+from nlp_extraction.multilingual import normalize_text
 
 
 def extract_product(text: str) -> str:
@@ -568,6 +569,12 @@ def extract_from_text(text: str, spec_id: str = "") -> dict[str, Any]:
     Primary extraction entry point. Processes raw text through cleaning and rule-based
     extraction routines.
 
+    If the input text contains non-English Indian script characters (Devanagari,
+    Tamil, Telugu, Bengali, Gujarati, Kannada, Malayalam, Gurmukhi, Odia, Urdu),
+    a multilingual normalization pre-processor is invoked first to translate the
+    text to English via the Groq LLM before the standard regex pipeline runs.
+    For English-only input the normalization step is a zero-cost pass-through.
+
     Parameters
     ----------
     text : str
@@ -585,8 +592,21 @@ def extract_from_text(text: str, spec_id: str = "") -> dict[str, Any]:
         - "specs": list[str]
         - "parameters": dict[str, str]
         - "explicit_standards": list[str]
+        - "multilingual_meta": dict  — translation diagnostics:
+            {
+              "was_translated":      bool,
+              "detected_scripts":    list[str],
+              "translation_success": bool,
+              "original_language":   str,
+            }
     """
-    cleaned = clean_text(text)
+    # ── Multilingual normalization (pre-processing) ──────────────────────────
+    # For English text this is a pure pass-through (no API call, no latency).
+    # For regional-language text this translates once via Groq before the
+    # existing English regex pipeline runs completely unchanged.
+    normalized_text, multilingual_meta = normalize_text(text)
+
+    cleaned = clean_text(normalized_text)
 
     product = extract_product(cleaned)
     specs = extract_specifications(cleaned)
@@ -601,6 +621,7 @@ def extract_from_text(text: str, spec_id: str = "") -> dict[str, Any]:
         "specs": specs,
         "parameters": parameters,
         "explicit_standards": standards,
+        "multilingual_meta": multilingual_meta,
     }
 
 
