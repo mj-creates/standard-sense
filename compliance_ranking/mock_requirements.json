@@ -4,10 +4,22 @@
     "title": "PVC Insulated (Heavy Duty) Electric Cables for Working Voltages up to and including 1100 V",
     "category": "electrical",
     "requirements": {
-      "voltage":   { "max": "1100V" },
-      "material":  { "required": true },
-      "protection":{ "min": "IP44" },
-      "warranty":  { "required": true }
+      "voltage": {
+        "max": "1100V",
+        "mandatory": true
+      },
+      "material": {
+        "required": true,
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP44",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -15,20 +27,41 @@
     "title": "PVC Insulated Cables for Voltages not Exceeding 1100 V",
     "category": "electrical",
     "requirements": {
-      "voltage":   { "max": "1100V" },
-      "material":  { "required": true },
-      "warranty":  { "required": true }
+      "voltage": {
+        "max": "1100V",
+        "mandatory": true
+      },
+      "material": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
     "is_code": "IS 8828",
-    "title": "Electrical Accessories — Circuit Breakers for Overcurrent Protection",
+    "title": "Electrical Accessories \u00e2\u20ac\u201d Circuit Breakers for Overcurrent Protection",
     "category": "electrical",
     "requirements": {
-      "voltage":   { "min": "230V" },
-      "power":     { "min": "1W" },
-      "warranty":  { "required": true },
-      "protection":{ "min": "IP20" }
+      "voltage": {
+        "min": "230V",
+        "mandatory": true
+      },
+      "power": {
+        "min": "1W",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      }
     }
   },
   {
@@ -36,10 +69,22 @@
     "title": "Safety of Household and Similar Electrical Appliances",
     "category": "electrical",
     "requirements": {
-      "voltage":              { "max": "250V" },
-      "protection":           { "min": "IP20" },
-      "operating_temperature":{ "required": true },
-      "warranty":             { "required": true }
+      "voltage": {
+        "max": "250V",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -47,9 +92,18 @@
     "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
     "category": "structural",
     "requirements": {
-      "grade":     { "min": "Fe415" },
-      "material":  { "required": true },
-      "dimensions":{ "required": true }
+      "grade": {
+        "min": "Fe415",
+        "mandatory": true
+      },
+      "material": {
+        "required": true,
+        "mandatory": true
+      },
+      "dimensions": {
+        "required": true,
+        "mandatory": true
+      }
     }
   },
   {
@@ -57,10 +111,22 @@
     "title": "Hot Rolled Medium and High Tensile Structural Steel",
     "category": "structural",
     "requirements": {
-      "grade":     { "min": "E250" },
-      "material":  { "required": true },
-      "dimensions":{ "required": true },
-      "warranty":  { "required": true }
+      "grade": {
+        "min": "E250",
+        "mandatory": true
+      },
+      "material": {
+        "required": true,
+        "mandatory": true
+      },
+      "dimensions": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -68,9 +134,18 @@
     "title": "43 Grade Ordinary Portland Cement",
     "category": "structural",
     "requirements": {
-      "grade":    { "min": "43" },
-      "material": { "required": true },
-      "warranty": { "required": true }
+      "grade": {
+        "min": "43",
+        "mandatory": true
+      },
+      "material": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -78,10 +153,22 @@
     "title": "Safety Requirements for Toys",
     "category": "consumer_goods",
     "requirements": {
-      "material":             { "required": true },
-      "operating_temperature":{ "max": "50" },
-      "warranty":             { "required": true },
-      "protection":           { "min": "IP20" }
+      "material": {
+        "required": true,
+        "mandatory": true
+      },
+      "operating_temperature": {
+        "max": "50",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      }
     }
   },
   {
@@ -89,11 +176,26 @@
     "title": "Plugs and Socket-Outlets of Rated Voltage up to 250 V and Rated Current up to 16 A",
     "category": "consumer_goods",
     "requirements": {
-      "voltage":   { "max": "250V" },
-      "power":     { "max": "3680W" },
-      "protection":{ "min": "IP20" },
-      "warranty":  { "required": true },
-      "material":  { "required": true }
+      "voltage": {
+        "max": "250V",
+        "mandatory": true
+      },
+      "power": {
+        "max": "3680W",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      },
+      "material": {
+        "required": true,
+        "mandatory": true
+      }
     }
   },
   {
@@ -101,12 +203,30 @@
     "title": "Luminaires - Specification for LED Street Lighting and General Lighting Requirements",
     "category": "lighting",
     "requirements": {
-      "power":               { "max": "250W" },
-      "protection":          { "min": "IP65" },
-      "voltage":             { "max": "270V" },
-      "operating_temperature":{ "required": true },
-      "warranty":            { "required": true },
-      "lifespan":            { "min": "25000 hours" }
+      "power": {
+        "max": "250W",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP65",
+        "mandatory": true
+      },
+      "voltage": {
+        "max": "270V",
+        "mandatory": true
+      },
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      },
+      "lifespan": {
+        "min": "25000 hours",
+        "mandatory": false
+      }
     }
   },
   {
@@ -114,12 +234,30 @@
     "title": "Luminaires Part 5 Section 3 - LED Road and Street Luminaires",
     "category": "lighting",
     "requirements": {
-      "power":               { "max": "250W" },
-      "protection":          { "min": "IP65" },
-      "voltage":             { "max": "270V" },
-      "operating_temperature":{ "required": true },
-      "warranty":            { "required": true },
-      "lifespan":            { "min": "50000 hours" }
+      "power": {
+        "max": "250W",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP65",
+        "mandatory": true
+      },
+      "voltage": {
+        "max": "270V",
+        "mandatory": true
+      },
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      },
+      "lifespan": {
+        "min": "50000 hours",
+        "mandatory": false
+      }
     }
   },
   {
@@ -127,10 +265,22 @@
     "title": "Self-Ballasted LED Lamps for General Lighting Services - Safety Requirements",
     "category": "lighting",
     "requirements": {
-      "voltage":   { "max": "250V" },
-      "protection":{ "min": "IP20" },
-      "warranty":  { "required": true },
-      "power":     { "max": "100W" }
+      "voltage": {
+        "max": "250V",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      },
+      "power": {
+        "max": "100W",
+        "mandatory": true
+      }
     }
   },
   {
@@ -138,10 +288,22 @@
     "title": "Self-Ballasted LED Lamps for General Lighting Services - Performance Requirements",
     "category": "lighting",
     "requirements": {
-      "voltage":   { "max": "240V" },
-      "protection":{ "min": "IP20" },
-      "lifespan":  { "min": "25000 hours" },
-      "warranty":  { "required": true }
+      "voltage": {
+        "max": "240V",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "lifespan": {
+        "min": "25000 hours",
+        "mandatory": false
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -149,10 +311,22 @@
     "title": "LED Drivers and Control Gear - Safety and Performance Requirements",
     "category": "lighting",
     "requirements": {
-      "voltage":             { "max": "305V" },
-      "operating_temperature":{ "required": true },
-      "protection":          { "min": "IP20" },
-      "warranty":            { "required": true }
+      "voltage": {
+        "max": "305V",
+        "mandatory": true
+      },
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -160,8 +334,14 @@
     "title": "Degrees of Protection Provided by Enclosures (IP Code)",
     "category": "electrical",
     "requirements": {
-      "protection": { "min": "IP65" },
-      "warranty":   { "required": true }
+      "protection": {
+        "min": "IP65",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -169,10 +349,22 @@
     "title": "Electric Light Fittings - General Requirements and Tests",
     "category": "lighting",
     "requirements": {
-      "voltage":             { "max": "1000V" },
-      "protection":          { "min": "IP44" },
-      "operating_temperature":{ "required": true },
-      "warranty":            { "required": true }
+      "voltage": {
+        "max": "1000V",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP44",
+        "mandatory": true
+      },
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -180,9 +372,18 @@
     "title": "Basic Environmental Testing Procedures for Electronic and Electrical Items",
     "category": "electrical",
     "requirements": {
-      "operating_temperature":{ "required": true },
-      "protection":           { "min": "IP20" },
-      "warranty":             { "required": true }
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -190,9 +391,18 @@
     "title": "LED Module for General Lighting - Safety Requirements",
     "category": "lighting",
     "requirements": {
-      "voltage":   { "max": "250V" },
-      "protection":{ "min": "IP20" },
-      "warranty":  { "required": true }
+      "voltage": {
+        "max": "250V",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -200,10 +410,22 @@
     "title": "LED Module for General Lighting - Performance Requirements",
     "category": "lighting",
     "requirements": {
-      "lifespan":  { "min": "50000 hours" },
-      "protection":{ "min": "IP20" },
-      "operating_temperature":{ "required": true },
-      "warranty":  { "required": true }
+      "lifespan": {
+        "min": "50000 hours",
+        "mandatory": false
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -211,12 +433,30 @@
     "title": "Solid State Lighting Products - LED Street Lights Performance Requirements",
     "category": "lighting",
     "requirements": {
-      "power":               { "max": "250W" },
-      "protection":          { "min": "IP65" },
-      "voltage":             { "max": "270V" },
-      "lifespan":            { "min": "50000 hours" },
-      "operating_temperature":{ "required": true },
-      "warranty":            { "required": true }
+      "power": {
+        "max": "250W",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP65",
+        "mandatory": true
+      },
+      "voltage": {
+        "max": "270V",
+        "mandatory": true
+      },
+      "lifespan": {
+        "min": "50000 hours",
+        "mandatory": false
+      },
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -224,9 +464,18 @@
     "title": "Code of Practice for Lighting of Public Thoroughfares",
     "category": "lighting",
     "requirements": {
-      "voltage":             { "max": "250V" },
-      "operating_temperature":{ "required": true },
-      "warranty":            { "required": true }
+      "voltage": {
+        "max": "250V",
+        "mandatory": true
+      },
+      "operating_temperature": {
+        "required": true,
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -234,9 +483,18 @@
     "title": "Code of Practice for Interior Illumination",
     "category": "lighting",
     "requirements": {
-      "voltage":   { "max": "250V" },
-      "protection":{ "min": "IP20" },
-      "warranty":  { "required": true }
+      "voltage": {
+        "max": "250V",
+        "mandatory": true
+      },
+      "protection": {
+        "min": "IP20",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   },
   {
@@ -244,8 +502,14 @@
     "title": "High Voltage AC Circuit Breakers - Outdoor Street Lighting Panel Protection",
     "category": "electrical",
     "requirements": {
-      "protection":{ "min": "IP44" },
-      "warranty":  { "required": true }
+      "protection": {
+        "min": "IP44",
+        "mandatory": true
+      },
+      "warranty": {
+        "required": true,
+        "mandatory": false
+      }
     }
   }
 ]
