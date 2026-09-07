@@ -48,4 +48,5 @@ def get_llm() -> ChatGroq:
         model="openai/gpt-oss-20b",
         temperature=0,
         groq_api_key=api_key,
+        request_timeout=10,   # hard cap on LLM round-trip; prevents hung requests
     )

@@ -145,6 +145,7 @@ def generate_clarifying_question(query_text: str, results: list[dict]) -> str:
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=80,
+            timeout=10,   # hard cap — clarifying question must not stall the pipeline
         )
         question = response.choices[0].message.content.strip()
         # Strip any leading/trailing quotes or numbering the model might add
