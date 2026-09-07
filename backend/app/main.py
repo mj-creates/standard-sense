@@ -115,9 +115,25 @@ async def process_tender(file: UploadFile = File(...)):
 
         # Make sure extraction produced text
         if not spec_text:
+            # Detect scanned/image-only PDF and give a specific error message
+            page_count_hint = ""
+            try:
+                import pymupdf
+                doc = pymupdf.open(temp_path)
+                total_pages = len(doc)
+                text_pages  = sum(1 for p in doc if p.get_text().strip())
+                doc.close()
+                if text_pages == 0:
+                    page_count_hint = (
+                        f" The uploaded file appears to be a scanned or image-only PDF "
+                        f"({total_pages} page(s), 0 with selectable text). "
+                        f"Please upload a PDF with a text layer, or use OCR software first."
+                    )
+            except Exception:
+                pass
             raise HTTPException(
                 status_code=422,
-                detail="Could not extract a specification from the PDF."
+                detail=f"Could not extract a specification from the PDF.{page_count_hint}",
             )
 
         # --------------------------------------------------

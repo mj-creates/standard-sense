@@ -115,6 +115,56 @@ def extract_standards(text: str) -> list[str]:
     return standards
 
 
+def _normalize_voltage(raw: str) -> str:
+    """
+    Normalize a voltage string to canonical form.
+
+    "230 Volts AC" → "230V AC"
+    "230 V AC"     → "230V AC"
+    "0.23 kV"      → "0.23kV"   (kV kept; compliance checker scales)
+    """
+    normalized = re.sub(
+        r"(\d)\s+(Volts?)\b",
+        lambda m: m.group(1) + "V",
+        raw.strip(),
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"(\d)\s+(kV)\b",
+        lambda m: m.group(1) + "kV",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    return normalized.strip()
+
+
+def _normalize_power_unit(unit: str) -> str:
+    """Normalize power unit to canonical abbreviation."""
+    u = unit.strip()
+    lower = u.lower()
+    if lower in ("w", "watt", "watts"):
+        return "W"
+    if lower in ("kw", "kilowatt", "kilowatts"):
+        return "kW"
+    if lower in ("mw", "megawatt", "megawatts"):
+        return "MW"
+    if lower == "hp":
+        return "hp"
+    return u.upper() if len(u) <= 2 else u
+
+
+def _format_power(num: str, unit: str) -> str:
+    """
+    Format power as canonical string.
+    Single-char units (W) joined without space: "150W"
+    Multi-char units get a space: "25 kW"
+    """
+    norm = _normalize_power_unit(unit)
+    if len(norm) == 1:
+        return f"{num}{norm}"
+    return f"{num} {norm}"
+
+
 def extract_parameters(text: str) -> dict[str, str]:
     """
     Extract key technical parameters into a structured dictionary.
@@ -146,79 +196,107 @@ def extract_parameters(text: str) -> dict[str, str]:
 
     parameters: dict[str, str] = {}
 
-    # 1. Power (e.g., "100-150W", "100W-150W", "150W", "25 kW")
-    # Range pattern first (e.g., "wattage range 100W-150W", "100W-150W", "100-150W", "100 - 150 W")
+    # 1. Power (e.g., "100-150W", "100W-150W", "150W", "25 kW", "100 to 150 Watts")
+    # Range pattern: dash/en-dash OR the word "to" as separator
     power_range = re.search(
-        r"\b(\d+)\s*(?:W|kW|MW|Watts?|hp)?\s*[-–]\s*(\d+)\s*(W|kW|MW|Watts?|hp)\b",
+        r"\b(\d+)\s*(?:W|kW|MW|Watts?|hp)?\s*(?:[-–]|\bto\b)\s*(\d+)\s*(W|kW|MW|Watts?|hp)\b",
         text,
         re.IGNORECASE,
     )
     if power_range:
         start, end, unit = power_range.groups()
-        unit_str = unit.upper() if len(unit) <= 2 else unit
-        parameters["power"] = f"{start}-{end}{unit_str}"
+        unit_norm = _normalize_power_unit(unit)
+        parameters["power"] = f"{start}-{end}{unit_norm}"
     else:
         # Labeled with colon/dash: e.g. 'Power: 150W'
         power_label = re.search(
-            r"(?:power(?:\s*(?:rating|consumption|range))?|wattage(?:\s*range)?)\s*[:\-–]\s*([^\n\r,;]+)",
+            r"(?:power(?:\s*(?:rating|consumption|range))?|wattage(?:\s*range)?)\s*[:\-–]\s*([^\n\r;]+)",
             text,
             re.IGNORECASE,
         )
         if power_label:
             val = power_label.group(1).strip()
-            m_single = re.search(r"\b(\d+(?:\.\d+)?\s*(?:W|kW|MW|Watts?|hp))\b", val, re.IGNORECASE)
-            if m_single:
-                parameters["power"] = m_single.group(1).strip()
+            # Sub-match a range with "to" inside the label value first
+            m_range = re.search(
+                r"\b(\d+)\s*(?:W|kW|MW|Watts?|hp)?\s*(?:[-–]|\bto\b)\s*(\d+)\s*(W|kW|MW|Watts?|hp)\b",
+                val, re.IGNORECASE
+            )
+            if m_range:
+                s, e, u = m_range.groups()
+                parameters["power"] = f"{s}-{e}{_normalize_power_unit(u)}"
             else:
-                parameters["power"] = val
+                m_single = re.search(r"\b(\d+(?:\.\d+)?)\s*(W|kW|MW|Watts?|hp)\b", val, re.IGNORECASE)
+                if m_single:
+                    num, unit = m_single.groups()
+                    parameters["power"] = _format_power(num, unit)
+                else:
+                    parameters["power"] = val
         else:
             # Labeled without colon but followed by numeric value: e.g. 'wattage 150W'
             power_label_no_colon = re.search(
-                r"(?:power(?:\s*(?:rating|consumption|range))?|wattage(?:\s*range)?)\s+(\d+(?:\.\d+)?\s*(?:W|kW|MW|Watts?|hp))\b",
+                r"(?:power(?:\s*(?:rating|consumption|range))?|wattage(?:\s*range)?)\s+(\d+(?:\.\d+)?)\s*(W|kW|MW|Watts?|hp)\b",
                 text,
                 re.IGNORECASE,
             )
             if power_label_no_colon:
-                parameters["power"] = power_label_no_colon.group(1).strip()
+                raw_num, raw_unit = power_label_no_colon.group(1), power_label_no_colon.group(2)
+                parameters["power"] = _format_power(raw_num, raw_unit)
             else:
                 # Inline standalone power value: e.g. '150W', '25 kW'
                 power_inline = re.search(
-                    r"\b(\d+(?:\.\d+)?\s*(?:W|kW|MW|Watts?|hp))\b",
+                    r"\b(\d+(?:\.\d+)?)\s*(W|kW|MW|Watts?|hp)\b",
                     text,
                     re.IGNORECASE,
                 )
                 if power_inline:
-                    parameters["power"] = power_inline.group(1).strip()
+                    num, unit = power_inline.groups()
+                    parameters["power"] = _format_power(num, unit)
 
-    # 2. Protection / IP Rating (e.g., "IP65", "IP67")
+    # 2. Protection / IP Rating (e.g., "IP65", "IP67", "IP-65", "IP 65")
     protection_label = re.search(
-        r"(?:protection(?:\s*rating|\s*class)?|ip\s*rating|ingress\s*protection)\s*[:\-–]\s*([^\n\r,;]+)",
+        r"(?:protection(?:\s*rating|\s*class)?|ip\s*rating|ingress\s*protection)\s*[:\-–]\s*([^\n\r;]+)",
         text,
         re.IGNORECASE,
     )
     if protection_label:
-        parameters["protection"] = protection_label.group(1).strip()
+        raw_val = protection_label.group(1).strip()
+        # Normalize "IP-65", "IP 65", "IP65" → canonical "IP65"
+        ip_m = re.search(r"\bIP[\s\-]?(\d{2,})\b", raw_val, re.IGNORECASE)
+        if ip_m:
+            parameters["protection"] = f"IP{ip_m.group(1)}"
+        else:
+            parameters["protection"] = raw_val
     else:
-        protection_inline = re.search(r"\b(IP\s*\d{2})\b", text, re.IGNORECASE)
+        # Inline: handle IP65, IP-65, IP 65
+        protection_inline = re.search(r"\bIP[\s\-]?(\d{2,})\b", text, re.IGNORECASE)
         if protection_inline:
-            parameters["protection"] = protection_inline.group(1).replace(" ", "").upper()
+            parameters["protection"] = f"IP{protection_inline.group(1)}"
 
-    # 3. Lifespan (e.g., "50000 hours", "50,000 hrs")
+    # 3. Lifespan (e.g., "50000 hours", "50,000 hrs", "50000hrs")
     lifespan_label = re.search(
-        r"(?:lifespan|lifetime|rated\s*life|l70(?:\s*life)?)\s*[:\-–]\s*([^\n\r,;]+)",
+        r"(?:lifespan|lifetime|rated\s*life|l70(?:\s*life)?)\s*[:\-–]\s*([^\n\r;]+)",
         text,
         re.IGNORECASE,
     )
     if lifespan_label:
-        parameters["lifespan"] = lifespan_label.group(1).strip()
+        raw_val = lifespan_label.group(1).strip()
+        # Extract numeric + unit; strip commas from numbers like "50,000"
+        lf_m = re.search(r"([\d,]+\s*(?:hours?|hrs?)(?:\s*operating)?)", raw_val, re.IGNORECASE)
+        if lf_m:
+            parameters["lifespan"] = re.sub(r",", "", lf_m.group(1)).strip()
+        else:
+            parameters["lifespan"] = raw_val.split(",")[0].strip()
     else:
-        lifespan_inline = re.search(r"\b(\d+[\d,]*\s*(?:hours|hrs|operating\s*hours))\b", text, re.IGNORECASE)
+        lifespan_inline = re.search(
+            r"\b([\d,]+\s*(?:hours?|hrs?|operating\s*hours?))\b", text, re.IGNORECASE
+        )
         if lifespan_inline:
-            parameters["lifespan"] = lifespan_inline.group(1).strip()
+            parameters["lifespan"] = re.sub(r",", "", lifespan_inline.group(1)).strip()
 
-    # 4. Voltage (e.g., "working voltage up to 1100V", "Operating voltage: 230V AC", "220-240 V", "11kV")
+    # 4. Voltage (e.g., "working voltage up to 1100V", "Operating voltage: 230V AC",
+    #             "220-240 V", "11kV", "230 Volts AC", "supply voltage: 230 Volts AC")
     voltage_label = re.search(
-        r"(?:operating\s*voltage|rated\s*voltage|input\s*voltage|working\s*voltage|voltage)\s*[:\-–]\s*([^\n\r,;]+)",
+        r"(?:operating\s*voltage|rated\s*voltage|input\s*voltage|working\s*voltage|supply\s*voltage|voltage)\s*[:\-–]\s*([^\n\r;]+)",
         text,
         re.IGNORECASE,
     )
@@ -230,7 +308,7 @@ def extract_parameters(text: str) -> dict[str, str]:
             re.IGNORECASE,
         )
         if m_volt:
-            parameters["voltage"] = m_volt.group(1).strip()
+            parameters["voltage"] = _normalize_voltage(m_volt.group(1).strip())
         else:
             parameters["voltage"] = val
     else:
@@ -240,7 +318,7 @@ def extract_parameters(text: str) -> dict[str, str]:
             re.IGNORECASE,
         )
         if inline_label:
-            parameters["voltage"] = inline_label.group(1).strip()
+            parameters["voltage"] = _normalize_voltage(inline_label.group(1).strip())
         else:
             voltage_inline = re.search(
                 r"\b(\d+(?:\s*[-–]\s*\d+)?\s*(?:V|kV|Volts?)(?:\s*(?:AC|DC))?)\b",
@@ -248,7 +326,7 @@ def extract_parameters(text: str) -> dict[str, str]:
                 re.IGNORECASE,
             )
             if voltage_inline:
-                parameters["voltage"] = voltage_inline.group(1).strip()
+                parameters["voltage"] = _normalize_voltage(voltage_inline.group(1).strip())
 
     # 5. Color Temperature (e.g., "4000K", "5700 K", "3000K-6500K")
     cct_label = re.search(

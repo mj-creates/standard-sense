@@ -48,18 +48,37 @@ _REQUIREMENTS: dict[str, dict] = _load_requirements()
 
 def _extract_numeric(value: str) -> float | None:
     """
-    Pull the first numeric token (int or float) out of a string.
-    Returns None if nothing numeric is found.
+    Pull the first numeric token (int or float) out of a string,
+    applying SI unit scaling so comparisons are always in base units.
+
+    Scaling rules applied when a SI-prefix unit follows the number:
+        kV  → multiply by 1000   ("0.23 kV" → 230.0)
+        kW  → multiply by 1000   ("25 kW"   → 25000.0)
+        MW  → multiply by 1e6
+        MV  → multiply by 1e6
 
     Examples:
         "230V AC"    -> 230.0
+        "0.23 kV"    -> 230.0   (scaled from kV)
         "IP65"       -> 65.0
         "Fe500"      -> 500.0
         "3680W"      -> 3680.0
+        "25 kW"      -> 25000.0  (scaled from kW)
         "50000 hrs"  -> 50000.0
     """
     match = re.search(r"[-+]?\d+(?:\.\d+)?", value)
-    return float(match.group()) if match else None
+    if not match:
+        return None
+    num = float(match.group())
+
+    # Apply SI prefix scaling when the unit immediately follows the number
+    suffix_match = re.search(r"\d\s*(kV|kW|MW|MV)\b", value, re.IGNORECASE)
+    if suffix_match:
+        suffix = suffix_match.group(1).lower()
+        multipliers = {"kv": 1_000, "kw": 1_000, "mv": 1_000_000, "mw": 1_000_000}
+        num *= multipliers.get(suffix, 1)
+
+    return num
 
 
 def _extract_range(value: str) -> tuple[float, float] | None:
