@@ -55,42 +55,42 @@ def build_rag_prompt(spec_text: str, recommendation: Mapping[str, Any] | dict[st
     failed_str = ", ".join(str(f) for f in failed_fields) if failed_fields else "None"
     missing_str = ", ".join(str(f) for f in missing_fields) if missing_fields else "None"
 
-    status_descriptions = {
-        "compliant": "The specification fully satisfies all evaluated requirements of this standard.",
-        "partial": "The specification partially satisfies requirements, with missing or unverified fields.",
-        "non-compliant": "The specification fails one or more requirements of this standard.",
-        "unknown": "Compliance cannot be conclusively determined from the available specification data.",
-    }
-    status_note = status_descriptions.get(compliance_status, status_descriptions["unknown"])
-
-    prompt = f"""You are an expert technical advisor for government procurement in India, evaluating tender specifications against Bureau of Indian Standards (BIS).
+    prompt = f"""You are a technical advisor for government procurement in India, evaluating tender specifications against Bureau of Indian Standards (BIS).
 
 Explain why the following Indian Standard was recommended for this procurement specification, and summarize the compliance assessment clearly and concisely for a procurement officer.
 
-### Context & Input Data
-1. Procurement Specification:
-   "{spec_text}"
+You must ONLY use information explicitly present in the input data below. Do not use external knowledge or invent facts.
 
-2. Recommended Standard:
-   - IS Code: {is_code}
-   - Title: {title}
-   - Semantic Score: {semantic_score_str} (Note: a lower semantic score means a closer semantic match)
+### Ground Truth Input Data
+- Procurement Specification (spec_text): "{spec_text}"
+- Recommended Standard (is_code): {is_code}
+- Standard Title (title): {title}
+- Semantic Score (semantic_score): {semantic_score_str}
+- Compliance Status (compliance_status): {compliance_status}
+- Passed Fields (passed_fields): {passed_str}
+- Failed Fields (failed_fields): {failed_str}
+- Missing Fields (missing_fields): {missing_str}
 
-3. Compliance Assessment:
-   - Compliance Status: {compliance_status} ({status_note})
-   - Passed Fields: {passed_str}
-   - Failed Fields: {failed_str}
-   - Missing Fields: {missing_str}
-
-### Instructions
-Provide a concise, professional explanation covering the following:
-1. Relevance: Explain why this standard is relevant to the tender product and requirements. Mention that the semantic score of {semantic_score_str} indicates how closely the tender description matches the standard (noting that a lower semantic score means a closer semantic match).
-2. Field Matching: Detail which specification fields matched ({passed_str}).
-3. Gaps & Issues: Explain any failed fields ({failed_str}) or missing fields ({missing_str}).
-4. Compliance Status: Clearly state the overall compliance status as "{compliance_status}".
-5. Constraints:
-   - Base your explanation strictly on the facts and data provided above.
-   - Never invent requirements or facts that are not provided.
-   - Keep the explanation concise and suitable for a procurement officer.
+### Explicit Instructions & Anti-Hallucination Guidelines
+1. NEVER use words such as "covered", "matches the scope", "meets the criteria", "satisfies the requirements", "complies with the standard", or similar wording to describe a field unless the actual standard requirement is explicitly present in the input.
+2. A field listed in passed_fields means ONLY:
+   "The compliance module reported [field_name] as passed." (e.g., "The compliance module reported protection_rating as passed.", "The compliance module reported voltage as passed.")
+   It does NOT mean that you know why it passed.
+3. A field listed in failed_fields means ONLY:
+   "The compliance module reported this field as failed." (or "The compliance module reported [field_name] as failed.")
+4. A field listed in missing_fields means ONLY:
+   "The compliance module reported [field_name] as missing." (or "The compliance module reported this field as missing.")
+   Do NOT say that the standard does or does not cover that field. NEVER explain why fields are missing or whether the standard covers them.
+5. Do not infer relationships between the specification values and the standard from the standard title, standard code, semantic score, or field names. Do not infer or invent the actual technical requirements of the Indian Standard from its title or code.
+6. Do not say that a recommendation is "suitable", "applicable", "valid", or "appropriate" unless that conclusion is explicitly provided in the input.
+7. The explanation for why the standard was recommended must be strictly limited to:
+   - the standard code and title provided,
+   - the semantic score provided by the ranking system (stating that a lower score indicates a closer match in the ranking system),
+   - and the fact that the ranking/compliance modules produced the supplied results.
+8. For compliance status, simply report:
+   "The compliance module evaluated the overall status as {compliance_status}."
+9. Do not invent standard requirements, standard clauses, certification requirements, warranty requirements, voltage limits, IP ratings, materials, or other technical facts.
+10. Explain only the matching information supplied by the ranking/compliance module. If the available information is insufficient to explain why a field matches, say that it is "reported as passed by the compliance module" rather than inventing a reason.
+11. Keep the explanation concise, strictly factual, and suitable for a procurement officer.
 """
     return prompt.strip()
