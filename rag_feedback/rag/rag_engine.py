@@ -10,6 +10,7 @@ recommended Indian Standards for procurement officers.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from rag_feedback.rag.llm import get_llm
@@ -76,12 +77,12 @@ def validate_input(data: dict[str, Any]) -> None:
             )
 
 
-def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
+def _generate_template_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
     """
-    Generate an explanation for an Indian Standard recommendation using the Groq LLM.
+    Generate a deterministic fallback explanation using only supplied recommendation data.
 
-    Calls `build_rag_prompt()` to construct the contextual prompt, sends it
-    to the configured Groq LLM via `get_llm()`, and returns the explanation text.
+    Used as a reliable, grounded fallback if LLM initialization, network requests,
+    or prompt invocation fails or returns empty output.
 
     Parameters
     ----------
@@ -94,12 +95,64 @@ def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
     Returns
     -------
     str
-        LLM-generated explanation of why the standard was recommended and its compliance standing.
+        Deterministic explanation grounded strictly in the supplied input data.
+    """
+    is_code = recommendation.get("is_code", "Unknown Standard")
+    title = recommendation.get("title", "No Title Provided")
+    raw_score = recommendation.get("semantic_score", 0.0)
+    score_str = f"{raw_score:.4f}" if isinstance(raw_score, (int, float)) else str(raw_score)
+    status = str(recommendation.get("compliance_status", "unknown")).strip().lower()
 
-    Raises
-    ------
-    RuntimeError
-        If RAG LLM generation fails during initialization or prompt invocation.
+    passed_fields = recommendation.get("passed_fields", [])
+    failed_fields = recommendation.get("failed_fields", [])
+    missing_fields = recommendation.get("missing_fields", [])
+
+    status_summaries = {
+        "compliant": f"{is_code} is reported as compliant by the compliance module.",
+        "partial": f"{is_code} is reported as partially compliant by the compliance module.",
+        "non-compliant": f"{is_code} is reported as non-compliant by the compliance module.",
+        "unknown": f"Compliance status for {is_code} is reported as unknown.",
+    }
+    status_summary = status_summaries.get(status, status_summaries["unknown"])
+
+    parts = [
+        f"{is_code} ('{title}') was recommended with a semantic score of {score_str} (a lower semantic score indicates a closer match in the ranking system).",
+        status_summary,
+    ]
+
+    for field in passed_fields:
+        parts.append(f"The compliance module reported {field} as passed.")
+
+    for field in failed_fields:
+        parts.append(f"The compliance module reported {field} as failed.")
+
+    for field in missing_fields:
+        parts.append(f"The compliance module reported {field} as missing.")
+
+    return " ".join(parts)
+
+
+def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
+    """
+    Generate an explanation for an Indian Standard recommendation using the Groq LLM.
+
+    Calls `build_rag_prompt()` to construct the contextual prompt, sends it
+    to the configured Groq LLM via `get_llm()`, and returns the explanation text.
+    If LLM initialization or invocation fails, times out, or returns an empty result,
+    gracefully falls back to the deterministic template explanation.
+
+    Parameters
+    ----------
+    spec_text : str
+        The procurement specification text.
+    recommendation : dict[str, Any]
+        Dictionary of recommendation details containing is_code, title, semantic_score,
+        compliance_status, passed_fields, failed_fields, and missing_fields.
+
+    Returns
+    -------
+    str
+        Explanation of why the standard was recommended and its compliance standing.
     """
     prompt = build_rag_prompt(spec_text, recommendation)
 
@@ -111,9 +164,20 @@ def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
             explanation = "".join(str(part) for part in content).strip()
         else:
             explanation = str(content).strip()
-        return explanation
-    except Exception as exc:
-        raise RuntimeError(f"RAG LLM generation failed: {exc}") from exc
+
+        # Normalize Unicode spaces and hyphens to regular ASCII
+        explanation = (
+            explanation.replace("\u202f", " ")
+            .replace("\u00a0", " ")
+            .replace("\u2011", "-")
+        )
+        if explanation:
+            return explanation
+    except Exception:
+        # Gracefully fall back to the deterministic template explanation
+        pass
+
+    return _generate_template_explanation(spec_text, recommendation)
 
 
 def generate_rag_response(data: dict[str, Any]) -> dict[str, Any]:
@@ -144,9 +208,21 @@ def generate_rag_response(data: dict[str, Any]) -> dict[str, Any]:
     spec_text = data["spec_text"]
     recommendations = data.get("recommendations", [])
 
+    if not recommendations:
+        return {
+            "status": "ok",
+            "spec_id": spec_id,
+            "explanations": [],
+        }
+
+    max_workers = min(len(recommendations), 5)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        explanation_texts = list(
+            executor.map(lambda rec: generate_explanation(spec_text, rec), recommendations)
+        )
+
     explanations: list[dict[str, Any]] = []
-    for rec in recommendations:
-        explanation_text = generate_explanation(spec_text, rec)
+    for rec, explanation_text in zip(recommendations, explanation_texts):
         explanations.append(
             {
                 "is_code": rec.get("is_code", ""),

@@ -92,5 +92,13 @@ You must ONLY use information explicitly present in the input data below. Do not
 9. Do not invent standard requirements, standard clauses, certification requirements, warranty requirements, voltage limits, IP ratings, materials, or other technical facts.
 10. Explain only the matching information supplied by the ranking/compliance module. If the available information is insufficient to explain why a field matches, say that it is "reported as passed by the compliance module" rather than inventing a reason.
 11. Keep the explanation concise, strictly factual, and suitable for a procurement officer.
+
+### Output Formatting
+- Use Markdown formatting.
+- Use **bold** for important labels, IS codes, compliance status, and key values.
+- Use *italic* only when useful.
+- Use bullet points for recommendation and compliance details.
+- Do not use tables.
+- Do not output raw JSON.
 """
     return prompt.strip()
