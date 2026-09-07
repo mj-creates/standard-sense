@@ -42,6 +42,25 @@ def _load_requirements() -> dict[str, dict]:
 _REQUIREMENTS: dict[str, dict] = _load_requirements()
 
 
+def _is_mandatory(rule: dict) -> bool:
+    """
+    Return True if the requirement rule is flagged as mandatory.
+
+    Rules that carry  "mandatory": true  are hard safety/statutory
+    requirements — a spec that fails them is non-compliant for the
+    purposes of the rule filter.
+
+    Rules that carry  "mandatory": false  (or omit the flag, defaulting
+    to True for backwards compatibility with legacy entries) are advisory
+    best-practice recommendations — failing them reduces the compliance
+    score but does not disqualify the spec outright.
+
+    Default is True so that any legacy rule without a mandatory key
+    continues to behave as a hard requirement.
+    """
+    return bool(rule.get("mandatory", True))
+
+
 # ---------------------------------------------------------------------------
 # Parsing helpers
 # ---------------------------------------------------------------------------
@@ -65,6 +84,8 @@ def _extract_numeric(value: str) -> float | None:
         "3680W"      -> 3680.0
         "25 kW"      -> 25000.0  (scaled from kW)
         "50000 hrs"  -> 50000.0
+        "0.23 kV"    -> 230.0   (scaled from kV)
+        "25 kW"      -> 25000.0  (scaled from kW)
     """
     match = re.search(r"[-+]?\d+(?:\.\d+)?", value)
     if not match:
@@ -330,8 +351,17 @@ def check_compliance(
     is_code: str,
 ) -> dict:
     """
-    Check whether spec_parameters satisfies the mandatory requirements
-    defined for is_code in mock_requirements.json.
+    Check whether spec_parameters satisfies the requirements defined for
+    is_code in mock_requirements.json.
+
+    Each requirement rule carries an optional "mandatory" boolean flag:
+      - mandatory: true  (default) → hard statutory/safety requirement.
+                                     Failing it → appears in failed_fields
+                                     AND mandatory_failed_fields.
+      - mandatory: false           → advisory best-practice requirement.
+                                     Failing it → appears in failed_fields
+                                     AND advisory_failed_fields (not in
+                                     mandatory_failed_fields).
 
     Parameters
     ----------
@@ -345,14 +375,24 @@ def check_compliance(
     Returns
     -------
     dict with keys:
-        is_code, status, passed_fields, failed_fields, missing_fields
+        is_code                 str
+        status                  "compliant" | "partial" | "non-compliant" | "unknown"
+        passed_fields           list[str]   — all fields that passed
+        failed_fields           list[str]   — ALL fields that failed (mandatory + advisory)
+        missing_fields          list[str]   — fields absent from spec
+        mandatory_failed_fields list[str]   — subset of failed_fields: mandatory-only failures
+        advisory_failed_fields  list[str]   — subset of failed_fields: advisory-only failures
+        is_mandatory_compliant  bool        — True iff zero mandatory fields failed/missing
     """
     _UNKNOWN = {
-        "is_code":        is_code,
-        "status":         "unknown",
-        "passed_fields":  [],
-        "failed_fields":  [],
-        "missing_fields": [],
+        "is_code":                  is_code,
+        "status":                   "unknown",
+        "passed_fields":            [],
+        "failed_fields":            [],
+        "missing_fields":           [],
+        "mandatory_failed_fields":  [],
+        "advisory_failed_fields":   [],
+        "is_mandatory_compliant":   False,
     }
 
     # No entry in requirements data
@@ -363,49 +403,64 @@ def check_compliance(
 
     # Empty or None spec
     if not spec_parameters:
+        mandatory_missing = [f for f, r in requirements.items() if _is_mandatory(r)]
         return {
             **_UNKNOWN,
             "status":         "unknown",
             "missing_fields": list(requirements.keys()),
+            "mandatory_failed_fields": mandatory_missing,
+            "is_mandatory_compliant":  False,
         }
 
-    passed:  list[str] = []
-    failed:  list[str] = []
-    missing: list[str] = []
+    passed:             list[str] = []
+    failed:             list[str] = []
+    missing:            list[str] = []
+    mandatory_failed:   list[str] = []
+    advisory_failed:    list[str] = []
 
     for field, rule in requirements.items():
-        raw_value = spec_parameters.get(field)
+        raw_value  = spec_parameters.get(field)
+        is_mand    = _is_mandatory(rule)
 
         # Field completely absent from extracted parameters
         if raw_value is None:
             missing.append(field)
+            # A missing mandatory field counts as a mandatory failure for
+            # the is_mandatory_compliant flag, but not in mandatory_failed_fields
+            # (missing is its own category — the caller can check both lists)
             continue
 
         result = _evaluate_field(field, rule, str(raw_value))
 
         if result is True:
             passed.append(field)
-        elif result is False:
-            failed.append(field)
         else:
-            # None = parse failure: value was present but couldn't be interpreted.
-            # Classified as failed (not missing) because the data IS there,
-            # just in an unexpected format.
+            # result is False (explicit fail) or None (parse error → treat as fail)
             failed.append(field)
+            if is_mand:
+                mandatory_failed.append(field)
+            else:
+                advisory_failed.append(field)
 
-    # Compute overall status
+    # is_mandatory_compliant: True only if no mandatory field failed OR is missing
+    mandatory_missing = [f for f in missing if _is_mandatory(requirements[f])]
+    is_mandatory_compliant = (len(mandatory_failed) == 0 and len(mandatory_missing) == 0)
+
+    # Compute overall status (unchanged semantics — backward compatible)
     if not failed and not missing:
         status = "compliant"
     elif passed and (failed or missing):
         status = "partial"
     else:
-        # passed is empty AND (failed or missing) is non-empty
         status = "non-compliant"
 
     return {
-        "is_code":        is_code,
-        "status":         status,
-        "passed_fields":  passed,
-        "failed_fields":  failed,
-        "missing_fields": missing,
+        "is_code":                  is_code,
+        "status":                   status,
+        "passed_fields":            passed,
+        "failed_fields":            failed,
+        "missing_fields":           missing,
+        "mandatory_failed_fields":  mandatory_failed,
+        "advisory_failed_fields":   advisory_failed,
+        "is_mandatory_compliant":   is_mandatory_compliant,
     }
