@@ -111,6 +111,13 @@ def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
             explanation = "".join(str(part) for part in content).strip()
         else:
             explanation = str(content).strip()
+
+        # Normalize Unicode spaces and hyphens to regular ASCII
+        explanation = (
+            explanation.replace("\u202f", " ")
+            .replace("\u00a0", " ")
+            .replace("\u2011", "-")
+        )
         return explanation
     except Exception as exc:
         raise RuntimeError(f"RAG LLM generation failed: {exc}") from exc
