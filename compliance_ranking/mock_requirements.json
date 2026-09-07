@@ -47,8 +47,8 @@
     "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
     "category": "structural",
     "requirements": {
-      "grade":    { "min": "Fe415" },
-      "material": { "required": true },
+      "grade":     { "min": "Fe415" },
+      "material":  { "required": true },
       "dimensions":{ "required": true }
     }
   },
@@ -57,10 +57,10 @@
     "title": "Hot Rolled Medium and High Tensile Structural Steel",
     "category": "structural",
     "requirements": {
-      "grade":    { "min": "E250" },
-      "material": { "required": true },
+      "grade":     { "min": "E250" },
+      "material":  { "required": true },
       "dimensions":{ "required": true },
-      "warranty": { "required": true }
+      "warranty":  { "required": true }
     }
   },
   {
@@ -94,6 +94,158 @@
       "protection":{ "min": "IP20" },
       "warranty":  { "required": true },
       "material":  { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 10322",
+    "title": "Luminaires - Specification for LED Street Lighting and General Lighting Requirements",
+    "category": "lighting",
+    "requirements": {
+      "power":               { "max": "250W" },
+      "protection":          { "min": "IP65" },
+      "voltage":             { "max": "270V" },
+      "operating_temperature":{ "required": true },
+      "warranty":            { "required": true },
+      "lifespan":            { "min": "25000 hours" }
+    }
+  },
+  {
+    "is_code": "IS 10322-5-3",
+    "title": "Luminaires Part 5 Section 3 - LED Road and Street Luminaires",
+    "category": "lighting",
+    "requirements": {
+      "power":               { "max": "250W" },
+      "protection":          { "min": "IP65" },
+      "voltage":             { "max": "270V" },
+      "operating_temperature":{ "required": true },
+      "warranty":            { "required": true },
+      "lifespan":            { "min": "50000 hours" }
+    }
+  },
+  {
+    "is_code": "IS 16102",
+    "title": "Self-Ballasted LED Lamps for General Lighting Services - Safety Requirements",
+    "category": "lighting",
+    "requirements": {
+      "voltage":   { "max": "250V" },
+      "protection":{ "min": "IP20" },
+      "warranty":  { "required": true },
+      "power":     { "max": "100W" }
+    }
+  },
+  {
+    "is_code": "IS 16103",
+    "title": "Self-Ballasted LED Lamps for General Lighting Services - Performance Requirements",
+    "category": "lighting",
+    "requirements": {
+      "voltage":   { "max": "240V" },
+      "protection":{ "min": "IP20" },
+      "lifespan":  { "min": "25000 hours" },
+      "warranty":  { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 15885",
+    "title": "LED Drivers and Control Gear - Safety and Performance Requirements",
+    "category": "lighting",
+    "requirements": {
+      "voltage":             { "max": "305V" },
+      "operating_temperature":{ "required": true },
+      "protection":          { "min": "IP20" },
+      "warranty":            { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 12063",
+    "title": "Degrees of Protection Provided by Enclosures (IP Code)",
+    "category": "electrical",
+    "requirements": {
+      "protection": { "min": "IP65" },
+      "warranty":   { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 6882",
+    "title": "Electric Light Fittings - General Requirements and Tests",
+    "category": "lighting",
+    "requirements": {
+      "voltage":             { "max": "1000V" },
+      "protection":          { "min": "IP44" },
+      "operating_temperature":{ "required": true },
+      "warranty":            { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 9000",
+    "title": "Basic Environmental Testing Procedures for Electronic and Electrical Items",
+    "category": "electrical",
+    "requirements": {
+      "operating_temperature":{ "required": true },
+      "protection":           { "min": "IP20" },
+      "warranty":             { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 16107",
+    "title": "LED Module for General Lighting - Safety Requirements",
+    "category": "lighting",
+    "requirements": {
+      "voltage":   { "max": "250V" },
+      "protection":{ "min": "IP20" },
+      "warranty":  { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 16108",
+    "title": "LED Module for General Lighting - Performance Requirements",
+    "category": "lighting",
+    "requirements": {
+      "lifespan":  { "min": "50000 hours" },
+      "protection":{ "min": "IP20" },
+      "operating_temperature":{ "required": true },
+      "warranty":  { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 16520",
+    "title": "Solid State Lighting Products - LED Street Lights Performance Requirements",
+    "category": "lighting",
+    "requirements": {
+      "power":               { "max": "250W" },
+      "protection":          { "min": "IP65" },
+      "voltage":             { "max": "270V" },
+      "lifespan":            { "min": "50000 hours" },
+      "operating_temperature":{ "required": true },
+      "warranty":            { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 1944",
+    "title": "Code of Practice for Lighting of Public Thoroughfares",
+    "category": "lighting",
+    "requirements": {
+      "voltage":             { "max": "250V" },
+      "operating_temperature":{ "required": true },
+      "warranty":            { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 3646",
+    "title": "Code of Practice for Interior Illumination",
+    "category": "lighting",
+    "requirements": {
+      "voltage":   { "max": "250V" },
+      "protection":{ "min": "IP20" },
+      "warranty":  { "required": true }
+    }
+  },
+  {
+    "is_code": "IS 13118",
+    "title": "High Voltage AC Circuit Breakers - Outdoor Street Lighting Panel Protection",
+    "category": "electrical",
+    "requirements": {
+      "protection":{ "min": "IP44" },
+      "warranty":  { "required": true }
     }
   }
 ]
