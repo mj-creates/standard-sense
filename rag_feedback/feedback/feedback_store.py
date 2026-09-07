@@ -2,8 +2,9 @@ import json
 from pathlib import Path
 
 
-# Location of the feedback JSON file
-FEEDBACK_FILE = Path("data/feedback/feedback.json")
+# Location of the feedback JSON file — resolved relative to this file's location
+# so it works correctly regardless of the current working directory.
+FEEDBACK_FILE = Path(__file__).parent.parent.parent / "data" / "feedback" / "feedback.json"
 
 
 def _ensure_feedback_file():
