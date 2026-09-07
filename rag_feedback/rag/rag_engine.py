@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from rag_feedback.rag.llm import get_llm
 from rag_feedback.rag.prompt import build_rag_prompt
 
 VALID_COMPLIANCE_STATUSES = {"compliant", "partial", "non-compliant", "unknown"}
@@ -77,11 +78,10 @@ def validate_input(data: dict[str, Any]) -> None:
 
 def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
     """
-    Generate an explanation for an Indian Standard recommendation.
+    Generate an explanation for an Indian Standard recommendation using the Groq LLM.
 
-    Calls `build_rag_prompt()` to construct the contextual prompt, then generates
-    a deterministic, template-based explanation summarizing the recommendation
-    and compliance findings without inventing external requirements.
+    Calls `build_rag_prompt()` to construct the contextual prompt, sends it
+    to the configured Groq LLM via `get_llm()`, and returns the explanation text.
 
     Parameters
     ----------
@@ -94,46 +94,26 @@ def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
     Returns
     -------
     str
-        Human-readable explanation of why the standard was recommended and its compliance standing.
+        LLM-generated explanation of why the standard was recommended and its compliance standing.
+
+    Raises
+    ------
+    RuntimeError
+        If RAG LLM generation fails during initialization or prompt invocation.
     """
-    # Build prompt to validate schema and prepare for LLM integration
-    _ = build_rag_prompt(spec_text, recommendation)
+    prompt = build_rag_prompt(spec_text, recommendation)
 
-    is_code = recommendation.get("is_code", "Unknown Standard")
-    title = recommendation.get("title", "No Title Provided")
-    raw_score = recommendation.get("semantic_score", 0.0)
-    score_str = f"{raw_score:.4f}" if isinstance(raw_score, (int, float)) else str(raw_score)
-    status = str(recommendation.get("compliance_status", "unknown")).strip().lower()
-
-    passed_fields = recommendation.get("passed_fields", [])
-    failed_fields = recommendation.get("failed_fields", [])
-    missing_fields = recommendation.get("missing_fields", [])
-
-    status_summaries = {
-        "compliant": f"{is_code} is fully compliant with all evaluated tender specification requirements.",
-        "partial": f"{is_code} is partially compliant with the tender specification.",
-        "non-compliant": f"{is_code} is non-compliant with the tender specification.",
-        "unknown": f"Compliance status for {is_code} could not be determined from the available specification data.",
-    }
-    status_summary = status_summaries.get(status, status_summaries["unknown"])
-
-    parts = [
-        f"{is_code} ('{title}') was recommended with a semantic score of {score_str} (lower score indicates a closer semantic match).",
-        status_summary,
-    ]
-
-    if passed_fields:
-        parts.append(f"Passed fields: {', '.join(str(f) for f in passed_fields)}.")
-    else:
-        parts.append("Passed fields: None.")
-
-    if failed_fields:
-        parts.append(f"Failed fields: {', '.join(str(f) for f in failed_fields)}.")
-
-    if missing_fields:
-        parts.append(f"Missing fields: {', '.join(str(f) for f in missing_fields)}.")
-
-    return " ".join(parts)
+    try:
+        llm = get_llm()
+        response = llm.invoke(prompt)
+        content = response.content
+        if isinstance(content, list):
+            explanation = "".join(str(part) for part in content).strip()
+        else:
+            explanation = str(content).strip()
+        return explanation
+    except Exception as exc:
+        raise RuntimeError(f"RAG LLM generation failed: {exc}") from exc
 
 
 def generate_rag_response(data: dict[str, Any]) -> dict[str, Any]:
