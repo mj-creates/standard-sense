@@ -36,6 +36,7 @@ Pygments==2.21.0
 pymupdf
 pytest
 python-dotenv==1.2.3
+python-multipart==0.0.20
 PyYAML==6.0.3
 regex==2026.9.3
 rich==15.0.0

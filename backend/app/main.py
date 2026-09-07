@@ -103,7 +103,13 @@ async def process_tender(file: UploadFile = File(...)):
 
         extracted = extract_from_pdf(temp_path)
 
-        spec_id = extracted.get("spec_id", "")
+        # Override the spec_id with the original uploaded filename stem
+        # (extract_from_pdf derives spec_id from the temp file path, which
+        # produces a meaningless OS temp name like "tmp5rxsuzic")
+        original_stem = Path(file.filename).stem
+        extracted["spec_id"] = original_stem
+
+        spec_id = original_stem
         spec_text = extracted.get("spec_text", "")
         spec_parameters = extracted.get("parameters", {})
 
@@ -166,7 +172,17 @@ async def process_tender(file: UploadFile = File(...)):
     finally:
         # --------------------------------------------------
         # Delete temporary PDF
+        # On Windows, PyMuPDF may briefly hold the file handle
+        # open after returning. Retry once after a short sleep,
+        # then silently give up — the OS will clean temp files.
         # --------------------------------------------------
-
         if temp_path:
-            Path(temp_path).unlink(missing_ok=True)
+            import time
+            for attempt in range(3):
+                try:
+                    Path(temp_path).unlink(missing_ok=True)
+                    break
+                except (PermissionError, OSError):
+                    if attempt < 2:
+                        time.sleep(0.2)
+                    # Final attempt failed — leave for OS cleanup, don't raise
