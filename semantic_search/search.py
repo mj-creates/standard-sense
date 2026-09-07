@@ -67,7 +67,7 @@ def semantic_search(query_text: str, top_k: int = 5) -> list[dict]:
 def is_ambiguous(
     results: list[dict],
     low_confidence_threshold: float = 1.0,
-    gap_threshold: float = 0.15,
+    gap_threshold: float = 0.05,
 ) -> bool:
     """
     Returns True if the search results are too weak or too close to be useful.
@@ -78,9 +78,12 @@ def is_ambiguous(
       2. Narrow gap      — difference between top and second result's score
          < gap_threshold (no clear winner; multiple standards look equally likely)
 
-    Both thresholds are tunable kwargs with sensible defaults:
+    Thresholds (tuned for the 44-standard expanded index):
       low_confidence_threshold=1.0  → scores above 1.0 are treated as weak
-      gap_threshold=0.15            → a gap smaller than 0.15 is too close to call
+      gap_threshold=0.05            → only extremely tight gaps trigger clarification;
+                                       LED standards naturally cluster at 0.02–0.06
+                                       apart, so 0.05 avoids false positives while
+                                       still catching genuinely indistinguishable results
     """
     if len(results) == 0:
         return True
