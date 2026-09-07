@@ -10,6 +10,7 @@ recommended Indian Standards for procurement officers.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from rag_feedback.rag.llm import get_llm
@@ -78,9 +79,10 @@ def validate_input(data: dict[str, Any]) -> None:
 
 def _generate_template_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
     """
-    Generate a deterministic, template-based explanation for an Indian Standard recommendation.
+    Generate a deterministic fallback explanation using only supplied recommendation data.
 
-    Used as a reliable fallback if LLM initialization, network requests, or prompt invocation fails.
+    Used as a reliable, grounded fallback if LLM initialization, network requests,
+    or prompt invocation fails or returns empty output.
 
     Parameters
     ----------
@@ -93,7 +95,7 @@ def _generate_template_explanation(spec_text: str, recommendation: dict[str, Any
     Returns
     -------
     str
-        Human-readable explanation of why the standard was recommended and its compliance standing.
+        Deterministic explanation grounded strictly in the supplied input data.
     """
     is_code = recommendation.get("is_code", "Unknown Standard")
     title = recommendation.get("title", "No Title Provided")
@@ -106,28 +108,26 @@ def _generate_template_explanation(spec_text: str, recommendation: dict[str, Any
     missing_fields = recommendation.get("missing_fields", [])
 
     status_summaries = {
-        "compliant": f"{is_code} is fully compliant with all evaluated tender specification requirements.",
-        "partial": f"{is_code} is partially compliant with the tender specification.",
-        "non-compliant": f"{is_code} is non-compliant with the tender specification.",
-        "unknown": f"Compliance status for {is_code} could not be determined from the available specification data.",
+        "compliant": f"{is_code} is reported as compliant by the compliance module.",
+        "partial": f"{is_code} is reported as partially compliant by the compliance module.",
+        "non-compliant": f"{is_code} is reported as non-compliant by the compliance module.",
+        "unknown": f"Compliance status for {is_code} is reported as unknown.",
     }
     status_summary = status_summaries.get(status, status_summaries["unknown"])
 
     parts = [
-        f"{is_code} ('{title}') was recommended with a semantic score of {score_str} (lower score indicates a closer semantic match).",
+        f"{is_code} ('{title}') was recommended with a semantic score of {score_str} (a lower semantic score indicates a closer match in the ranking system).",
         status_summary,
     ]
 
-    if passed_fields:
-        parts.append(f"Passed fields: {', '.join(str(f) for f in passed_fields)}.")
-    else:
-        parts.append("Passed fields: None.")
+    for field in passed_fields:
+        parts.append(f"The compliance module reported {field} as passed.")
 
-    if failed_fields:
-        parts.append(f"Failed fields: {', '.join(str(f) for f in failed_fields)}.")
+    for field in failed_fields:
+        parts.append(f"The compliance module reported {field} as failed.")
 
-    if missing_fields:
-        parts.append(f"Missing fields: {', '.join(str(f) for f in missing_fields)}.")
+    for field in missing_fields:
+        parts.append(f"The compliance module reported {field} as missing.")
 
     return " ".join(parts)
 
@@ -138,8 +138,8 @@ def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
 
     Calls `build_rag_prompt()` to construct the contextual prompt, sends it
     to the configured Groq LLM via `get_llm()`, and returns the explanation text.
-    If LLM generation fails or returns an empty result, gracefully falls back
-    to the deterministic template explanation.
+    If LLM initialization or invocation fails, times out, or returns an empty result,
+    gracefully falls back to the deterministic template explanation.
 
     Parameters
     ----------
@@ -174,7 +174,7 @@ def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
         if explanation:
             return explanation
     except Exception:
-        # Fall back gracefully to the deterministic template explanation
+        # Gracefully fall back to the deterministic template explanation
         pass
 
     return _generate_template_explanation(spec_text, recommendation)
@@ -208,9 +208,21 @@ def generate_rag_response(data: dict[str, Any]) -> dict[str, Any]:
     spec_text = data["spec_text"]
     recommendations = data.get("recommendations", [])
 
+    if not recommendations:
+        return {
+            "status": "ok",
+            "spec_id": spec_id,
+            "explanations": [],
+        }
+
+    max_workers = min(len(recommendations), 5)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        explanation_texts = list(
+            executor.map(lambda rec: generate_explanation(spec_text, rec), recommendations)
+        )
+
     explanations: list[dict[str, Any]] = []
-    for rec in recommendations:
-        explanation_text = generate_explanation(spec_text, rec)
+    for rec, explanation_text in zip(recommendations, explanation_texts):
         explanations.append(
             {
                 "is_code": rec.get("is_code", ""),
