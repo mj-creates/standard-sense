@@ -25,6 +25,7 @@
  */
 const API_BASE = 'http://localhost:8000';
 const PROCESS_TENDER_ENDPOINT = `${API_BASE}/process-tender`;
+const AUTO_FIX_ENDPOINT = `${API_BASE}/auto-fix`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // B. APPLICATION STATE
@@ -601,11 +602,13 @@ function _renderComplianceResults(rag, ranking) {
   const recMap = {};
   recommendations.forEach(r => { recMap[r.is_code] = r; });
 
+  const specText = (ranking && ranking.spec_text) || (currentTenderData && currentTenderData.ranking && currentTenderData.ranking.spec_text) || (currentTenderData && currentTenderData.extraction && currentTenderData.extraction.spec_text) || '';
+
   // Render cards
   cards.innerHTML = '';
   explanations.forEach((exp, idx) => {
     const rec    = recMap[exp.is_code] || {};
-    const card   = _buildResultCard(exp, rec, idx);
+    const card   = _buildResultCard(exp, rec, idx, specText);
     cards.appendChild(card);
   });
 
@@ -620,13 +623,15 @@ function _renderComplianceResults(rag, ranking) {
 
 /**
  * Build a single compliance result card DOM element.
- * @param {Object} exp  — explanation object from rag.explanations[]
- * @param {Object} rec  — matching recommendation from ranking.recommendations[]
- * @param {number} idx  — zero-based rank index
+ * @param {Object} exp      — explanation object from rag.explanations[]
+ * @param {Object} rec      — matching recommendation from ranking.recommendations[]
+ * @param {number} idx      — zero-based rank index
+ * @param {string} specText — original tender specification text
  * @returns {HTMLElement}
  */
-function _buildResultCard(exp, rec, idx) {
+function _buildResultCard(exp, rec, idx, specText = '') {
   const status  = exp.compliance_status || 'unknown';
+  const statusLower = String(status).toLowerCase().trim();
   const score   = typeof exp.semantic_score === 'number' ? exp.semantic_score.toFixed(4) : '—';
   const cardId  = `result-card-${idx}`;
   const bodyId  = `result-body-${idx}`;
@@ -650,6 +655,14 @@ function _buildResultCard(exp, rec, idx) {
   const failed  = rec.failed_fields  || [];
   const missing = rec.missing_fields || [];
 
+  // Determine Auto-Fix eligibility: ONLY for 'partial' or 'non-compliant' with failed or missing fields
+  const canAutoFix = (statusLower === 'partial' || statusLower === 'non-compliant') &&
+                     (failed.length > 0 || missing.length > 0);
+
+  const originalSpec = specText ||
+                       (currentTenderData && currentTenderData.ranking && currentTenderData.ranking.spec_text) ||
+                       (currentTenderData && currentTenderData.extraction && currentTenderData.extraction.spec_text) || '';
+
   const fieldChips = [
     ...passed.map(f  => `<span class="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-medium">✓ ${_escHtml(f)}</span>`),
     ...failed.map(f  => `<span class="inline-flex items-center gap-1 bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full font-medium">✗ ${_escHtml(f)}</span>`),
@@ -660,6 +673,44 @@ function _buildResultCard(exp, rec, idx) {
   const scoreNum     = parseFloat(score) || 0;
   const scorePercent = Math.max(0, Math.min(100, Math.round((1 - scoreNum / 2) * 100)));
   const scoreColor   = scorePercent >= 70 ? 'bg-green-500' : scorePercent >= 40 ? 'bg-amber-400' : 'bg-red-400';
+
+  // Build Auto-Fix markup only if eligible
+  let autoFixHtml = '';
+  if (canAutoFix) {
+    const fieldSummary = [
+      failed.length ? `${failed.length} failed` : '',
+      missing.length ? `${missing.length} missing` : '',
+    ].filter(Boolean).join(' and ');
+
+    autoFixHtml = `
+        <!-- Auto-Fix Section -->
+        <div class="mt-4 pt-4 border-t border-slate-100" id="autofix-section-${idx}">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <span class="text-xs font-bold text-govnavy flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-govorange" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Specification Auto-Fix
+              </span>
+              <p class="text-[11px] text-slate-500 mt-0.5">Generate a standard-compliant draft addressing ${fieldSummary} field${(failed.length + missing.length) === 1 ? '' : 's'}.</p>
+            </div>
+            <button
+              id="autofix-btn-${idx}"
+              type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-govnavy hover:bg-govnavy/90 text-white text-xs font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-govorange disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <svg id="autofix-icon-${idx}" class="w-3.5 h-3.5 text-govorange flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              <span id="autofix-btn-text-${idx}">Generate Compliant Version</span>
+            </button>
+          </div>
+          <div id="autofix-error-${idx}" class="hidden mt-3 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg"></div>
+          <div id="autofix-result-${idx}" class="hidden mt-3"></div>
+        </div>
+    `;
+  }
 
   card.innerHTML = `
     <!-- Card header -->
@@ -710,11 +761,257 @@ function _buildResultCard(exp, rec, idx) {
           Groq RAG Explanation
         </p>
         <div class="explanation-text text-slate-600 text-xs leading-relaxed whitespace-pre-wrap">${_formatExplanation(exp.explanation || '')}</div>
+        ${autoFixHtml}
       </div>
     </div>
   `;
 
+  // Attach event listener for Auto-Fix button if present
+  if (canAutoFix) {
+    const autoFixBtn = card.querySelector(`#autofix-btn-${idx}`);
+    if (autoFixBtn) {
+      autoFixBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        _handleAutoFix(idx, {
+          spec_text: originalSpec,
+          is_code: exp.is_code || '',
+          title: exp.title || '',
+          failed_fields: failed,
+          missing_fields: missing,
+        });
+      });
+    }
+  }
+
   return card;
+}
+
+/**
+ * Handle Auto-Fix button click to generate a compliant specification.
+ * @param {number} idx
+ * @param {Object} payload - { spec_text, is_code, title, failed_fields, missing_fields }
+ */
+async function _handleAutoFix(idx, payload) {
+  const btn = document.getElementById(`autofix-btn-${idx}`);
+  const btnText = document.getElementById(`autofix-btn-text-${idx}`);
+  const btnIcon = document.getElementById(`autofix-icon-${idx}`);
+  const errorEl = document.getElementById(`autofix-error-${idx}`);
+  const bodyEl = document.getElementById(`result-body-${idx}`);
+
+  if (!btn || btn.disabled) return;
+
+  // Clear previous error
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.classList.add('hidden');
+  }
+
+  // Ensure original spec text is available
+  const originalSpec = payload.spec_text ||
+    (currentTenderData && currentTenderData.ranking && currentTenderData.ranking.spec_text) ||
+    (currentTenderData && currentTenderData.extraction && currentTenderData.extraction.spec_text) || '';
+
+  if (!originalSpec.trim()) {
+    if (errorEl) {
+      errorEl.textContent = 'Original specification text is not available. Please re-run the tender analysis.';
+      errorEl.classList.remove('hidden');
+    }
+    return;
+  }
+
+  // Set loading state: disable button, show spinner & "Generating..."
+  btn.disabled = true;
+  if (btnText) btnText.textContent = 'Generating...';
+  if (btnIcon) {
+    btnIcon.outerHTML = `
+      <svg id="autofix-icon-${idx}" class="animate-spin w-3.5 h-3.5 text-white flex-shrink-0" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+      </svg>
+    `;
+  }
+
+  try {
+    const response = await fetch(AUTO_FIX_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        spec_text: originalSpec,
+        is_code: payload.is_code || '',
+        title: payload.title || '',
+        failed_fields: payload.failed_fields || [],
+        missing_fields: payload.missing_fields || [],
+      }),
+    });
+
+    if (!response.ok) {
+      let message = 'Failed to generate compliant specification.';
+      try {
+        const errorData = await response.json();
+        if (errorData && errorData.detail) {
+          message = errorData.detail;
+        }
+      } catch (_) {}
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+    const correctedSpec = data.corrected_specification || '';
+
+    if (!correctedSpec) {
+      throw new Error('Auto-Fix returned an empty specification.');
+    }
+
+    // Render comparison result
+    _renderAutoFixResult(idx, originalSpec, correctedSpec);
+
+    // Re-enable button and allow regenerating
+    btn.disabled = false;
+    const currentBtnText = document.getElementById(`autofix-btn-text-${idx}`);
+    const currentBtnIcon = document.getElementById(`autofix-icon-${idx}`);
+    if (currentBtnText) currentBtnText.textContent = 'Regenerate Compliant Version';
+    if (currentBtnIcon) {
+      currentBtnIcon.outerHTML = `
+        <svg id="autofix-icon-${idx}" class="w-3.5 h-3.5 text-govorange flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+      `;
+    }
+  } catch (err) {
+    if (errorEl) {
+      errorEl.textContent = err.message || 'Auto-Fix request failed. Please try again.';
+      errorEl.classList.remove('hidden');
+    }
+    btn.disabled = false;
+    const currentBtnText = document.getElementById(`autofix-btn-text-${idx}`);
+    const currentBtnIcon = document.getElementById(`autofix-icon-${idx}`);
+    if (currentBtnText) currentBtnText.textContent = 'Generate Compliant Version';
+    if (currentBtnIcon) {
+      currentBtnIcon.outerHTML = `
+        <svg id="autofix-icon-${idx}" class="w-3.5 h-3.5 text-govorange flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+      `;
+    }
+  }
+
+  // Adjust card container height if expanded so that content is fully visible
+  if (bodyEl && bodyEl.classList.contains('open')) {
+    bodyEl.style.maxHeight = `${bodyEl.scrollHeight + 600}px`;
+  }
+}
+
+/**
+ * Render the Before/After comparison, disclaimer, and copy button for Auto-Fix.
+ * @param {number} idx
+ * @param {string} originalSpec
+ * @param {string} correctedSpec
+ */
+function _renderAutoFixResult(idx, originalSpec, correctedSpec) {
+  const resultEl = document.getElementById(`autofix-result-${idx}`);
+  if (!resultEl) return;
+
+  resultEl.innerHTML = `
+    <div class="space-y-3 pt-2">
+      <!-- Comparison Grid: side-by-side on desktop, stacked on mobile -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <!-- Original Specification -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col">
+          <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-slate-400 inline-block"></span>
+              Original Specification
+            </span>
+          </div>
+          <div class="text-xs text-slate-600 font-mono whitespace-pre-wrap leading-relaxed overflow-y-auto max-h-60 flex-1">${_escHtml(originalSpec)}</div>
+        </div>
+
+        <!-- Corrected Specification -->
+        <div class="bg-emerald-50/40 border border-emerald-200 rounded-xl p-3 flex flex-col">
+          <div class="flex items-center justify-between pb-2 mb-2 border-b border-emerald-200">
+            <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+              Corrected Specification
+            </span>
+            <button
+              id="copy-autofix-btn-${idx}"
+              type="button"
+              class="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-md border border-emerald-300 shadow-2xs transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <span id="copy-autofix-text-${idx}">Copy Corrected Text</span>
+            </button>
+          </div>
+          <div class="text-xs text-emerald-950 font-mono whitespace-pre-wrap leading-relaxed overflow-y-auto max-h-60 flex-1">${_escHtml(correctedSpec)}</div>
+        </div>
+      </div>
+
+      <!-- Exact Disclaimer -->
+      <p class="text-[11px] text-slate-400 italic flex items-center gap-1">
+        <svg class="w-3.5 h-3.5 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        AI-generated suggestion — please review before use.
+      </p>
+    </div>
+  `;
+
+  resultEl.classList.remove('hidden');
+
+  // Attach copy event listener
+  const copyBtn = document.getElementById(`copy-autofix-btn-${idx}`);
+  const copyTextEl = document.getElementById(`copy-autofix-text-${idx}`);
+  if (copyBtn && copyTextEl) {
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      _copyToClipboard(correctedSpec, copyTextEl);
+    });
+  }
+}
+
+/**
+ * Copy text to clipboard with feedback and fallback.
+ * @param {string} text
+ * @param {HTMLElement} labelEl
+ */
+function _copyToClipboard(text, labelEl) {
+  const showFeedback = () => {
+    if (!labelEl) return;
+    const oldText = labelEl.textContent;
+    labelEl.textContent = 'Copied!';
+    setTimeout(() => {
+      labelEl.textContent = oldText;
+    }, 2000);
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(showFeedback).catch(() => {
+      _fallbackCopy(text);
+      showFeedback();
+    });
+  } else {
+    _fallbackCopy(text);
+    showFeedback();
+  }
+}
+
+function _fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.top = '0';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand('copy');
+  } catch (_) {}
+  document.body.removeChild(ta);
 }
 
 /**
@@ -729,6 +1026,12 @@ function toggleCard(bodyId) {
 
   const isOpen = body.classList.contains('open');
   body.classList.toggle('open', !isOpen);
+  if (isOpen) {
+    body.style.maxHeight = '';
+  } else {
+    // When expanding, accommodate any auto-fix result content
+    body.style.maxHeight = `${Math.max(800, body.scrollHeight + 100)}px`;
+  }
   if (chevron) {
     chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
   }

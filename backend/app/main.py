@@ -10,6 +10,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+
+from rag_feedback.rag.llm import get_llm
 
 from nlp_extraction.extractor import extract_from_pdf
 
@@ -390,3 +393,108 @@ async def process_tender(
 
                     if attempt < 2:
                         time.sleep(0.2)
+
+
+# --------------------------------------------------
+# AUTO-FIX ENDPOINT
+# --------------------------------------------------
+
+class AutoFixRequest(BaseModel):
+    spec_text: str
+    is_code: str
+    title: str
+    failed_fields: list[str] = Field(default_factory=list)
+    missing_fields: list[str] = Field(default_factory=list)
+
+
+@app.post("/auto-fix")
+def auto_fix(payload: AutoFixRequest):
+    """
+    Rewrite a non-compliant tender specification to meet standard requirements.
+    """
+    if not payload.spec_text or not payload.spec_text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="spec_text must not be empty.",
+        )
+
+    if not payload.is_code or not payload.is_code.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="is_code must not be empty.",
+        )
+
+    if not payload.title or not payload.title.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="title must not be empty.",
+        )
+
+    failed_valid = [
+        str(f).strip()
+        for f in payload.failed_fields
+        if str(f).strip()
+    ]
+    missing_valid = [
+        str(m).strip()
+        for m in payload.missing_fields
+        if str(m).strip()
+    ]
+
+    if not failed_valid and not missing_valid:
+        raise HTTPException(
+            status_code=400,
+            detail="At least one failed or missing field must be present.",
+        )
+
+    failed_str = ", ".join(failed_valid) if failed_valid else "None"
+    missing_str = ", ".join(missing_valid) if missing_valid else "None"
+
+    prompt = (
+        "You are helping a procurement officer fix a non-compliant tender specification.\n\n"
+        "Original tender specification text:\n"
+        f'"{payload.spec_text.strip()}"\n\n'
+        f"This tender is being checked against {payload.is_code.strip()} - {payload.title.strip()}.\n"
+        f"The following fields FAILED to meet requirements: {failed_str}\n"
+        f"The following fields are MISSING entirely: {missing_str}\n\n"
+        "Rewrite the tender specification text so that:\n"
+        "1. Everything that was already correct stays exactly as it was\n"
+        "2. The failed fields are corrected to meet the standard's requirements\n"
+        "3. The missing fields are added with reasonable, standard-compliant values\n"
+        "4. The output reads naturally as a tender specification, not a bullet list\n\n"
+        "Return ONLY the rewritten specification text, nothing else."
+    )
+
+    try:
+        llm = get_llm()
+        response = llm.invoke(prompt)
+        content = response.content
+
+        if isinstance(content, list):
+            corrected_text = "".join(str(part) for part in content).strip()
+        else:
+            corrected_text = str(content).strip()
+
+        corrected_text = (
+            corrected_text.replace("\u202f", " ")
+            .replace("\u00a0", " ")
+            .replace("\u2011", "-")
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=502,
+            detail="Auto-Fix LLM request failed. Please try again.",
+        )
+
+    if not corrected_text:
+        raise HTTPException(
+            status_code=502,
+            detail="Auto-Fix returned an empty specification.",
+        )
+
+    return {
+        "status": "ok",
+        "corrected_specification": corrected_text,
+    }
