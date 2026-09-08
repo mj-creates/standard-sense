@@ -33,6 +33,7 @@ const PROCESS_TENDER_ENDPOINT = `${API_BASE}/process-tender`;
 let selectedRole  = 'officer';   // 'officer' | 'vendor'
 let selectedFile  = null;        // File object currently staged for upload
 let isProcessing  = false;       // True while a fetch is in-flight
+let currentTenderData = null;    // Stores the last successful analysis result
 
 const ROLE_CONFIG = {
   officer: {
@@ -423,6 +424,7 @@ function _renderResults(data) {
     return;
   }
 
+  currentTenderData = data;
   _renderExtractionSummary(data.extraction);
   _renderComplianceResults(data.rag, data.ranking);
 }
@@ -553,6 +555,8 @@ function _renderComplianceResults(rag, ranking) {
 
   section.classList.remove('hidden');
   document.getElementById('empty-state')?.classList.add('hidden');
+  document.getElementById('download-pdf-btn')?.classList.remove('hidden');
+  document.getElementById('download-pdf-btn')?.classList.add('flex');
 
   // Smooth-scroll to first card
   setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -751,10 +755,13 @@ function _hideError() {
 }
 
 function _resetResults() {
+  currentTenderData = null;
   document.getElementById('extraction-summary')?.classList.add('hidden');
   document.getElementById('results-section')?.classList.add('hidden');
   document.getElementById('clarification-panel')?.classList.add('hidden');
   document.getElementById('empty-state')?.classList.remove('hidden');
+  document.getElementById('download-pdf-btn')?.classList.add('hidden');
+  document.getElementById('download-pdf-btn')?.classList.remove('flex');
 
   const cards = document.getElementById('results-cards');
   if (cards) cards.innerHTML = '';
@@ -767,7 +774,129 @@ function _sleep(ms) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// I. KEYBOARD ACCESSIBILITY + BOOT
+// I. PDF EXPORT
+// ═══════════════════════════════════════════════════════════════════════════
+
+function handleDownloadPdf() {
+  if (currentTenderData) {
+    _generatePdfReport(currentTenderData);
+  }
+}
+
+function _generatePdfReport(data) {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    _showError("PDF library failed to load.");
+    return;
+  }
+
+  const doc = new window.jspdf.jsPDF();
+  const extraction = data.extraction || {};
+  const rag = data.rag || {};
+  const ranking = data.ranking || {};
+  
+  const explanations = rag.explanations || [];
+  const recommendations = ranking.recommendations || [];
+  const recMap = {};
+  recommendations.forEach(r => { recMap[r.is_code] = r; });
+
+  let y = 20;
+  const leftMargin = 15;
+  const rightMargin = 195;
+  const maxWidth = rightMargin - leftMargin;
+
+  // Helper to add wrapped text and advance y
+  function addText(text, x, startY, size, fontStyle = 'normal') {
+    doc.setFont("helvetica", fontStyle);
+    doc.setFontSize(size);
+    const lines = doc.splitTextToSize(text || '', maxWidth);
+    
+    // Check page break
+    if (startY + (lines.length * size * 0.4) > 280) {
+      doc.addPage();
+      startY = 20;
+    }
+    
+    doc.text(lines, x, startY);
+    return startY + (lines.length * size * 0.4) + 5;
+  }
+
+  // Header
+  doc.setTextColor(13, 33, 55); // govnavy
+  y = addText("StandardSense Compliance Report", leftMargin, y, 18, 'bold');
+  
+  doc.setTextColor(100, 100, 100);
+  const fileName = selectedFile ? selectedFile.name : (extraction.spec_id || "Report");
+  const dateStr = new Date().toLocaleString();
+  y = addText(`File: ${fileName} | Date: ${dateStr}`, leftMargin, y, 10, 'normal');
+  y += 5;
+
+  // Extracted Spec Summary
+  doc.setTextColor(0, 0, 0);
+  y = addText("Extracted Specification Summary", leftMargin, y, 14, 'bold');
+  y = addText(`Product: ${extraction.product || 'N/A'}`, leftMargin, y, 11, 'normal');
+  
+  if (extraction.parameters) {
+    const paramsText = Object.entries(extraction.parameters)
+      .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
+      .join(', ');
+    if (paramsText) {
+      y = addText(`Parameters: ${paramsText}`, leftMargin, y, 10, 'normal');
+    }
+  }
+  y += 5;
+
+  // Recommendations
+  y = addText("BIS Standard Recommendations", leftMargin, y, 14, 'bold');
+  y += 2;
+
+  explanations.forEach((exp, idx) => {
+    const rec = recMap[exp.is_code] || {};
+    
+    // Title
+    doc.setTextColor(24, 61, 102); // slightly lighter navy
+    y = addText(`#${idx + 1} - ${exp.is_code}: ${exp.title}`, leftMargin, y, 12, 'bold');
+    
+    doc.setTextColor(0, 0, 0);
+    // Basic stats
+    const status = exp.compliance_status || 'unknown';
+    const score = typeof exp.semantic_score === 'number' ? exp.semantic_score.toFixed(4) : 'N/A';
+    y = addText(`Status: ${status.toUpperCase()} | Semantic Score: ${score}`, leftMargin, y, 10, 'bold');
+    
+    // Fields
+    const passed = (rec.passed_fields || []).join(', ') || 'none';
+    const failed = (rec.failed_fields || []).join(', ') || 'none';
+    const missing = (rec.missing_fields || []).join(', ') || 'none';
+    
+    y = addText(`Passed: ${passed}`, leftMargin, y, 10, 'normal');
+    if (failed !== 'none') {
+        doc.setTextColor(200, 0, 0);
+        y = addText(`Failed: ${failed}`, leftMargin, y, 10, 'normal');
+        doc.setTextColor(0, 0, 0);
+    }
+    if (missing !== 'none') {
+        y = addText(`Missing: ${missing}`, leftMargin, y, 10, 'normal');
+    }
+    
+    // Mandatory/Advisory (Task 5 data if present)
+    const mandStatus = rec.is_mandatory_compliant !== undefined ? (rec.is_mandatory_compliant ? 'Yes' : 'No') : 'N/A';
+    if (mandStatus !== 'N/A') {
+       y = addText(`Mandatory Requirements Compliant: ${mandStatus}`, leftMargin, y, 10, 'italic');
+    }
+
+    // Explanation Summary (strip html, truncate)
+    const rawExp = (exp.explanation || '').replace(/<[^>]*>?/gm, '').replace(/\*/g, '');
+    const truncExp = rawExp.length > 300 ? rawExp.substring(0, 300) + '...' : rawExp;
+    doc.setTextColor(80, 80, 80);
+    y = addText(`Explanation: ${truncExp}`, leftMargin, y, 9, 'normal');
+    
+    y += 5; // spacing between cards
+  });
+
+  doc.save("compliance-report.pdf");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// J. KEYBOARD ACCESSIBILITY + BOOT
 // ═══════════════════════════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {

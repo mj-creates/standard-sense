@@ -674,12 +674,18 @@
 
       <!-- ══ COMPLIANCE RESULTS (hidden until result) ═══════════════ -->
       <div id="results-section" class="hidden mb-8">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
           <h4 class="text-govnavy font-bold text-base flex items-center gap-2">
             <span class="w-1 h-5 bg-govorange rounded-full inline-block"></span>
             BIS Standard Recommendations
           </h4>
-          <div id="results-summary-badges" class="flex items-center gap-2"></div>
+          <div class="flex items-center gap-3">
+            <div id="results-summary-badges" class="flex items-center gap-2"></div>
+            <button id="download-pdf-btn" onclick="handleDownloadPdf()" class="hidden items-center gap-1.5 bg-govnavy hover:bg-govblue text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Download Report
+            </button>
+          </div>
         </div>
         <!-- Cards injected here by renderResults() -->
         <div id="results-cards" class="flex flex-col gap-4"></div>
@@ -718,6 +724,7 @@
     }
   </script>
   <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
