@@ -419,13 +419,51 @@ function _setAnalyseButtonLoading(loading) {
  * @param {Object} data — full response from POST /process-tender
  */
 function _renderResults(data) {
-  if (!data || data.status !== 'ok') {
+  if (!data || (data.status !== 'ok' && data.status !== 'needs_clarification' && data.status !== 'out_of_scope')) {
     _showError('Unexpected response from server. Check the browser console for details.');
     console.error('[StandardSense] Unexpected API response:', data);
     return;
   }
 
   currentTenderData = data;
+
+  if (data.status === 'out_of_scope') {
+    const section = document.getElementById('results-section');
+    const panel = document.getElementById('clarification-panel');
+    const cards = document.getElementById('results-cards');
+    if (section) section.classList.remove('hidden');
+    if (cards) cards.innerHTML = '';
+
+    // Hide standard features
+    document.getElementById('compliance-summary-chart')?.classList.add('hidden');
+    document.getElementById('results-summary-badges')?.classList.add('hidden');
+    document.getElementById('empty-state')?.classList.add('hidden');
+
+    // Show out of scope message in the clarification panel style or similar
+    if (panel) {
+      panel.classList.remove('hidden');
+      const q = document.getElementById('clarification-question');
+      if (q) q.textContent = data.message;
+    }
+    return;
+  }
+
+  if (data.status === 'needs_clarification') {
+    const section = document.getElementById('results-section');
+    const panel = document.getElementById('clarification-panel');
+    const q     = document.getElementById('clarification-question');
+    if (section) section.classList.remove('hidden');
+    if (panel) panel.classList.remove('hidden');
+    if (q)     q.textContent = data.question || 'Could you clarify the product category or intended use?';
+
+    // Hide standard features
+    document.getElementById('compliance-summary-chart')?.classList.add('hidden');
+    document.getElementById('results-summary-badges')?.classList.add('hidden');
+    document.getElementById('results-cards')?.classList.add('hidden');
+    document.getElementById('empty-state')?.classList.add('hidden');
+    return;
+  }
+
   _renderExtractionSummary(data.extraction);
 
   const chart = document.getElementById('compliance-summary-chart');
@@ -1082,7 +1120,7 @@ function _renderVendorResults(rag, ranking) {
 
   section.classList.remove('hidden');
   document.getElementById('empty-state')?.classList.add('hidden');
-  
+
   // Hide PDF download button for Vendor
   const pdfBtn = document.getElementById('download-pdf-btn');
   if (pdfBtn) {
@@ -1096,11 +1134,11 @@ function _renderVendorResults(rag, ranking) {
 
 function _buildVendorResultCard(exp, rec, idx) {
   const status  = exp.compliance_status || 'unknown';
-  
+
   let verdictText = '⚠️ Needs Review';
   let verdictColor = 'text-amber-700 bg-amber-50 border-amber-200';
   let headerBg = 'bg-amber-50 border-b border-amber-100';
-  
+
   if (status === 'compliant') {
     verdictText = '✅ Likely Compliant';
     verdictColor = 'text-green-700 bg-green-50 border-green-200';
@@ -1118,7 +1156,7 @@ function _buildVendorResultCard(exp, rec, idx) {
   const failed  = rec.failed_fields  || [];
   const missing = rec.missing_fields || [];
   const allFixes = [...failed, ...missing];
-  
+
   let fixSummary = 'All requirements appear to be met.';
   if (allFixes.length > 0) {
     const plainFields = allFixes.map(f => f.replace(/_/g, ' '));
@@ -1271,7 +1309,7 @@ function _generatePdfReport(data) {
   const extraction = data.extraction || {};
   const rag = data.rag || {};
   const ranking = data.ranking || {};
-  
+
   const explanations = rag.explanations || [];
   const recommendations = ranking.recommendations || [];
   const recMap = {};
@@ -1287,13 +1325,13 @@ function _generatePdfReport(data) {
     doc.setFont("helvetica", fontStyle);
     doc.setFontSize(size);
     const lines = doc.splitTextToSize(text || '', maxWidth);
-    
+
     // Check page break
     if (startY + (lines.length * size * 0.4) > 280) {
       doc.addPage();
       startY = 20;
     }
-    
+
     doc.text(lines, x, startY);
     return startY + (lines.length * size * 0.4) + 5;
   }
@@ -1301,7 +1339,7 @@ function _generatePdfReport(data) {
   // Header
   doc.setTextColor(13, 33, 55); // govnavy
   y = addText("StandardSense Compliance Report", leftMargin, y, 18, 'bold');
-  
+
   doc.setTextColor(100, 100, 100);
   const fileName = selectedFile ? selectedFile.name : (extraction.spec_id || "Report");
   const dateStr = new Date().toLocaleString();
@@ -1312,7 +1350,7 @@ function _generatePdfReport(data) {
   doc.setTextColor(0, 0, 0);
   y = addText("Extracted Specification Summary", leftMargin, y, 14, 'bold');
   y = addText(`Product: ${extraction.product || 'N/A'}`, leftMargin, y, 11, 'normal');
-  
+
   if (extraction.parameters) {
     const paramsText = Object.entries(extraction.parameters)
       .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
@@ -1329,22 +1367,22 @@ function _generatePdfReport(data) {
 
   explanations.forEach((exp, idx) => {
     const rec = recMap[exp.is_code] || {};
-    
+
     // Title
     doc.setTextColor(24, 61, 102); // slightly lighter navy
     y = addText(`#${idx + 1} - ${exp.is_code}: ${exp.title}`, leftMargin, y, 12, 'bold');
-    
+
     doc.setTextColor(0, 0, 0);
     // Basic stats
     const status = exp.compliance_status || 'unknown';
     const score = typeof exp.semantic_score === 'number' ? exp.semantic_score.toFixed(4) : 'N/A';
     y = addText(`Status: ${status.toUpperCase()} | Semantic Score: ${score}`, leftMargin, y, 10, 'bold');
-    
+
     // Fields
     const passed = (rec.passed_fields || []).join(', ') || 'none';
     const failed = (rec.failed_fields || []).join(', ') || 'none';
     const missing = (rec.missing_fields || []).join(', ') || 'none';
-    
+
     y = addText(`Passed: ${passed}`, leftMargin, y, 10, 'normal');
     if (failed !== 'none') {
         doc.setTextColor(200, 0, 0);
@@ -1354,7 +1392,7 @@ function _generatePdfReport(data) {
     if (missing !== 'none') {
         y = addText(`Missing: ${missing}`, leftMargin, y, 10, 'normal');
     }
-    
+
     // Mandatory/Advisory (Task 5 data if present)
     const mandStatus = rec.is_mandatory_compliant !== undefined ? (rec.is_mandatory_compliant ? 'Yes' : 'No') : 'N/A';
     if (mandStatus !== 'N/A') {
@@ -1366,7 +1404,7 @@ function _generatePdfReport(data) {
     const truncExp = rawExp;
     doc.setTextColor(80, 80, 80);
     y = addText(`Explanation: ${truncExp}`, leftMargin, y, 9, 'normal');
-    
+
     y += 5; // spacing between cards
   });
 

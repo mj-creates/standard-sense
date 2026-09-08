@@ -1,8 +1,8 @@
 
 # TASK 5 FINAL SIGN-OFF
 
-**Generated:** 2026-09-07 23:03:37
-**Server:** http://127.0.0.1:8001
+**Generated:** 2026-09-08 16:03:44
+**Server:** http://127.0.0.1:8000
 **Commit:** 104df23 (dev)
 
 ---
@@ -15,13 +15,13 @@
 | 2a | LED Street Light — `status=ok`, `is_mandatory_compliant` present, RAG explanations present | ✅ PASS | `is_mandatory_compliant=True`, `5 explanations` |
 | 2b | IS 10322 matched for LED spec | ✅ PASS | `codes=['IS 10322', 'IS 16520', 'IS 10322-5-3', 'IS 16107', 'IS 16108']` |
 | 2c | Electrical Cable — extraction + accurate match | ✅ PASS | `status=ok`, `codes=['IS 1554', 'IS 694', 'IS 9000']` |
-| 2d | Plug/Socket — extraction + accurate match | ✅ PASS | `status=ok`, `codes=['IS 16107', 'IS 1293', 'IS 302']` |
+| 2d | Plug/Socket — extraction + accurate match | ✅ PASS | `status=ok`, `codes=['IS 16107', 'IS 694', 'IS 1293']` |
 | 2e | Out-of-domain PDF — graceful failure, no IS hallucination | ✅ PASS | `HTTP 422`, `no electrical IS codes in recommendations` |
 | 3a | 0-byte file → HTTP 400 | ✅ PASS | `got 400` |
 | 3b | Non-PDF `.txt` → HTTP 400 | ✅ PASS | `got 400` |
 | 3c | No-text PDF → HTTP 422 | ✅ PASS | `got 422` |
 | 3d | Concurrent requests — both 200, no state leakage | ✅ PASS | `codes=['', '']`, `top_codes=['', '']` |
-| 4a | Average E2E response time | ℹ️ INFO | Min=0.06s  Max=0.17s  **Avg=0.13s** |
+| 4a | Average E2E response time | ℹ️ INFO | Min=0.04s  Max=0.04s  **Avg=0.04s** |
 | 4b | No hardcoded secrets; `.env` not committed | ✅ PASS | `clean`, `.env exists=False, in .gitignore=True` |
 | 4c | LLM timeout=10 hardened; template fallback fires | ✅ PASS | `explanation present=True, is_template=True` |
 
@@ -38,7 +38,7 @@
 | step2 | Cable extraction successful | ✅ | `status=ok` |
 | step2 | Cable accurate standard match | ✅ | `codes=['IS 1554', 'IS 694', 'IS 9000']` |
 | step2 | Plug/Socket extraction successful | ✅ | `status=ok` |
-| step2 | Plug/Socket accurate standard match | ✅ | `codes=['IS 16107', 'IS 1293', 'IS 302']` |
+| step2 | Plug/Socket accurate standard match | ✅ | `codes=['IS 16107', 'IS 694', 'IS 1293']` |
 | step2 | Out-of-domain no crash | ✅ | `HTTP 422` |
 | step2 | Out-of-domain no electrical IS hallucination | ✅ | `no electrical IS codes in recommendations` |
 | step3 | 0-byte file → HTTP 400 | ✅ | `got 400` |
@@ -46,7 +46,7 @@
 | step3 | No-text PDF → HTTP 422 | ✅ | `got 422` |
 | step3 | Concurrent: both return HTTP 200 | ✅ | `codes=['', '']` |
 | step3 | Concurrent: no state leakage (top codes consistent) | ✅ | `top_codes=['', '']` |
-| step4 | 3x sequential runs all HTTP 200 | ✅ | `min=0.06s max=0.17s avg=0.13s` |
+| step4 | 3x sequential runs all HTTP 200 | ✅ | `min=0.04s max=0.04s avg=0.04s` |
 | step4 | No hardcoded API keys in source files | ✅ | `clean` |
 | step4 | .env not committed to repo | ✅ | `.env exists=False, in .gitignore=True` |
 | step4 | Template fallback fires when LLM unavailable | ✅ | `explanation present=True, is_template=True` |
@@ -58,7 +58,7 @@
 ## Summary
 
 - **21/21 checks passed**
-- **E2E Response Times (LED × 3):** Min=0.06s · Max=0.17s · Avg=0.13s
+- **E2E Response Times (LED × 3):** Min=0.04s · Max=0.04s · Avg=0.04s
 - **Dev branch:** `104df23` — clean, up to date
 - **Fresh venv boot:** ✅ demo_venv started on port 8001, 44 IS standards loaded
 - **Secrets:** No hardcoded keys found in 33 source files

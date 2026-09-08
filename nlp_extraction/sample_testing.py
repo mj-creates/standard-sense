@@ -84,4 +84,3 @@ print("\n" + "=" * 72)
 print("MY SAMPLE 3 - SOLAR PANEL")
 print("=" * 72)
 print(json.dumps(result_3, indent=2, ensure_ascii=False))
-
