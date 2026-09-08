@@ -215,11 +215,19 @@ def generate_rag_response(data: dict[str, Any]) -> dict[str, Any]:
             "explanations": [],
         }
 
-    max_workers = min(len(recommendations), 5)
+    max_workers = min(len(recommendations), 2)
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Only use LLM for top 2 recommendations to avoid rate limits
+        top_recs = recommendations[:2]
+        rest_recs = recommendations[2:]
+        
         explanation_texts = list(
-            executor.map(lambda rec: generate_explanation(spec_text, rec), recommendations)
+            executor.map(lambda rec: generate_explanation(spec_text, rec), top_recs)
         )
+        
+        # Fall back to template for the remaining recommendations
+        for rec in rest_recs:
+            explanation_texts.append(_generate_template_explanation(spec_text, rec))
 
     explanations: list[dict[str, Any]] = []
     for rec, explanation_text in zip(recommendations, explanation_texts):
