@@ -518,6 +518,54 @@ function _renderComplianceResults(rag, ranking) {
   const explanations   = (rag && rag.explanations)              || [];
   const recommendations = (ranking && ranking.recommendations)  || [];
 
+  // ── Feature 1: Compliance Summary Chart (uses ONLY ranking.recommendations) ──
+  const totalRecs = recommendations.length;
+  const totalEl   = document.getElementById('compliance-summary-total');
+  const barsEl    = document.getElementById('compliance-summary-bars');
+
+  if (totalEl) {
+    totalEl.textContent = `${totalRecs} recommendation${totalRecs === 1 ? '' : 's'}`;
+  }
+
+  if (barsEl) {
+    const validStatuses = new Set(['compliant', 'partial', 'non-compliant', 'unknown']);
+    const chartCounts = {
+      compliant: 0,
+      partial: 0,
+      'non-compliant': 0,
+      unknown: 0,
+    };
+
+    recommendations.forEach(r => {
+      const rawStatus = (r && r.compliance_status) ? String(r.compliance_status).trim().toLowerCase() : '';
+      const status = validStatuses.has(rawStatus) ? rawStatus : 'unknown';
+      chartCounts[status] = (chartCounts[status] || 0) + 1;
+    });
+
+    const statusConfigs = [
+      { key: 'compliant',     label: 'Compliant',     color: 'bg-green-500' },
+      { key: 'partial',       label: 'Partial',       color: 'bg-yellow-500' },
+      { key: 'non-compliant', label: 'Non-compliant', color: 'bg-red-500' },
+      { key: 'unknown',       label: 'Unknown',       color: 'bg-slate-400' },
+    ];
+
+    barsEl.innerHTML = statusConfigs.map(cfg => {
+      const count = chartCounts[cfg.key] || 0;
+      const pct = totalRecs > 0 ? (count / totalRecs) * 100 : 0;
+      return `
+        <div>
+          <div class="flex items-center justify-between text-xs font-medium text-slate-700 mb-1">
+            <span>${cfg.label}</span>
+            <span class="font-semibold text-slate-800">${count}</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div class="${cfg.color} h-2 rounded-full transition-all duration-300" style="width: ${pct}%;"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   if (explanations.length === 0) {
     section.classList.add('hidden');
     document.getElementById('empty-state')?.classList.remove('hidden');
