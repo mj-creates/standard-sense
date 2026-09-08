@@ -419,13 +419,51 @@ function _setAnalyseButtonLoading(loading) {
  * @param {Object} data — full response from POST /process-tender
  */
 function _renderResults(data) {
-  if (!data || data.status !== 'ok') {
+  if (!data || (data.status !== 'ok' && data.status !== 'needs_clarification' && data.status !== 'out_of_scope')) {
     _showError('Unexpected response from server. Check the browser console for details.');
     console.error('[StandardSense] Unexpected API response:', data);
     return;
   }
 
   currentTenderData = data;
+  
+  if (data.status === 'out_of_scope') {
+    const section = document.getElementById('results-section');
+    const panel = document.getElementById('clarification-panel');
+    const cards = document.getElementById('results-cards');
+    if (section) section.classList.remove('hidden');
+    if (cards) cards.innerHTML = '';
+    
+    // Hide standard features
+    document.getElementById('compliance-summary-chart')?.classList.add('hidden');
+    document.getElementById('results-summary-badges')?.classList.add('hidden');
+    document.getElementById('empty-state')?.classList.add('hidden');
+    
+    // Show out of scope message in the clarification panel style or similar
+    if (panel) {
+      panel.classList.remove('hidden');
+      const q = document.getElementById('clarification-question');
+      if (q) q.textContent = data.message;
+    }
+    return;
+  }
+  
+  if (data.status === 'needs_clarification') {
+    const section = document.getElementById('results-section');
+    const panel = document.getElementById('clarification-panel');
+    const q     = document.getElementById('clarification-question');
+    if (section) section.classList.remove('hidden');
+    if (panel) panel.classList.remove('hidden');
+    if (q)     q.textContent = data.question || 'Could you clarify the product category or intended use?';
+    
+    // Hide standard features
+    document.getElementById('compliance-summary-chart')?.classList.add('hidden');
+    document.getElementById('results-summary-badges')?.classList.add('hidden');
+    document.getElementById('results-cards')?.classList.add('hidden');
+    document.getElementById('empty-state')?.classList.add('hidden');
+    return;
+  }
+
   _renderExtractionSummary(data.extraction);
 
   const chart = document.getElementById('compliance-summary-chart');

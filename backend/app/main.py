@@ -264,6 +264,21 @@ async def process_tender(
             [],
         )
 
+        # --------------------------------------------------
+        # FEATURE A: OUT-OF-SCOPE DETECTION
+        # Threshold set to 1.20. Real good matches are 0.67-0.85. 
+        # Real bad matches (e.g. wooden chair) are ~1.57. 
+        # Halfway between worst good (0.85) and best bad (1.57) is ~1.21, so 1.20 is a safe threshold.
+        # --------------------------------------------------
+        if semantic_results and not explicit_standards:
+            top_score = semantic_results[0].get("l2_score", 0.0)
+            if top_score > 1.20:
+                return {
+                    "status": "out_of_scope",
+                    "filename": file.filename,
+                    "message": "No confident match found in our current database of 44 electrical/ lighting standards. This product may fall outside current coverage."
+                }
+
         if (
             is_ambiguous(semantic_results)
             and not explicit_standards

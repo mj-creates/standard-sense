@@ -108,11 +108,19 @@ def rank_recommendations(
                 "is_mandatory_compliant": False,
             }
 
+        import re
+        stopwords = {"the", "a", "an", "for", "and", "or", "to", "in", "of", "with", "is", "are", "on", "at", "by", "from", "as", "this", "that"}
+        std_text = (candidate.get("title", "") + " " + candidate.get("description", "")).lower()
+        spec_text_lower = spec_text.lower()
+        std_words = set(re.findall(r'\b[a-z0-9]{3,}\b', std_text))
+        matched_terms = [w for w in std_words if w not in stopwords and re.search(r'\b' + re.escape(w) + r'\b', spec_text_lower)]
+
         entry = dict(candidate)
         entry.update({
             "is_code": is_code,
             "title": title,
             "semantic_score": score,
+            "matched_terms": matched_terms,
             "compliance_status": compliance["status"],
             "passed_fields": compliance["passed_fields"],
             "failed_fields": compliance["failed_fields"],
