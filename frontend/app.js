@@ -933,7 +933,7 @@ function _generatePdfReport(data) {
 
     // Explanation Summary (strip html, truncate)
     const rawExp = (exp.explanation || '').replace(/<[^>]*>?/gm, '').replace(/\*/g, '');
-    const truncExp = rawExp.length > 300 ? rawExp.substring(0, 300) + '...' : rawExp;
+    const truncExp = rawExp;
     doc.setTextColor(80, 80, 80);
     y = addText(`Explanation: ${truncExp}`, leftMargin, y, 9, 'normal');
     
