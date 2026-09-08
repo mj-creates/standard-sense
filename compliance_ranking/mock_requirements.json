@@ -1,0 +1,251 @@
+[
+  {
+    "is_code": "IS 1554",
+    "title": "PVC Insulated (Heavy Duty) Electric Cables for Working Voltages up to and including 1100 V",
+    "category": "electrical",
+    "requirements": {
+      "voltage":    { "max": "1100V",  "mandatory": true,  "rationale": "Statutory voltage rating ceiling — core safety limit" },
+      "material":   { "required": true, "mandatory": true,  "rationale": "Insulation material must be explicitly specified for cable standards" },
+      "protection": { "min": "IP44",   "mandatory": true,  "rationale": "Minimum ingress protection for power cables in industrial use" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Commercial requirement — advisory for short tender contracts" }
+    }
+  },
+  {
+    "is_code": "IS 694",
+    "title": "PVC Insulated Cables for Voltages not Exceeding 1100 V",
+    "category": "electrical",
+    "requirements": {
+      "voltage":  { "max": "1100V",  "mandatory": true,  "rationale": "Statutory voltage ceiling" },
+      "material": { "required": true, "mandatory": true,  "rationale": "Conductor insulation material is a core spec" },
+      "warranty": { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 8828",
+    "title": "Electrical Accessories — Circuit Breakers for Overcurrent Protection",
+    "category": "electrical",
+    "requirements": {
+      "voltage":    { "min": "230V",  "mandatory": true,  "rationale": "Minimum rated voltage for MCB suitability" },
+      "power":      { "min": "1W",    "mandatory": false, "rationale": "Load rating — advisory lower bound" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" },
+      "protection": { "min": "IP20",  "mandatory": true,  "rationale": "Minimum enclosure protection for circuit breakers" }
+    }
+  },
+  {
+    "is_code": "IS 302",
+    "title": "Safety of Household and Similar Electrical Appliances",
+    "category": "electrical",
+    "requirements": {
+      "voltage":               { "max": "250V",  "mandatory": true,  "rationale": "IS 302 applies to appliances rated up to 250V — mandatory safety ceiling" },
+      "protection":            { "min": "IP20",  "mandatory": true,  "rationale": "Minimum protection against touch contact — safety mandatory" },
+      "operating_temperature": { "required": true, "mandatory": false, "rationale": "Operational environment spec — advisory for general appliances" },
+      "warranty":              { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 1786",
+    "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
+    "category": "structural",
+    "requirements": {
+      "grade":      { "min": "Fe415",  "mandatory": true,  "rationale": "Minimum grade for structural reinforcement — statutory safety requirement" },
+      "material":   { "required": true, "mandatory": true,  "rationale": "Steel composition must be specified for structural use" },
+      "dimensions": { "required": true, "mandatory": false, "rationale": "Advisory — size may vary by structural design" }
+    }
+  },
+  {
+    "is_code": "IS 2062",
+    "title": "Hot Rolled Medium and High Tensile Structural Steel",
+    "category": "structural",
+    "requirements": {
+      "grade":      { "min": "E250",   "mandatory": true,  "rationale": "Minimum structural steel grade — mandatory for load-bearing applications" },
+      "material":   { "required": true, "mandatory": true,  "rationale": "Steel type must be documented" },
+      "dimensions": { "required": true, "mandatory": false, "rationale": "Advisory — section size varies per design" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 8112",
+    "title": "43 Grade Ordinary Portland Cement",
+    "category": "structural",
+    "requirements": {
+      "grade":    { "min": "43",      "mandatory": true,  "rationale": "Minimum cement grade — mandatory for structural concrete" },
+      "material": { "required": true, "mandatory": true,  "rationale": "Cement type must be OPC — mandatory" },
+      "warranty": { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 9873",
+    "title": "Safety Requirements for Toys",
+    "category": "consumer_goods",
+    "requirements": {
+      "material":              { "required": true, "mandatory": true,  "rationale": "Material safety (heavy metals, flammability) is statutory for toys" },
+      "operating_temperature": { "max": "50",     "mandatory": true,  "rationale": "Thermal safety limit — mandatory to prevent burn hazard" },
+      "warranty":              { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" },
+      "protection":            { "min": "IP20",   "mandatory": false, "rationale": "Advisory for non-electronic toys" }
+    }
+  },
+  {
+    "is_code": "IS 1293",
+    "title": "Plugs and Socket-Outlets of Rated Voltage up to 250 V and Rated Current up to 16 A",
+    "category": "consumer_goods",
+    "requirements": {
+      "voltage":    { "max": "250V",   "mandatory": true,  "rationale": "IS 1293 rated for ≤250V — mandatory safety ceiling" },
+      "power":      { "max": "3680W",  "mandatory": true,  "rationale": "16A × 230V = 3680W maximum load — mandatory current rating" },
+      "protection": { "min": "IP20",   "mandatory": true,  "rationale": "Minimum protection against accidental contact — safety mandatory" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" },
+      "material":   { "required": true, "mandatory": false, "rationale": "Advisory — polycarbonate or urea preferred but not disqualifying" }
+    }
+  },
+  {
+    "is_code": "IS 10322",
+    "title": "Luminaires - Specification for LED Street Lighting and General Lighting Requirements",
+    "category": "lighting",
+    "requirements": {
+      "power":                 { "max": "250W",         "mandatory": true,  "rationale": "Power consumption ceiling for municipal procurement compliance" },
+      "protection":            { "min": "IP65",         "mandatory": true,  "rationale": "IP65 is mandatory for all outdoor luminaires — dust-tight + water jet" },
+      "voltage":               { "max": "270V",         "mandatory": true,  "rationale": "Operating voltage ceiling including surge tolerance" },
+      "operating_temperature": { "required": true,      "mandatory": true,  "rationale": "Thermal management spec mandatory for outdoor LED reliability" },
+      "warranty":              { "required": true,      "mandatory": false, "rationale": "Advisory — typically 5 years for municipal tenders" },
+      "lifespan":              { "min": "25000 hours",  "mandatory": false, "rationale": "Advisory — IS 10322 recommends 25k hrs but Part 5 mandates 50k" }
+    }
+  },
+  {
+    "is_code": "IS 10322-5-3",
+    "title": "Luminaires Part 5 Section 3 - LED Road and Street Luminaires",
+    "category": "lighting",
+    "requirements": {
+      "power":                 { "max": "250W",         "mandatory": true,  "rationale": "Power ceiling for street luminaires" },
+      "protection":            { "min": "IP65",         "mandatory": true,  "rationale": "IP65 mandatory for road luminaires — outdoor statutory requirement" },
+      "voltage":               { "max": "270V",         "mandatory": true,  "rationale": "Operating voltage ceiling including mains fluctuation" },
+      "operating_temperature": { "required": true,      "mandatory": true,  "rationale": "Thermal spec mandatory — road lights operate in extreme climates" },
+      "warranty":              { "required": true,      "mandatory": false, "rationale": "Advisory — 5 years standard for highway lighting" },
+      "lifespan":              { "min": "50000 hours",  "mandatory": true,  "rationale": "L80 at 50000 hrs is the mandatory life rating for road luminaires" }
+    }
+  },
+  {
+    "is_code": "IS 16102",
+    "title": "Self-Ballasted LED Lamps for General Lighting Services - Safety Requirements",
+    "category": "lighting",
+    "requirements": {
+      "voltage":    { "max": "250V",  "mandatory": true,  "rationale": "Safety voltage ceiling — statutory for self-ballasted lamps" },
+      "protection": { "min": "IP20",  "mandatory": true,  "rationale": "Minimum moisture protection — mandatory safety requirement" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" },
+      "power":      { "max": "100W",  "mandatory": false, "rationale": "Advisory — higher wattage retrofit lamps may be acceptable" }
+    }
+  },
+  {
+    "is_code": "IS 16103",
+    "title": "Self-Ballasted LED Lamps for General Lighting Services - Performance Requirements",
+    "category": "lighting",
+    "requirements": {
+      "voltage":    { "max": "240V",         "mandatory": true,  "rationale": "Rated voltage ceiling for performance compliance" },
+      "protection": { "min": "IP20",         "mandatory": false, "rationale": "Advisory for indoor lamps" },
+      "lifespan":   { "min": "25000 hours",  "mandatory": true,  "rationale": "L70 at 25000 hrs is the mandatory lumen maintenance requirement" },
+      "warranty":   { "required": true,      "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 15885",
+    "title": "LED Drivers and Control Gear - Safety and Performance Requirements",
+    "category": "lighting",
+    "requirements": {
+      "voltage":               { "max": "305V",  "mandatory": true,  "rationale": "Driver input voltage ceiling — mandatory for safety compliance" },
+      "operating_temperature": { "required": true, "mandatory": true, "rationale": "Thermal derating specification — mandatory for driver reliability" },
+      "protection":            { "min": "IP20",   "mandatory": false, "rationale": "Advisory for indoor-mounted drivers" },
+      "warranty":              { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 12063",
+    "title": "Degrees of Protection Provided by Enclosures (IP Code)",
+    "category": "electrical",
+    "requirements": {
+      "protection": { "min": "IP65",   "mandatory": true,  "rationale": "IS 12063 is referenced specifically for IP65 outdoor enclosures — mandatory" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 6882",
+    "title": "Electric Light Fittings - General Requirements and Tests",
+    "category": "lighting",
+    "requirements": {
+      "voltage":               { "max": "1000V", "mandatory": true,  "rationale": "Maximum operating voltage for light fittings — statutory safety limit" },
+      "protection":            { "min": "IP44",  "mandatory": true,  "rationale": "IP44 minimum for semi-exposed luminaires" },
+      "operating_temperature": { "required": true, "mandatory": false, "rationale": "Advisory thermal spec" },
+      "warranty":              { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 9000",
+    "title": "Basic Environmental Testing Procedures for Electronic and Electrical Items",
+    "category": "electrical",
+    "requirements": {
+      "operating_temperature": { "required": true, "mandatory": true,  "rationale": "Temperature range spec is the core input to environmental testing — mandatory" },
+      "protection":            { "min": "IP20",   "mandatory": false, "rationale": "Advisory baseline for equipment under test" },
+      "warranty":              { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 16107",
+    "title": "LED Module for General Lighting - Safety Requirements",
+    "category": "lighting",
+    "requirements": {
+      "voltage":    { "max": "250V",  "mandatory": true,  "rationale": "Module operating voltage ceiling — mandatory safety requirement" },
+      "protection": { "min": "IP20",  "mandatory": true,  "rationale": "Minimum module enclosure protection — mandatory" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Advisory — typically 3 years for outdoor modules" }
+    }
+  },
+  {
+    "is_code": "IS 16108",
+    "title": "LED Module for General Lighting - Performance Requirements",
+    "category": "lighting",
+    "requirements": {
+      "lifespan":              { "min": "50000 hours", "mandatory": true,  "rationale": "L80 at 50000 hrs is the mandatory lumen maintenance performance criterion" },
+      "protection":            { "min": "IP20",        "mandatory": false, "rationale": "Advisory — module protection depends on luminaire housing" },
+      "operating_temperature": { "required": true,     "mandatory": false, "rationale": "Advisory thermal operating range" },
+      "warranty":              { "required": true,     "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 16520",
+    "title": "Solid State Lighting Products - LED Street Lights Performance Requirements",
+    "category": "lighting",
+    "requirements": {
+      "power":                 { "max": "250W",        "mandatory": true,  "rationale": "System efficacy and power ceiling — mandatory for municipal procurement" },
+      "protection":            { "min": "IP65",        "mandatory": true,  "rationale": "IP66 minimum in IS 16520 — IP65 as minimum threshold here; outdoor mandatory" },
+      "voltage":               { "max": "270V",        "mandatory": true,  "rationale": "Operating voltage range ceiling — mandatory" },
+      "lifespan":              { "min": "50000 hours", "mandatory": true,  "rationale": "L80 at 50000 hrs is the mandatory rated life for LED street lights" },
+      "operating_temperature": { "required": true,     "mandatory": false, "rationale": "Advisory — operating temp range should be stated but not disqualifying" },
+      "warranty":              { "required": true,     "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 1944",
+    "title": "Code of Practice for Lighting of Public Thoroughfares",
+    "category": "lighting",
+    "requirements": {
+      "voltage":               { "max": "250V",  "mandatory": false, "rationale": "Advisory — IS 1944 is a design CoP, not a product specification standard" },
+      "operating_temperature": { "required": true, "mandatory": false, "rationale": "Advisory environmental context" },
+      "warranty":              { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 3646",
+    "title": "Code of Practice for Interior Illumination",
+    "category": "lighting",
+    "requirements": {
+      "voltage":    { "max": "250V",  "mandatory": false, "rationale": "Advisory — IS 3646 is a design CoP; voltage is contextual not a product spec" },
+      "protection": { "min": "IP20",  "mandatory": false, "rationale": "Advisory minimum for interior luminaires" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  },
+  {
+    "is_code": "IS 13118",
+    "title": "High Voltage AC Circuit Breakers - Outdoor Street Lighting Panel Protection",
+    "category": "electrical",
+    "requirements": {
+      "protection": { "min": "IP44",   "mandatory": true,  "rationale": "IP54 outdoor panel minimum — IP44 as floor; mandatory for panel protection" },
+      "warranty":   { "required": true, "mandatory": false, "rationale": "Advisory commercial requirement" }
+    }
+  }
+]
