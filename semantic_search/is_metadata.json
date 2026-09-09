@@ -31,23 +31,23 @@
   },
   "6": {
     "is_code": "IS 456:2000",
-    "title": "Plain and Reinforced Concrete — Code of Practice",
-    "description": "Standard for Concrete / Structural Construction. Key fields include concrete_durability."
+    "title": "Plain and Reinforced Concrete ΓÇö Code of Practice",
+    "description": "Provides comprehensive guidelines for design and construction of plain and reinforced concrete structures. Covers materials quality including cement and aggregate, mix design, durability requirements, structural design principles, formwork, curing, and inspection of concrete works."
   },
   "7": {
     "is_code": "IS 383:2016",
-    "title": "Coarse and Fine Aggregate for Concrete — Specification (Third Revision)",
-    "description": "Standard for Concrete Aggregates. Key fields include aggregate_grading."
+    "title": "Coarse and Fine Aggregate for Concrete ΓÇö Specification",
+    "description": "Specifies grading, physical properties, and deleterious substance limits for natural and manufactured coarse and fine aggregates used in concrete production. Covers sieve analysis requirements, flakiness index, water absorption, soundness, and alkali-silica reactivity testing."
   },
   "8": {
     "is_code": "IS 1786:2008",
-    "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement — Specification (Fourth Revision)",
-    "description": "Standard for Steel Reinforcement Bars. Key fields include characteristic_yield_strength."
+    "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
+    "description": "Covers requirements for deformed steel bars and wires used as reinforcement in reinforced concrete construction. Specifies chemical composition, mechanical properties including tensile strength and bend test, rib geometry for bond strength, and mass tolerances for grades Fe415, Fe500, and Fe550."
   },
   "9": {
     "is_code": "IS 8112:2013",
-    "title": "43 Grade Ordinary Portland Cement — Specification (Third Revision)",
-    "description": "Standard for Cement. Key fields include cement_grade, 28_day_compressive_strength."
+    "title": "43 Grade Ordinary Portland Cement",
+    "description": "Specifies physical and chemical requirements for 43 grade ordinary portland cement used in general construction work. Covers fineness, soundness, setting time, compressive strength at 3, 7, and 28 days, and limits on chemical constituents including tricalcium aluminate and free lime content."
   },
   "10": {
     "is_code": "IS 1489",
