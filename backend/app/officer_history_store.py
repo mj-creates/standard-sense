@@ -102,3 +102,36 @@ def get_actions_for_officer(
     total = len(officer_records)
     page  = officer_records[offset : offset + limit]
     return {"items": page, "total": total, "limit": limit, "offset": offset}
+
+
+def delete_action(action_id: str, officer_id: str) -> bool:
+    """
+    Delete one action record by id, verified against officer_id (anti-IDOR).
+
+    Returns True if a matching record was found and removed, False otherwise.
+    Only records where BOTH id AND officer_id match are deleted — an officer
+    cannot delete another officer's entries even if they know the UUID.
+    """
+    records  = _load()
+    filtered = [
+        r for r in records
+        if not (r.get("id") == action_id and r.get("officer_id") == officer_id)
+    ]
+    if len(filtered) == len(records):
+        return False  # nothing matched
+    _save(filtered)
+    return True
+
+
+def clear_actions_for_officer(officer_id: str) -> int:
+    """
+    Delete ALL action records for one officer.
+
+    Returns the number of records deleted.
+    """
+    records  = _load()
+    filtered = [r for r in records if r.get("officer_id") != officer_id]
+    deleted  = len(records) - len(filtered)
+    if deleted:
+        _save(filtered)
+    return deleted

@@ -2485,7 +2485,7 @@ async function refreshHistory(newOffset) {
   // Loading indicator
   tbody.innerHTML = `
     <tr>
-      <td colspan="4" class="text-center text-slate-400 text-xs py-8">
+      <td colspan="5" class="text-center text-slate-400 text-xs py-8">
         <svg class="inline w-4 h-4 animate-spin mr-2 text-govnavy" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -2541,9 +2541,14 @@ async function refreshHistory(newOffset) {
     const notes   = item.notes
       ? `<span class="text-slate-600">${_histEscapeHtml(item.notes)}</span>`
       : `<span class="text-slate-300 italic">—</span>`;
+    const safeId  = _histEscapeHtml(item.id);
 
     return `
-      <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+      <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors group"
+          data-id="${safeId}"
+          ondblclick="_histConfirmDelete(this)"
+          ontouchend="_histDoubleTap(event, this)"
+          title="Double-click / double-tap to delete this entry">
         <td class="py-3 px-4 text-xs text-slate-500 whitespace-nowrap">
           <div class="font-medium text-slate-700">${dateStr}</div>
           <div class="text-slate-400">${timeStr}</div>
@@ -2558,6 +2563,22 @@ async function refreshHistory(newOffset) {
           ${_histEscapeHtml(item.related_standard_or_spec)}
         </td>
         <td class="py-3 px-4 text-xs">${notes}</td>
+        <td class="py-2 px-3 text-right">
+          <!-- Trash button: invisible by default, revealed on double-click selection -->
+          <button
+            class="hist-delete-btn hidden items-center justify-center w-7 h-7 rounded-lg
+                   bg-red-50 hover:bg-red-100 border border-red-200 text-red-600
+                   transition-colors"
+            onclick="_histConfirmDelete(this.closest('tr'))"
+            title="Delete this entry"
+            aria-label="Delete entry"
+          >
+            <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </td>
       </tr>`;
   }).join('');
 
@@ -2684,6 +2705,196 @@ function _histEscapeHtml(str) {
     .replace(/>/g,  '&gt;')
     .replace(/"/g,  '&quot;')
     .replace(/'/g,  '&#39;');
+}
+
+// ─── Delete / Clear functionality ──────────────────────────────────────────
+
+/**
+ * Double-tap tracker for mobile.
+ * A second tap on the same row within 400 ms triggers the delete flow.
+ */
+let _histLastTap = { id: null, time: 0 };
+
+function _histDoubleTap(event, trEl) {
+  const id  = trEl.dataset.id;
+  const now = Date.now();
+  if (_histLastTap.id === id && now - _histLastTap.time < 400) {
+    // Second tap within threshold — treat as double-tap
+    event.preventDefault();          // suppress ghost mouse click
+    _histConfirmDelete(trEl);
+    _histLastTap = { id: null, time: 0 };
+  } else {
+    _histLastTap = { id, time: now };
+  }
+}
+
+/**
+ * Called by ondblclick / double-tap / trash button click on a row.
+ *
+ * Highlights the row and reveals the inline trash button so the officer
+ * has a visible confirmation step before the DELETE fires.
+ * Clicking the trash button a second time (or the row itself again) calls
+ * _histDeleteRow() which does the actual API call.
+ *
+ * This two-step approach (highlight → visible button → confirm) satisfies:
+ *   1. Double-click/tap reveals the delete UI without cluttering the table
+ *   2. A single accidental double-click still requires one more explicit click
+ *   3. Normal single-clicks are completely unaffected
+ */
+function _histConfirmDelete(trEl) {
+  if (!trEl) return;
+
+  // If this row is already in "selected-for-delete" state, execute the delete
+  if (trEl.classList.contains('hist-row-selected')) {
+    _histDeleteRow(trEl);
+    return;
+  }
+
+  // De-select any previously selected row first
+  document.querySelectorAll('tr.hist-row-selected').forEach(prev => {
+    prev.classList.remove('hist-row-selected', 'bg-red-50', 'outline', 'outline-1', 'outline-red-200');
+    const btn = prev.querySelector('.hist-delete-btn');
+    if (btn) btn.classList.add('hidden');
+    btn && btn.classList.remove('inline-flex');
+  });
+
+  // Highlight this row and reveal the trash button
+  trEl.classList.add('hist-row-selected', 'bg-red-50', 'outline', 'outline-1', 'outline-red-200');
+  const btn = trEl.querySelector('.hist-delete-btn');
+  if (btn) {
+    btn.classList.remove('hidden');
+    btn.classList.add('inline-flex');
+  }
+
+  // Auto-deselect after 4 seconds if the officer doesn't confirm
+  setTimeout(() => {
+    if (trEl.classList.contains('hist-row-selected')) {
+      trEl.classList.remove('hist-row-selected', 'bg-red-50', 'outline', 'outline-1', 'outline-red-200');
+      const b = trEl.querySelector('.hist-delete-btn');
+      if (b) { b.classList.add('hidden'); b.classList.remove('inline-flex'); }
+    }
+  }, 4000);
+}
+
+/**
+ * Execute the DELETE API call for a single history row.
+ * Called after the officer clicks the trash button on a selected row.
+ *
+ * On success: removes the row from the DOM immediately (instant UI feedback),
+ * then re-fetches the current page so pagination counts stay accurate.
+ * Shows a toast notification on completion.
+ */
+async function _histDeleteRow(trEl) {
+  const id = trEl && trEl.dataset.id;
+  if (!id) return;
+
+  // Optimistic UI: dim the row while the request is in flight
+  trEl.style.opacity = '0.4';
+  trEl.style.transition = 'opacity 0.2s';
+
+  try {
+    const res = await fetch(
+      `${HISTORY_ENDPOINT}/${encodeURIComponent(id)}`,
+      {
+        method:  'DELETE',
+        headers: { 'X-Officer-Id': _getOfficerId() },
+      }
+    );
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || `HTTP ${res.status}`);
+    }
+
+    // Animate row out then refresh the current page
+    trEl.style.opacity    = '0';
+    trEl.style.transform  = 'translateX(20px)';
+    trEl.style.transition = 'opacity 0.25s, transform 0.25s';
+    setTimeout(async () => {
+      // Stay on the same page; if it was the last row, move back one page
+      const newOffset = (historyTotal - 1 <= historyOffset && historyOffset > 0)
+        ? Math.max(0, historyOffset - HISTORY_LIMIT)
+        : historyOffset;
+      await refreshHistory(newOffset);
+    }, 260);
+
+    _histShowToast('Entry deleted successfully.');
+
+  } catch (err) {
+    // Restore row on failure
+    trEl.style.opacity   = '1';
+    trEl.style.transform = '';
+    trEl.classList.remove('hist-row-selected', 'bg-red-50', 'outline', 'outline-1', 'outline-red-200');
+    const btn = trEl.querySelector('.hist-delete-btn');
+    if (btn) { btn.classList.add('hidden'); btn.classList.remove('inline-flex'); }
+    _histShowToast(`Delete failed: ${err.message}`, true);
+  }
+}
+
+/**
+ * Clear ALL history for this officer.
+ * Called when the user double-clicks the "Officer Action History" heading.
+ * Requires explicit confirmation via the browser confirm dialog before proceeding.
+ */
+async function historyClearAll() {
+  if (!confirm('Clear ALL action history?\n\nThis cannot be undone.')) return;
+
+  try {
+    const res = await fetch(HISTORY_ENDPOINT, {
+      method:  'DELETE',
+      headers: { 'X-Officer-Id': _getOfficerId() },
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    await refreshHistory(0);
+    _histShowToast(`Cleared ${data.deleted} entr${data.deleted === 1 ? 'y' : 'ies'} successfully.`);
+  } catch (err) {
+    _histShowToast(`Clear failed: ${err.message}`, true);
+  }
+}
+
+/**
+ * Brief toast notification — appears at bottom-right, auto-dismisses after 3 s.
+ * @param {string}  message
+ * @param {boolean} isError  — true = red toast, false (default) = green
+ */
+function _histShowToast(message, isError = false) {
+  // Reuse existing toast if present, otherwise create one
+  let toast = document.getElementById('hist-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'hist-toast';
+    toast.className = [
+      'fixed bottom-5 right-5 z-50 flex items-center gap-2',
+      'px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold',
+      'transition-all duration-300 translate-y-2 opacity-0 pointer-events-none',
+    ].join(' ');
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.className   = toast.className
+    .replace(/bg-\S+/g, '')
+    .replace(/text-\S+(?=\s|$)/g, '');
+  toast.classList.add(
+    isError ? 'bg-red-600' : 'bg-govgreen',
+    'text-white'
+  );
+
+  // Animate in
+  requestAnimationFrame(() => {
+    toast.classList.remove('translate-y-2', 'opacity-0', 'pointer-events-none');
+    toast.classList.add('translate-y-0', 'opacity-100');
+  });
+
+  // Auto-dismiss after 3 s
+  clearTimeout(toast._dismissTimer);
+  toast._dismissTimer = setTimeout(() => {
+    toast.classList.add('translate-y-2', 'opacity-0', 'pointer-events-none');
+    toast.classList.remove('translate-y-0', 'opacity-100');
+  }, 3000);
 }
 
 // ── Auto-load history on login ──────────────────────────────────────────────

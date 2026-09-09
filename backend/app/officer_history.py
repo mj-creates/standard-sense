@@ -28,7 +28,12 @@ from typing import Annotated
 from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from backend.app.officer_history_store import create_action, get_actions_for_officer
+from backend.app.officer_history_store import (
+    create_action,
+    get_actions_for_officer,
+    delete_action,
+    clear_actions_for_officer,
+)
 
 # ---------------------------------------------------------------------------
 # Mock auth — remove / replace once Task 01 auth merges
@@ -183,3 +188,62 @@ def get_history(
         offset=offset,
     )
     return PaginatedActions(**result)
+
+
+@router.delete(
+    "/{action_id}",
+    status_code=204,
+    summary="Delete one officer action",
+    description=(
+        "Permanently removes a single action record. "
+        "The record must belong to the requesting officer (anti-IDOR check). "
+        "Returns 204 No Content on success, 404 if not found or not owned."
+    ),
+)
+def remove_action(
+    action_id: str,
+    x_officer_id: Annotated[str | None, Header()] = None,
+) -> None:
+    """
+    DELETE /api/officer-history/{action_id}
+
+    Header:
+        X-Officer-Id  — officer identity (or mock fallback)
+
+    Responses:
+        204  No Content  — deleted successfully
+        404  Not Found   — action_id does not exist or belongs to a different officer
+    """
+    officer_id = _get_officer_id(x_officer_id)
+    found = delete_action(action_id=action_id, officer_id=officer_id)
+    if not found:
+        raise HTTPException(
+            status_code=404,
+            detail="Action not found or not owned by this officer.",
+        )
+
+
+@router.delete(
+    "",
+    status_code=200,
+    summary="Clear all history for this officer",
+    description=(
+        "Permanently removes every action record belonging to the requesting officer. "
+        "Returns the count of deleted records."
+    ),
+)
+def clear_history(
+    x_officer_id: Annotated[str | None, Header()] = None,
+) -> dict:
+    """
+    DELETE /api/officer-history
+
+    Header:
+        X-Officer-Id  — officer identity (or mock fallback)
+
+    Response (200 OK):
+        {"deleted": <int>}
+    """
+    officer_id = _get_officer_id(x_officer_id)
+    deleted    = clear_actions_for_officer(officer_id=officer_id)
+    return {"deleted": deleted}

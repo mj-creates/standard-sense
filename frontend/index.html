@@ -851,8 +851,10 @@
         <!-- Header row -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <div>
-            <h2 class="text-govnavy font-bold text-base">Officer Action History</h2>
-            <p class="text-slate-400 text-xs mt-0.5">Your recent procurement actions, newest first</p>
+            <h2 class="text-govnavy font-bold text-base cursor-pointer select-none"
+                ondblclick="historyClearAll()"
+                title="Double-click to clear all history">Officer Action History</h2>
+            <p class="text-slate-400 text-xs mt-0.5">Your recent procurement actions, newest first &nbsp;·&nbsp; <span class="text-slate-300">double-click a row to delete</span></p>
           </div>
           <!-- Back to Dashboard -->
           <button
@@ -881,6 +883,7 @@
                 <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
                 <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Standard / Spec</th>
                 <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Notes</th>
+                <th class="py-3 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wide text-right w-10" title="Double-click a row to reveal delete"></th>
               </tr>
             </thead>
             <tbody id="history-tbody">
