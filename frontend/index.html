@@ -453,6 +453,18 @@
               <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
               Live
             </span>
+            <!-- History navigation button -->
+            <button
+              id="nav-history-btn"
+              onclick="showHistoryView()"
+              class="hidden text-xs text-slate-600 hover:text-govnavy font-medium border border-slate-200 hover:border-govnavy px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+              title="View Officer Action History"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              History
+            </button>
             <button
               onclick="handleLogout()"
               class="text-xs text-slate-600 hover:text-red-600 font-medium border border-slate-200 hover:border-red-300 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
@@ -467,8 +479,8 @@
       </div>
     </div>
 
-    <!-- Dashboard Content -->
-    <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 animate-fadeInUp">
+    <!-- Dashboard Content (Analysis View) -->
+    <div id="dashboard-view" class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 animate-fadeInUp">
 
       <!-- ═══════════════════════════════════════════════════════════════
            VIEW 1: UPLOAD VIEW (Default / On Page Load)
@@ -744,6 +756,26 @@
 
         <!-- Cards injected here by renderResults() -->
         <div id="results-cards" class="flex flex-col gap-4"></div>
+
+        <!-- Log This Analysis — contextually placed below IS recommendation cards
+             so the officer can log the active session immediately after reviewing -->
+        <div id="log-analysis-bar" class="hidden mt-6 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-5 py-3.5">
+          <div>
+            <p class="text-amber-900 font-semibold text-xs">Ready to log your decision?</p>
+            <p class="text-amber-700 text-xs mt-0.5">Record your compliance action for this tender analysis.</p>
+          </div>
+          <button
+            id="log-analysis-btn"
+            onclick="testLogAction()"
+            class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            title="Log this tender analysis as an officer action"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Log This Analysis
+          </button>
+        </div>
       </div>
 
       <!-- ══ COMPLIANCE ANALYSIS VIEW (hidden by default) ════════════ -->
@@ -834,16 +866,15 @@
             <h2 class="text-govnavy font-bold text-base">Officer Action History</h2>
             <p class="text-slate-400 text-xs mt-0.5">Your recent procurement actions, newest first</p>
           </div>
-          <!-- Log current analysis as an officer action -->
+          <!-- Back to Dashboard -->
           <button
-            id="history-test-btn"
-            onclick="testLogAction()"
-            class="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200
-                   text-amber-700 text-xs font-semibold px-3 py-2 rounded-lg transition-colors
-                   disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Logs the current tender analysis as an officer action (approve/flag/fix based on compliance result)"
+            onclick="showDashboardView()"
+            class="inline-flex items-center gap-1.5 text-slate-500 hover:text-govnavy text-xs font-medium border border-slate-200 hover:border-govnavy px-3 py-1.5 rounded-lg transition-colors"
           >
-            🧪 Log This Analysis
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Analysis
           </button>
         </div>
 
