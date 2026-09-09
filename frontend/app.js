@@ -1,3 +1,4 @@
+
 /**
  * StandardSense — SIH 2026
  * app.js — Full-stack integration layer
@@ -107,6 +108,7 @@ function handleLogin(event) {
     }, 900);
     return;
   }
+
   _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, avatarEl, subtitleEl, emailInput);
 }
 
@@ -147,6 +149,7 @@ function togglePassword() {
   const pwInput = document.getElementById('password-input');
   const eyeIcon = document.getElementById('eye-icon');
   if (!pwInput) return;
+
   if (pwInput.type === 'password') {
     pwInput.type = 'text';
     eyeIcon.innerHTML = `
@@ -180,7 +183,9 @@ function _initDropzone() {
     e.preventDefault();
     dz.classList.add('drag-over');
   });
+
   dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+
   dz.addEventListener('drop', (e) => {
     e.preventDefault();
     dz.classList.remove('drag-over');
@@ -217,16 +222,16 @@ function _handleFileSelection(file) {
   selectedFile = file;
 
   // Update dropzone UI to "file selected" state
-  const dz       = document.getElementById('dropzone');
-  const chip     = document.getElementById('dz-file-chip');
-  const fname    = document.getElementById('dz-filename');
-  const primary  = document.getElementById('dz-primary');
+  const dz        = document.getElementById('dropzone');
+  const chip      = document.getElementById('dz-file-chip');
+  const fname     = document.getElementById('dz-filename');
+  const primary   = document.getElementById('dz-primary');
   const secondary = document.getElementById('dz-secondary');
 
   dz.classList.add('file-selected');
-  primary.textContent  = 'File ready for analysis';
+  primary.textContent   = 'File ready for analysis';
   secondary.textContent = 'Click "Analyse Tender" to start, or drop a different file to replace.';
-  fname.textContent    = file.name;
+  fname.textContent     = file.name;
   chip.classList.remove('hidden');
   chip.classList.add('flex');
 
@@ -240,7 +245,7 @@ function _handleFileSelection(file) {
 
 /**
  * Clear the currently staged file and reset the dropzone.
- * @param {Event} [event]  — if called from the ✕ button, stop propagation
+ * @param {Event} [event] — if called from the ✕ button, stop propagation
  */
 function clearFile(event) {
   if (event) event.stopPropagation();
@@ -256,12 +261,20 @@ function clearFile(event) {
   if (dz) {
     dz.classList.remove('file-selected', 'drag-over');
   }
-  if (primary)   primary.textContent   = 'Drag & drop your tender PDF here';
-  if (secondary) secondary.innerHTML   = 'or <span class="text-blue-600 underline cursor-pointer">click to browse</span> — max 20 MB';
+
+  if (primary) {
+    primary.textContent = 'Drag & drop your tender PDF here';
+  }
+
+  if (secondary) {
+    secondary.innerHTML = 'or <span class="text-blue-600 underline cursor-pointer">click to browse</span> — max 20 MB';
+  }
+
   if (chip) {
     chip.classList.add('hidden');
     chip.classList.remove('flex');
   }
+
   if (fileInput) fileInput.value = '';
 
   // Disable analyse button
@@ -280,6 +293,7 @@ function clearFile(event) {
 
 async function submitTender() {
   if (!selectedFile || isProcessing) return;
+
   isProcessing = true;
 
   _hideError();
@@ -287,43 +301,58 @@ async function submitTender() {
   _showPipelineTracker();
   _setAnalyseButtonLoading(true);
 
-  // Animate step 1 (NLP) as active immediately — the backend will be doing
-  // NLP extraction while the HTTP round-trip is happening.
+  // Animate step 1 (NLP) as active immediately
   _setStep('nlp', 'active');
   _setPipelineStatus('Extracting specifications from PDF…');
 
   // Build multipart/form-data payload
-  // Field name MUST be "file" — matches `file: UploadFile = File(...)` in main.py
+  // Field name MUST be "file" — matches file: UploadFile = File(...) in main.py
   const formData = new FormData();
   formData.append('file', selectedFile, selectedFile.name);
 
-  // Staggered step animations while we wait for the (slow) pipeline
-  // NLP → ~1s → Semantic → ~2s → Rank → ~3s → RAG → response
+  // Staggered step animations while we wait for the pipeline
   const stepTimers = [
-    setTimeout(() => { _setStep('nlp', 'done'); _setStep('search', 'active'); _setPipelineStatus('Running FAISS semantic search…'); },      1200),
-    setTimeout(() => { _setStep('search', 'done'); _setStep('rank', 'active'); _setPipelineStatus('Evaluating BIS compliance…'); },           3000),
-    setTimeout(() => { _setStep('rank', 'done'); _setStep('rag', 'active'); _setPipelineStatus('Generating Groq RAG explanations…'); },       5000),
+    setTimeout(() => {
+      _setStep('nlp', 'done');
+      _setStep('search', 'active');
+      _setPipelineStatus('Running FAISS semantic search…');
+    }, 1200),
+
+    setTimeout(() => {
+      _setStep('search', 'done');
+      _setStep('rank', 'active');
+      _setPipelineStatus('Evaluating BIS compliance…');
+    }, 3000),
+
+    setTimeout(() => {
+      _setStep('rank', 'done');
+      _setStep('rag', 'active');
+      _setPipelineStatus('Generating Groq RAG explanations…');
+    }, 5000),
   ];
 
   let data;
+
   try {
     const response = await fetch(PROCESS_TENDER_ENDPOINT, {
-      method:  'POST',
-      body:    formData,
-      // NOTE: Do NOT set credentials:'include' — backend uses allow_origins=["*"]
-      //       with allow_credentials=True which is a server misconfiguration;
-      //       credentialed requests to wildcard origins are rejected by browsers.
+      method: 'POST',
+      body: formData,
+      // NOTE: Do NOT set credentials:'include'
     });
 
-    // Flush any pending step timers — we have a real result now
+    // Flush pending step timers
     stepTimers.forEach(clearTimeout);
 
     if (!response.ok) {
       let detail = `HTTP ${response.status}`;
+
       try {
         const errBody = await response.json();
         detail = errBody.detail || detail;
-      } catch (_) { /* non-JSON error body */ }
+      } catch (_) {
+        /* non-JSON error body */
+      }
+
       throw new Error(detail);
     }
 
@@ -338,6 +367,7 @@ async function submitTender() {
     const msg = err.message.includes('Failed to fetch')
       ? `Could not connect to the backend at ${PROCESS_TENDER_ENDPOINT}. Make sure the FastAPI server is running:\n\nvenv\\Scripts\\uvicorn backend.app.main:app --reload --port 8000`
       : err.message;
+
     _showError(msg);
     return;
   }
@@ -348,8 +378,9 @@ async function submitTender() {
   _setAnalyseButtonLoading(false);
   isProcessing = false;
 
-  // Small pause so the user sees "Analysis complete." before results appear
+  // Small pause so the user sees "Analysis complete."
   await _sleep(400);
+
   _hidePipelineTracker();
   _renderResults(data);
 }
@@ -358,23 +389,38 @@ async function submitTender() {
 // F. PIPELINE TRACKER ANIMATION
 // ═══════════════════════════════════════════════════════════════════════════
 
-const STEP_IDS = { nlp: 'step-nlp', search: 'step-search', rank: 'step-rank', rag: 'step-rag' };
+const STEP_IDS = {
+  nlp: 'step-nlp',
+  search: 'step-search',
+  rank: 'step-rank',
+  rag: 'step-rag'
+};
 
 function _showPipelineTracker() {
   const tracker = document.getElementById('pipeline-tracker');
   const empty   = document.getElementById('empty-state');
+
   if (tracker) tracker.classList.remove('hidden');
   if (empty)   empty.classList.add('hidden');
+
   // Reset all steps
   Object.values(STEP_IDS).forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.className = el.className.replace(/\bactive\b|\bdone\b/g, '').trim() + ' pipeline-step';
+
+    if (el) {
+      el.className =
+        el.className.replace(/\bactive\b|\bdone\b/g, '').trim() +
+        ' pipeline-step';
+    }
   });
 }
 
 function _hidePipelineTracker() {
   const tracker = document.getElementById('pipeline-tracker');
-  if (tracker) tracker.classList.add('hidden');
+
+  if (tracker) {
+    tracker.classList.add('hidden');
+  }
 }
 
 /**
@@ -383,20 +429,26 @@ function _hidePipelineTracker() {
  */
 function _setStep(step, state) {
   const el = document.getElementById(STEP_IDS[step]);
+
   if (!el) return;
-  // Remove both possible state classes, then add the new one
+
   el.classList.remove('active', 'done');
   el.classList.add(state);
 }
 
 function _setPipelineStatus(text) {
   const el = document.getElementById('pipeline-status-text');
-  if (el) el.textContent = text;
+
+  if (el) {
+    el.textContent = text;
+  }
 }
 
 function _setAnalyseButtonLoading(loading) {
   const btn = document.getElementById('analyse-btn');
+
   if (!btn) return;
+
   if (loading) {
     btn.innerHTML = `
       <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -404,14 +456,17 @@ function _setAnalyseButtonLoading(loading) {
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
       </svg>
       Analysing…`;
+
     btn.disabled = true;
     btn.classList.add('opacity-70', 'cursor-not-allowed');
+
   } else {
     btn.innerHTML = `
       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
       </svg>
       Analyse Tender`;
+
     btn.disabled = false;
     btn.classList.remove('opacity-40', 'opacity-70', 'cursor-not-allowed');
   }
@@ -422,7 +477,7 @@ function _setAnalyseButtonLoading(loading) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Main render entry-point. Dispatches to extraction summary + results cards.
+ * Main render entry-point.
  * @param {Object} data — full response from POST /process-tender
  */
 function _renderResults(data) {
@@ -503,20 +558,31 @@ function _renderExtractionSummary(extraction) {
   if (!extraction) return;
 
   const panel = document.getElementById('extraction-summary');
+
   if (!panel) return;
+
   panel.classList.remove('hidden');
 
   // spec_id badge
   _setText('spec-id-badge', extraction.spec_id || '');
 
   // Multilingual badge
-  const meta   = extraction.multilingual_meta || {};
-  const badge  = document.getElementById('lang-badge');
+  const meta      = extraction.multilingual_meta || {};
+  const badge     = document.getElementById('lang-badge');
   const badgeText = document.getElementById('lang-badge-text');
+
   if (badge) {
-    if (meta.was_translated && meta.original_language && meta.original_language !== 'English') {
+    if (
+      meta.was_translated &&
+      meta.original_language &&
+      meta.original_language !== 'English'
+    ) {
       badge.classList.remove('hidden');
-      if (badgeText) badgeText.textContent = `Translated from ${meta.original_language}`;
+
+      if (badgeText) {
+        badgeText.textContent = `Translated from ${meta.original_language}`;
+      }
+
     } else {
       badge.classList.add('hidden');
     }
@@ -530,17 +596,27 @@ function _renderExtractionSummary(extraction) {
 
   // Parameters chips
   const paramsEl = document.getElementById('ext-params');
+
   if (paramsEl) {
     paramsEl.innerHTML = '';
-    const params = extraction.parameters || {};
+
+    const params  = extraction.parameters || {};
     const entries = Object.entries(params);
+
     if (entries.length === 0) {
-      paramsEl.innerHTML = '<span class="text-slate-400 text-xs">No parameters extracted</span>';
+      paramsEl.innerHTML =
+        '<span class="text-slate-400 text-xs">No parameters extracted</span>';
+
     } else {
       entries.forEach(([key, val]) => {
         const chip = document.createElement('span');
-        chip.className = 'inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-full';
-        chip.innerHTML = `<span class="text-slate-400 font-normal">${_escHtml(key.replace(/_/g,' '))}:</span> ${_escHtml(String(val))}`;
+
+        chip.className =
+          'inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-full';
+
+        chip.innerHTML =
+          `<span class="text-slate-400 font-normal">${_escHtml(key.replace(/_/g, ' '))}:</span> ${_escHtml(String(val))}`;
+
         paramsEl.appendChild(chip);
       });
     }
@@ -550,12 +626,15 @@ function _renderExtractionSummary(extraction) {
   const standards = extraction.explicit_standards || [];
   const stdRow    = document.getElementById('ext-standards-row');
   const stdEl     = document.getElementById('ext-standards');
+
   if (stdRow && stdEl) {
     if (standards.length > 0) {
       stdRow.classList.remove('hidden');
+
       stdEl.innerHTML = standards.map(s =>
         `<span class="inline-flex items-center bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full">${_escHtml(s)}</span>`
       ).join('');
+
     } else {
       stdRow.classList.add('hidden');
     }
@@ -572,21 +651,30 @@ function _renderComplianceResults(rag, ranking) {
   const section = document.getElementById('results-section');
   const cards   = document.getElementById('results-cards');
   const badges  = document.getElementById('results-summary-badges');
+
   if (!section || !cards) return;
 
   // Handle needs_clarification passthrough
   if (rag && rag.status === 'needs_clarification') {
     const panel = document.getElementById('clarification-panel');
     const q     = document.getElementById('clarification-question');
+
     if (panel) panel.classList.remove('hidden');
-    if (q)     q.textContent = rag.question || 'Could you clarify the product category or intended use?';
+
+    if (q) {
+      q.textContent =
+        rag.question ||
+        'Could you clarify the product category or intended use?';
+    }
+
     section.classList.add('hidden');
     document.getElementById('empty-state')?.classList.add('hidden');
+
     return;
   }
 
-  const explanations   = (rag && rag.explanations)              || [];
-  const recommendations = (ranking && ranking.recommendations)  || [];
+  const explanations    = (rag && rag.explanations) || [];
+  const recommendations = (ranking && ranking.recommendations) || [];
 
   // ── Feature 1: Compliance Summary Chart (uses ONLY ranking.recommendations) ──
   const totalRecs = recommendations.length;
@@ -643,7 +731,13 @@ function _renderComplianceResults(rag, ranking) {
   }
 
   // Build summary badge counts
-  const counts = { compliant: 0, partial: 0, unknown: 0, 'non-compliant': 0 };
+  const counts = {
+    compliant: 0,
+    partial: 0,
+    unknown: 0,
+    'non-compliant': 0
+  };
+
   explanations.forEach(e => {
     const s = e.compliance_status || 'unknown';
     counts[s] = (counts[s] || 0) + 1;
@@ -654,17 +748,22 @@ function _renderComplianceResults(rag, ranking) {
       .filter(([, n]) => n > 0)
       .map(([status, n]) =>
         `<span class="text-xs font-semibold px-2.5 py-1 rounded-full ${_badgeClass(status)}">${n} ${status}</span>`
-      ).join('');
+      )
+      .join('');
   }
 
-  // Build a quick lookup: is_code → recommendation detail
+  // Build quick lookup: is_code → recommendation detail
   const recMap = {};
-  recommendations.forEach(r => { recMap[r.is_code] = r; });
+
+  recommendations.forEach(r => {
+    recMap[r.is_code] = r;
+  });
 
   const specText = (ranking && ranking.spec_text) || (currentTenderData && currentTenderData.ranking && currentTenderData.ranking.spec_text) || (currentTenderData && currentTenderData.extraction && currentTenderData.extraction.spec_text) || '';
 
   // Render cards
   cards.innerHTML = '';
+
   explanations.forEach((exp, idx) => {
     const rec    = recMap[exp.is_code] || {};
     const card   = _buildResultCard(exp, rec, idx, specText);
@@ -679,7 +778,12 @@ function _renderComplianceResults(rag, ranking) {
   document.getElementById('view-analysis-btn')?.classList.add('flex');
 
   // Smooth-scroll to first card
-  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  setTimeout(() => {
+    section.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }, 100);
 }
 
 /**
@@ -698,15 +802,27 @@ function _buildResultCard(exp, rec, idx, specText = '') {
   const bodyId  = `result-body-${idx}`;
 
   const card = document.createElement('div');
-  card.id        = cardId;
-  card.className = 'bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden';
 
-  // ── Card header (always visible) ──────────────────────────────────────────
+  card.id = cardId;
+
+  card.className =
+    'bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden';
+
+  // ── Card header ───────────────────────────────────────────────────────────
+
   const headerBg = {
-    compliant:        'bg-green-50 border-b border-green-100',
-    partial:          'bg-amber-50 border-b border-amber-100',
-    'non-compliant':  'bg-red-50 border-b border-red-100',
-    unknown:          'bg-slate-50 border-b border-slate-100',
+    compliant:
+      'bg-green-50 border-b border-green-100',
+
+    partial:
+      'bg-amber-50 border-b border-amber-100',
+
+    'non-compliant':
+      'bg-red-50 border-b border-red-100',
+
+    unknown:
+      'bg-slate-50 border-b border-slate-100',
+
   }[status] || 'bg-slate-50 border-b border-slate-100';
 
   const rankLabel = `#${idx + 1}`;
@@ -725,15 +841,51 @@ function _buildResultCard(exp, rec, idx, specText = '') {
                        (currentTenderData && currentTenderData.extraction && currentTenderData.extraction.spec_text) || '';
 
   const fieldChips = [
-    ...passed.map(f  => `<span class="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-medium">✓ ${_escHtml(f)}</span>`),
-    ...failed.map(f  => `<span class="inline-flex items-center gap-1 bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full font-medium">✗ ${_escHtml(f)}</span>`),
-    ...missing.map(f => `<span class="inline-flex items-center gap-1 bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full font-medium">? ${_escHtml(f)}</span>`),
+    ...passed.map(
+      f =>
+        `<span class="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-medium">✓ ${_escHtml(f)}</span>`
+    ),
+
+    ...failed.map(
+      f =>
+        `<span class="inline-flex items-center gap-1 bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full font-medium">✗ ${_escHtml(f)}</span>`
+    ),
+
+    ...missing.map(
+      f =>
+        `<span class="inline-flex items-center gap-1 bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full font-medium">? ${_escHtml(f)}</span>`
+    ),
+
   ].join('');
 
-  // Semantic score bar (0 = best match, higher = worse; clamp to 0-2 range)
-  const scoreNum     = parseFloat(score) || 0;
-  const scorePercent = Math.max(0, Math.min(100, Math.round((1 - scoreNum / 2) * 100)));
-  const scoreColor   = scorePercent >= 70 ? 'bg-green-500' : scorePercent >= 40 ? 'bg-amber-400' : 'bg-red-400';
+  // Semantic score bar
+  const scoreNum = parseFloat(score) || 0;
+
+  const scorePercent = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round((1 - scoreNum / 2) * 100)
+    )
+  );
+
+  const scoreColor =
+    scorePercent >= 70
+      ? 'bg-green-500'
+      : scorePercent >= 40
+        ? 'bg-amber-400'
+        : 'bg-red-400';
+
+  // ── Explanation display logic ────────────────────────────────────────────
+
+  const fullExplanation =
+    String(exp.explanation || '').trim();
+
+  const shortExplanation =
+    _truncateText(fullExplanation, 150);
+
+  const hasMoreExplanation =
+    fullExplanation.length > 150;
 
   // Build Auto-Fix markup only if eligible
   let autoFixHtml = '';
@@ -776,40 +928,112 @@ function _buildResultCard(exp, rec, idx, specText = '') {
   card.innerHTML = `
     <!-- Card header -->
     <div class="${headerBg} px-5 py-4">
+
       <div class="flex items-start justify-between gap-3">
+
         <div class="flex items-center gap-3 min-w-0">
-          <span class="flex-shrink-0 w-7 h-7 rounded-full bg-govnavy text-white text-xs font-bold flex items-center justify-center">${_escHtml(rankLabel)}</span>
-          <div class="min-w-0">
-            <p class="text-govnavy font-bold text-sm leading-tight truncate">${_escHtml(exp.is_code || '—')}</p>
-            <p class="text-slate-500 text-xs mt-0.5 leading-tight">${_escHtml(exp.title || '—')}</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <span class="text-xs font-bold px-2.5 py-1 rounded-full ${_badgeClass(status)}">${_escHtml(status)}</span>
-          <button
-            onclick="toggleCard('${bodyId}')"
-            aria-expanded="false"
-            aria-controls="${bodyId}"
-            class="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-govnavy hover:border-slate-300 transition-colors flex-shrink-0"
-            title="Expand explanation"
+
+          <span
+            class="flex-shrink-0 w-7 h-7 rounded-full bg-govnavy text-white text-xs font-bold flex items-center justify-center"
           >
-            <svg id="chevron-${idx}" class="w-3.5 h-3.5 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
+            ${_escHtml(rankLabel)}
+          </span>
+
+          <div class="min-w-0">
+
+            <p class="text-govnavy font-bold text-sm leading-tight truncate">
+              ${_escHtml(exp.is_code || '—')}
+            </p>
+
+            <p class="text-slate-500 text-xs mt-0.5 leading-tight">
+              ${_escHtml(exp.title || '—')}
+            </p>
+
+          </div>
+
         </div>
+
+        <div class="flex items-center gap-2 flex-shrink-0">
+
+          <span
+            class="text-xs font-bold px-2.5 py-1 rounded-full ${_badgeClass(status)}"
+          >
+            ${_escHtml(status)}
+          </span>
+
+          ${
+            hasMoreExplanation
+              ? `
+                <button
+                  type="button"
+                  onclick="toggleCard('${bodyId}')"
+                  aria-expanded="false"
+                  aria-controls="${bodyId}"
+                  aria-label="Show full explanation"
+                  class="inline-flex items-center gap-1.5 rounded-lg bg-white border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-govnavy hover:border-slate-300 transition-colors flex-shrink-0"
+                  title="Show full explanation"
+                >
+
+                  <span id="toggle-label-${idx}">
+                    Show more
+                  </span>
+
+                  <svg
+                    id="chevron-${idx}"
+                    class="w-3.5 h-3.5 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+
+                </button>
+              `
+              : ''
+          }
+
+        </div>
+
       </div>
 
       <!-- Semantic score row -->
       <div class="mt-3 flex items-center gap-3">
-        <div class="flex-1 h-1.5 bg-white rounded-full overflow-hidden border border-slate-200">
-          <div class="h-full ${scoreColor} rounded-full transition-all duration-500" style="width:${scorePercent}%"></div>
+
+        <div
+          class="flex-1 h-1.5 bg-white rounded-full overflow-hidden border border-slate-200"
+        >
+          <div
+            class="h-full ${scoreColor} rounded-full transition-all duration-500"
+            style="width:${scorePercent}%"
+          ></div>
         </div>
-        <span class="text-slate-400 text-xs font-mono flex-shrink-0">L2 ${_escHtml(score)}</span>
+
+        <span
+          class="text-slate-400 text-xs font-mono flex-shrink-0"
+        >
+          L2 ${_escHtml(score)}
+        </span>
+
       </div>
 
       <!-- Field chips row -->
-      ${fieldChips ? `<div class="mt-3 flex flex-wrap gap-1.5">${fieldChips}</div>` : ''}
+      ${
+        fieldChips
+          ? `
+            <div class="mt-3 flex flex-wrap gap-1.5">
+              ${fieldChips}
+            </div>
+          `
+          : ''
+      }
+
     </div>
 
     <!-- Expandable explanation body -->
@@ -1077,12 +1301,12 @@ function _fallbackCopy(text) {
 
 /**
  * Toggle expand/collapse on a result card's explanation body.
+ *
  * @param {string} bodyId
  */
 function toggleCard(bodyId) {
-  const body    = document.getElementById(bodyId);
-  const idx     = bodyId.replace('result-body-', '');
-  const chevron = document.getElementById(`chevron-${idx}`);
+  const body = document.getElementById(bodyId);
+
   if (!body) return;
 
   const isOpen = body.classList.contains('open');
@@ -1094,11 +1318,40 @@ function toggleCard(bodyId) {
     body.style.maxHeight = `${Math.max(800, body.scrollHeight + 100)}px`;
   }
   if (chevron) {
-    chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    chevron.style.transform =
+      nextOpen
+        ? 'rotate(180deg)'
+        : 'rotate(0deg)';
   }
 
-  const btn = body.previousElementSibling?.querySelector(`button[aria-controls="${bodyId}"]`);
-  if (btn) btn.setAttribute('aria-expanded', String(!isOpen));
+  // Change visible label
+  if (label) {
+    label.textContent =
+      nextOpen
+        ? 'Show less'
+        : 'Show more';
+  }
+
+  // Update button accessibility
+  if (btn) {
+
+    btn.setAttribute(
+      'aria-expanded',
+      String(nextOpen)
+    );
+
+    btn.setAttribute(
+      'aria-label',
+      nextOpen
+        ? 'Hide full explanation'
+        : 'Show full explanation'
+    );
+
+    btn.title =
+      nextOpen
+        ? 'Hide full explanation'
+        : 'Show full explanation';
+  }
 }
 
 // ── G3. Vendor View (Simplified) ────────────────────────────────────────────
@@ -1247,6 +1500,34 @@ function _escHtml(str) {
 }
 
 /**
+ * Create a short client-side explanation preview.
+ * Maximum length is approximately 150 characters.
+ */
+function _truncateText(text, maxLength = 150) {
+  const normalized =
+    String(text || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  const preview =
+    normalized.slice(0, maxLength);
+
+  const lastSpace =
+    preview.lastIndexOf(' ');
+
+  const safePreview =
+    lastSpace > maxLength * 0.7
+      ? preview.slice(0, lastSpace)
+      : preview;
+
+  return `${safePreview.trim()}…`;
+}
+
+/**
  * Lightly format the Groq explanation text:
  * - **bold** → <strong>
  * - *italic* → <em>
@@ -1255,44 +1536,83 @@ function _escHtml(str) {
  */
 function _formatExplanation(text) {
   if (!text) return '';
+
   let safe = _escHtml(text);
 
   // **bold**
-  safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  safe = safe.replace(
+    /\*\*(.+?)\*\*/g,
+    '<strong>$1</strong>'
+  );
+
   // *italic*
-  safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  safe = safe.replace(
+    /\*(.+?)\*/g,
+    '<em>$1</em>'
+  );
 
   // Bullet list lines
   const lines = safe.split('\n');
+
   let inList = false;
   const result = [];
+
   for (const line of lines) {
+
     if (/^[-•]\s+/.test(line.trimStart())) {
-      if (!inList) { result.push('<ul>'); inList = true; }
-      result.push(`<li>${line.replace(/^[-•]\s+/, '').trim()}</li>`);
+
+      if (!inList) {
+        result.push('<ul>');
+        inList = true;
+      }
+
+      result.push(
+        `<li>${line.replace(/^[-•]\s+/, '').trim()}</li>`
+      );
+
     } else {
-      if (inList) { result.push('</ul>'); inList = false; }
+
+      if (inList) {
+        result.push('</ul>');
+        inList = false;
+      }
+
       result.push(line);
     }
   }
-  if (inList) result.push('</ul>');
+
+  if (inList) {
+    result.push('</ul>');
+  }
+
   return result.join('\n');
 }
 
 function _setText(id, text) {
   const el = document.getElementById(id);
-  if (el) el.textContent = text;
+
+  if (el) {
+    el.textContent = text;
+  }
 }
 
 function _showError(message) {
   const banner = document.getElementById('upload-error');
   const text   = document.getElementById('upload-error-text');
-  if (banner) banner.classList.remove('hidden');
-  if (text)   text.textContent = message;
+
+  if (banner) {
+    banner.classList.remove('hidden');
+  }
+
+  if (text) {
+    text.textContent = message;
+  }
 }
 
 function _hideError() {
-  document.getElementById('upload-error')?.classList.add('hidden');
+  document
+    .getElementById('upload-error')
+    ?.classList.add('hidden');
 }
 
 function _resetResults() {
@@ -1310,14 +1630,37 @@ function _resetResults() {
   document.getElementById('view-analysis-btn')?.classList.add('hidden');
   document.getElementById('view-analysis-btn')?.classList.remove('flex');
 
-  const cards = document.getElementById('results-cards');
-  if (cards) cards.innerHTML = '';
-  const badges = document.getElementById('results-summary-badges');
-  if (badges) badges.innerHTML = '';
+  document
+    .getElementById('results-section')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('clarification-panel')
+    ?.classList.add('hidden');
+
+  document
+    .getElementById('empty-state')
+    ?.classList.remove('hidden');
+
+  const cards =
+    document.getElementById('results-cards');
+
+  if (cards) {
+    cards.innerHTML = '';
+  }
+
+  const badges =
+    document.getElementById('results-summary-badges');
+
+  if (badges) {
+    badges.innerHTML = '';
+  }
 }
 
 function _sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(
+    resolve => setTimeout(resolve, ms)
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1969,18 +2312,37 @@ function _renderAnalysisView(data) {
 document.addEventListener('DOMContentLoaded', () => {
 
   // Show the API endpoint in the UI label
-  const urlDisplay = document.getElementById('api-url-display');
-  if (urlDisplay) urlDisplay.textContent = PROCESS_TENDER_ENDPOINT;
+  const urlDisplay =
+    document.getElementById('api-url-display');
+
+  if (urlDisplay) {
+    urlDisplay.textContent =
+      PROCESS_TENDER_ENDPOINT;
+  }
 
   // Role tabs — keyboard Enter/Space
   ['tab-officer', 'tab-vendor'].forEach(id => {
-    const el = document.getElementById(id);
+
+    const el =
+      document.getElementById(id);
+
     if (!el) return;
+
     el.setAttribute('role', 'tab');
     el.setAttribute('tabindex', '0');
+
     el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+
+      if (
+        e.key === 'Enter' ||
+        e.key === ' '
+      ) {
+        e.preventDefault();
+        el.click();
+      }
+
     });
+
   });
 
   // Wire up dropzone
