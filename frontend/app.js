@@ -1661,9 +1661,13 @@ async function testLogAction() {
 
     if (topRec) {
       // Map compliance status → a meaningful action type
+      // compliant     = officer approves with confidence
+      // partial        = officer approves with minor gaps noted
+      // non-compliant  = officer flags for fix
+      // unknown        = officer flags for manual review
       const statusToAction = {
         'compliant':     'approved',
-        'partial':       'flagged',
+        'partial':       'approved',
         'non-compliant': 'requested_fix',
         'unknown':       'flagged',
       };

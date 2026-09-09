@@ -405,6 +405,31 @@ def extract_parameters(text: str) -> dict[str, str]:
         )
         if material_prefixed:
             parameters["material"] = material_prefixed.group(1).strip()
+        else:
+            # Cable-spec fallback: extract conductor + insulation labels common in
+            # electrical cable tenders.
+            # PDF table extraction often produces the label and value on separate
+            # lines (e.g. "Conductor\nCopper") or with a colon ("Conductor: Copper").
+            # Both patterns are handled here.
+            # Compose them into a single material string so IS 694 / IS 1554 rules
+            # that require a "material" field are satisfiable from cable specs.
+            conductor_match = re.search(
+                r"(?:^|\b)conductor\s*(?:[:\-–]\s*|\n\s*)([^\n\r,;]+)",
+                text,
+                re.IGNORECASE | re.MULTILINE,
+            )
+            insulation_match = re.search(
+                r"(?:^|\b)insulation\s*(?:[:\-–]\s*|\n\s*)([^\n\r,;]+)",
+                text,
+                re.IGNORECASE | re.MULTILINE,
+            )
+            parts = []
+            if conductor_match:
+                parts.append(conductor_match.group(1).strip())
+            if insulation_match:
+                parts.append(insulation_match.group(1).strip())
+            if parts:
+                parameters["material"] = ", ".join(parts)
 
     # 10. Dimensions (e.g., "12mm x 6m", "150mm x 200mm x 50mm")
     dimensions_label = re.search(
