@@ -26,6 +26,7 @@
 const API_BASE = 'http://localhost:8000';
 const PROCESS_TENDER_ENDPOINT = `${API_BASE}/process-tender`;
 const AUTO_FIX_ENDPOINT = `${API_BASE}/auto-fix`;
+const COMPLIANCE_ANALYSIS_ENDPOINT = `${API_BASE}/compliance-analysis`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // B. APPLICATION STATE
@@ -35,6 +36,7 @@ let selectedRole  = 'officer';   // 'officer' | 'vendor'
 let selectedFile  = null;        // File object currently staged for upload
 let isProcessing  = false;       // True while a fetch is in-flight
 let currentTenderData = null;    // Stores the last successful analysis result
+let currentAnalysisData = null;  // Cached compliance analysis result
 
 const ROLE_CONFIG = {
   officer: {
@@ -118,6 +120,11 @@ function _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, ava
   loginPage.classList.remove('flex');
   dashPage.classList.remove('hidden');
   dashPage.classList.add('flex');
+
+  // Ensure default view is Upload view
+  document.getElementById('upload-view')?.classList.remove('hidden');
+  document.getElementById('results-view')?.classList.add('hidden');
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -427,6 +434,20 @@ function _renderResults(data) {
 
   currentTenderData = data;
 
+  // Navigate from Upload view to Results view
+  document.getElementById('upload-view')?.classList.add('hidden');
+  const resultsView = document.getElementById('results-view');
+  if (resultsView) {
+    resultsView.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const fname = selectedFile ? selectedFile.name : (data.extraction && data.extraction.spec_id) || 'Tender Document';
+  const fnameBadge = document.getElementById('results-filename-badge');
+  if (fnameBadge) {
+    fnameBadge.textContent = fname;
+  }
+
   if (data.status === 'out_of_scope') {
     const section = document.getElementById('results-section');
     const panel = document.getElementById('clarification-panel');
@@ -654,6 +675,8 @@ function _renderComplianceResults(rag, ranking) {
   document.getElementById('empty-state')?.classList.add('hidden');
   document.getElementById('download-pdf-btn')?.classList.remove('hidden');
   document.getElementById('download-pdf-btn')?.classList.add('flex');
+  document.getElementById('view-analysis-btn')?.classList.remove('hidden');
+  document.getElementById('view-analysis-btn')?.classList.add('flex');
 
   // Smooth-scroll to first card
   setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -1120,6 +1143,8 @@ function _renderVendorResults(rag, ranking) {
 
   section.classList.remove('hidden');
   document.getElementById('empty-state')?.classList.add('hidden');
+  document.getElementById('view-analysis-btn')?.classList.remove('hidden');
+  document.getElementById('view-analysis-btn')?.classList.add('flex');
 
   // Hide PDF download button for Vendor
   const pdfBtn = document.getElementById('download-pdf-btn');
@@ -1272,12 +1297,18 @@ function _hideError() {
 
 function _resetResults() {
   currentTenderData = null;
+  currentAnalysisData = null;
+  document.getElementById('upload-view')?.classList.remove('hidden');
+  document.getElementById('results-view')?.classList.add('hidden');
   document.getElementById('extraction-summary')?.classList.add('hidden');
   document.getElementById('results-section')?.classList.add('hidden');
+  document.getElementById('analysis-view')?.classList.add('hidden');
   document.getElementById('clarification-panel')?.classList.add('hidden');
-  document.getElementById('empty-state')?.classList.remove('hidden');
+  document.getElementById('empty-state')?.classList.add('hidden');
   document.getElementById('download-pdf-btn')?.classList.add('hidden');
   document.getElementById('download-pdf-btn')?.classList.remove('flex');
+  document.getElementById('view-analysis-btn')?.classList.add('hidden');
+  document.getElementById('view-analysis-btn')?.classList.remove('flex');
 
   const cards = document.getElementById('results-cards');
   if (cards) cards.innerHTML = '';
@@ -1409,6 +1440,526 @@ function _generatePdfReport(data) {
   });
 
   doc.save("compliance-report.pdf");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// J. COMPLIANCE ANALYSIS & RESULTS VIEW NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+function navigateToUploadView() {
+  const uploadView   = document.getElementById('upload-view');
+  const resultsView  = document.getElementById('results-view');
+  const analysisView = document.getElementById('analysis-view');
+  const resultsSection = document.getElementById('results-section');
+
+  if (resultsView) resultsView.classList.add('hidden');
+  if (analysisView) analysisView.classList.add('hidden');
+  if (resultsSection) resultsSection.classList.remove('hidden');
+  if (uploadView) {
+    uploadView.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function navigateToAnalysisView() {
+  if (!currentTenderData) {
+    _showError('No tender data available. Please upload and analyze a tender document first.');
+    return;
+  }
+
+  const resultsSection = document.getElementById('results-section');
+  const analysisView = document.getElementById('analysis-view');
+
+  if (resultsSection) resultsSection.classList.add('hidden');
+  if (analysisView) {
+    analysisView.classList.remove('hidden');
+    analysisView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  const extraction = currentTenderData.extraction || {};
+  const specBadge = document.getElementById('analysis-spec-badge');
+  if (specBadge) {
+    specBadge.textContent = extraction.spec_id ? `Spec ID: ${extraction.spec_id}` : 'Tender Spec';
+  }
+
+  // Check if we already have matching cached analysis
+  if (currentAnalysisData && currentAnalysisData.spec_id === (extraction.spec_id || '')) {
+    _renderAnalysisView(currentAnalysisData);
+  } else {
+    _fetchAndRenderAnalysis();
+  }
+}
+
+function navigateToResultsView() {
+  const resultsSection = document.getElementById('results-section');
+  const analysisView = document.getElementById('analysis-view');
+
+  if (analysisView) analysisView.classList.add('hidden');
+  if (resultsSection) {
+    resultsSection.classList.remove('hidden');
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+async function _fetchAndRenderAnalysis() {
+  const loadingEl = document.getElementById('analysis-loading');
+  const errorEl   = document.getElementById('analysis-error');
+  const errorText = document.getElementById('analysis-error-text');
+  const bodyEl    = document.getElementById('analysis-body');
+
+  if (loadingEl) {
+    loadingEl.classList.remove('hidden');
+    loadingEl.classList.add('flex');
+  }
+  if (errorEl) errorEl.classList.add('hidden');
+  if (bodyEl) bodyEl.innerHTML = '';
+
+  try {
+    const extraction = (currentTenderData && currentTenderData.extraction) || {};
+    const ranking = (currentTenderData && currentTenderData.ranking) || {};
+    const recommendations = ranking.recommendations || [];
+    const isCodes = recommendations.map(r => r.is_code).filter(Boolean);
+
+    const payload = {
+      spec_parameters: extraction.parameters || {},
+      is_codes: isCodes,
+      spec_id: extraction.spec_id || '',
+      spec_text: extraction.spec_text || (ranking && ranking.spec_text) || '',
+    };
+
+    const resp = await fetch(COMPLIANCE_ANALYSIS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      const errJson = await resp.json().catch(() => ({}));
+      throw new Error(errJson.detail || `Server returned ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    currentAnalysisData = data;
+
+    if (loadingEl) {
+      loadingEl.classList.add('hidden');
+      loadingEl.classList.remove('flex');
+    }
+
+    _renderAnalysisView(data);
+  } catch (err) {
+    console.error('[StandardSense] Failed to generate compliance analysis:', err);
+    if (loadingEl) {
+      loadingEl.classList.add('hidden');
+      loadingEl.classList.remove('flex');
+    }
+    if (errorEl) {
+      errorEl.classList.remove('hidden');
+      if (errorText) errorText.textContent = `Analysis calculation error: ${err.message || 'Unable to compute compliance metrics.'}`;
+    }
+  }
+}
+
+function _renderAnalysisView(data) {
+  const bodyEl = document.getElementById('analysis-body');
+  if (!bodyEl || !data) return;
+
+  // Header badges
+  const stdBadge = document.getElementById('analysis-standard-badge');
+  if (stdBadge) {
+    stdBadge.textContent = data.primary_standard ? `Primary: ${data.primary_standard}` : 'BIS Standard';
+  }
+
+  const primaryPct = typeof data.primary_compliance_percentage === 'number' ? data.primary_compliance_percentage : 0;
+  const overallPct = typeof data.overall_compliance_percentage === 'number' ? data.overall_compliance_percentage : 0;
+  const metrics = data.metrics || {};
+  const gaps = data.gap_summary || {};
+  const criticalGaps = gaps.critical_gaps || [];
+  const advisoryGaps = gaps.advisory_gaps || [];
+  const risks = data.key_risks || [];
+  const standards = data.standards_breakdown || [];
+
+  // Color determination for primary %
+  const primaryColor = primaryPct >= 80 ? 'bg-green-500' : (primaryPct >= 50 ? 'bg-amber-500' : 'bg-red-500');
+  const overallColor = overallPct >= 80 ? 'bg-green-500' : (overallPct >= 50 ? 'bg-amber-500' : 'bg-red-500');
+
+  // Format field helper
+  const fmtField = (f) => _escHtml(String(f).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+
+  // 1. KPI Cards Row
+  const kpiRowHtml = `
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Card 1: Primary Standard Compliance -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Primary Standard</span>
+            <span class="text-xs font-bold text-govnavy bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${_escHtml(data.primary_standard || '—')}</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-3xl font-extrabold text-govnavy">${primaryPct}%</span>
+            <span class="text-xs text-slate-500 font-medium">Compliance</span>
+          </div>
+        </div>
+        <div>
+          <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden mb-2">
+            <div class="${primaryColor} h-2 rounded-full transition-all duration-500" style="width: ${primaryPct}%"></div>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400">Mandatory:</span>
+            ${data.is_mandatory_compliant
+              ? '<span class="text-green-700 font-semibold flex items-center gap-1">✓ Passed</span>'
+              : '<span class="text-red-600 font-semibold flex items-center gap-1">✗ Violation</span>'}
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Overall Aggregate Score -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overall Match</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded ${_badgeClass(data.compliance_status || 'unknown')} uppercase tracking-wide">
+              ${_escHtml(data.compliance_status || 'unknown')}
+            </span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-3xl font-extrabold text-govnavy">${overallPct}%</span>
+            <span class="text-xs text-slate-500 font-medium">Aggregate</span>
+          </div>
+        </div>
+        <div>
+          <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden mb-2">
+            <div class="${overallColor} h-2 rounded-full transition-all duration-500" style="width: ${overallPct}%"></div>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400">Evaluated:</span>
+            <span class="text-slate-700 font-semibold">${metrics.standards_evaluated || 0} BIS Standards</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Identified Gaps -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Specification Gaps</span>
+            ${(metrics.critical_gaps_count || 0) > 0
+              ? '<span class="text-xs font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded border border-red-200">Critical</span>'
+              : '<span class="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded border border-green-200">Optimal</span>'}
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-3xl font-extrabold ${(metrics.critical_gaps_count || 0) > 0 ? 'text-red-600' : 'text-govnavy'}">${metrics.total_gaps || 0}</span>
+            <span class="text-xs text-slate-500 font-medium">Total Gaps</span>
+          </div>
+        </div>
+        <div class="text-xs flex items-center justify-between pt-2 border-t border-slate-100">
+          <span class="text-slate-500">${metrics.critical_gaps_count || 0} Critical</span>
+          <span class="text-slate-300">|</span>
+          <span class="text-slate-500">${metrics.advisory_gaps_count || 0} Advisory</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Parameters Checked -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Parameters Health</span>
+            <span class="text-xs font-semibold text-slate-600">${metrics.total_parameters_checked || 0} Total</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-3xl font-extrabold text-govnavy">${metrics.total_passed || 0}</span>
+            <span class="text-xs text-green-700 font-medium">Passed</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 pt-2 border-t border-slate-100">
+          <span class="inline-flex items-center gap-1 text-green-700 font-medium">
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>${metrics.total_passed || 0}
+          </span>
+          <span class="inline-flex items-center gap-1 text-red-600 font-medium ml-2">
+            <span class="w-2 h-2 rounded-full bg-red-500"></span>${metrics.total_failed || 0}
+          </span>
+          <span class="inline-flex items-center gap-1 text-slate-500 font-medium ml-2">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span>${metrics.total_missing || 0}
+          </span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 2. Risk Assessment Section
+  let risksHtml = '';
+  if (risks.length > 0) {
+    const riskCards = risks.map(r => {
+      const level = String(r.level || 'LOW').toUpperCase();
+      let borderCol = 'border-slate-200 bg-slate-50';
+      let badgeStyle = 'bg-slate-100 text-slate-800 border-slate-300';
+      if (level === 'HIGH') {
+        borderCol = 'border-red-200 bg-red-50/50';
+        badgeStyle = 'bg-red-100 text-red-800 border-red-200';
+      } else if (level === 'MEDIUM') {
+        borderCol = 'border-amber-200 bg-amber-50/50';
+        badgeStyle = 'bg-amber-100 text-amber-800 border-amber-200';
+      } else if (level === 'LOW') {
+        borderCol = 'border-green-200 bg-green-50/50';
+        badgeStyle = 'bg-green-100 text-green-800 border-green-200';
+      }
+
+      return `
+        <div class="p-5 rounded-xl border ${borderCol} flex flex-col gap-3 transition-all hover:shadow-sm bg-white">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full border ${badgeStyle}">${level} RISK</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                ${_escHtml(r.category || 'Compliance')}
+              </span>
+            </div>
+          </div>
+          <div>
+            <h5 class="text-sm font-bold text-govnavy mb-1">${_escHtml(r.title)}</h5>
+            <p class="text-xs text-slate-600 leading-relaxed">${_escHtml(r.description)}</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-100 text-xs">
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
+              <div class="font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Procurement &amp; Statutory Impact
+              </div>
+              <p class="text-slate-600 leading-relaxed">${_escHtml(r.impact)}</p>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
+              <div class="font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Recommended Action
+              </div>
+              <p class="text-slate-600 leading-relaxed">${_escHtml(r.mitigation)}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    risksHtml = `
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-card">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-1 h-5 bg-red-500 rounded-full inline-block"></span>
+            <h4 class="text-govnavy font-bold text-base">Key Procurement &amp; Statutory Risks</h4>
+          </div>
+          <span class="text-xs text-slate-500 font-medium">${risks.length} Risk Factor${risks.length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="flex flex-col gap-4">
+          ${riskCards}
+        </div>
+      </div>
+    `;
+  }
+
+  // 3. Gap Summary Section
+  let gapsHtml = '';
+  if (criticalGaps.length === 0 && advisoryGaps.length === 0) {
+    gapsHtml = `
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-card">
+        <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+          <span class="w-1 h-5 bg-govgreen rounded-full inline-block"></span>
+          <h4 class="text-govnavy font-bold text-base">Specification Gap Summary</h4>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+          <div class="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto mb-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h5 class="text-sm font-bold text-green-900 mb-1">Zero Specification Gaps</h5>
+          <p class="text-xs text-green-700 max-w-md mx-auto">The extracted tender specification satisfies all mandatory and advisory technical parameters evaluated across the applicable BIS standards.</p>
+        </div>
+      </div>
+    `;
+  } else {
+    // Critical gaps rows
+    const critRows = criticalGaps.map(g => `
+      <tr class="border-b border-red-100 bg-red-50/20 hover:bg-red-50/50 transition-colors">
+        <td class="py-3 px-4 text-xs font-bold text-govnavy whitespace-nowrap">
+          ${fmtField(g.field)}
+          <span class="block text-[10px] font-mono text-slate-400 font-normal mt-0.5">${_escHtml(g.is_code)}</span>
+        </td>
+        <td class="py-3 px-4 text-xs font-semibold text-red-700">
+          ${_escHtml(g.found_value)}
+        </td>
+        <td class="py-3 px-4 text-xs font-medium text-slate-700">
+          ${_escHtml(g.requirement)}
+        </td>
+        <td class="py-3 px-4 text-xs text-slate-600 leading-relaxed">
+          ${_escHtml(g.rationale)}
+        </td>
+      </tr>
+    `).join('');
+
+    // Advisory gaps rows
+    const advRows = advisoryGaps.map(g => `
+      <tr class="border-b border-amber-100 bg-amber-50/20 hover:bg-amber-50/50 transition-colors">
+        <td class="py-3 px-4 text-xs font-bold text-govnavy whitespace-nowrap">
+          ${fmtField(g.field)}
+          <span class="block text-[10px] font-mono text-slate-400 font-normal mt-0.5">${_escHtml(g.is_code)}</span>
+        </td>
+        <td class="py-3 px-4 text-xs font-semibold text-amber-700">
+          ${_escHtml(g.found_value)}
+        </td>
+        <td class="py-3 px-4 text-xs font-medium text-slate-700">
+          ${_escHtml(g.requirement)}
+        </td>
+        <td class="py-3 px-4 text-xs text-slate-600 leading-relaxed">
+          ${_escHtml(g.rationale)}
+        </td>
+      </tr>
+    `).join('');
+
+    gapsHtml = `
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-card">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-1 h-5 bg-govorange rounded-full inline-block"></span>
+            <h4 class="text-govnavy font-bold text-base">Specification Gap Summary</h4>
+          </div>
+          <span class="text-xs text-slate-500 font-medium">${criticalGaps.length + advisoryGaps.length} Total Identified Deficits</span>
+        </div>
+
+        ${criticalGaps.length > 0 ? `
+          <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs font-extrabold uppercase tracking-wide text-red-700 bg-red-100 px-2.5 py-0.5 rounded-full border border-red-200">
+                Critical Mandatory Gaps (${criticalGaps.length})
+              </span>
+              <span class="text-xs text-slate-400">Must be addressed to avoid legal and audit disqualification</span>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-red-200">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-red-50 text-[11px] font-bold text-red-900 uppercase tracking-wider border-b border-red-200">
+                    <th class="py-2.5 px-4">Parameter &amp; Standard</th>
+                    <th class="py-2.5 px-4">Found in Tender</th>
+                    <th class="py-2.5 px-4">Statutory Threshold</th>
+                    <th class="py-2.5 px-4">Audit Rationale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${critRows}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
+
+        ${advisoryGaps.length > 0 ? `
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs font-extrabold uppercase tracking-wide text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200">
+                Advisory Recommendations (${advisoryGaps.length})
+              </span>
+              <span class="text-xs text-slate-400">Recommended for procurement lifecycle and vendor quality optimization</span>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-amber-200">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-amber-50 text-[11px] font-bold text-amber-900 uppercase tracking-wider border-b border-amber-200">
+                    <th class="py-2.5 px-4">Parameter &amp; Standard</th>
+                    <th class="py-2.5 px-4">Found in Tender</th>
+                    <th class="py-2.5 px-4">Recommended Threshold</th>
+                    <th class="py-2.5 px-4">Lifecycle Rationale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${advRows}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  // 4. Evaluated Standards Breakdown Matrix
+  let standardsHtml = '';
+  if (standards.length > 0) {
+    const stdRows = standards.map(s => {
+      const pct = typeof s.compliance_percentage === 'number' ? s.compliance_percentage : 0;
+      const barColor = pct >= 80 ? 'bg-green-500' : (pct >= 50 ? 'bg-amber-500' : 'bg-red-500');
+      const passedChips = (s.passed_fields || []).map(f =>
+        `<span class="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 bg-green-50 text-green-700 rounded border border-green-200">✓ ${fmtField(f)}</span>`
+      ).join(' ');
+
+      return `
+        <tr class="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+          <td class="py-3 px-4">
+            <div class="font-bold text-xs text-govnavy">${_escHtml(s.is_code)}</div>
+            <div class="text-[11px] text-slate-500 max-w-xs truncate">${_escHtml(s.title || '')}</div>
+          </td>
+          <td class="py-3 px-4">
+            <span class="text-xs font-bold px-2 py-0.5 rounded ${_badgeClass(s.status || 'unknown')} uppercase tracking-wide">
+              ${_escHtml(s.status || 'unknown')}
+            </span>
+          </td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-govnavy w-10">${pct}%</span>
+              <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="${barColor} h-2 rounded-full" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-xs font-semibold">
+            ${s.is_mandatory_compliant
+              ? '<span class="text-green-700">✓ Fully Compliant</span>'
+              : '<span class="text-red-600">✗ Violations Present</span>'}
+          </td>
+          <td class="py-3 px-4">
+            <div class="flex flex-wrap gap-1 max-w-sm">
+              ${passedChips || '<span class="text-slate-400 text-xs">—</span>'}
+            </div>
+          </td>
+          <td class="py-3 px-4 text-xs text-center font-bold ${(s.gaps || []).length > 0 ? 'text-red-600' : 'text-green-700'}">
+            ${(s.gaps || []).length}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    standardsHtml = `
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-card">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-1 h-5 bg-govblue rounded-full inline-block"></span>
+            <h4 class="text-govnavy font-bold text-base">Evaluated BIS Standards Breakdown</h4>
+          </div>
+          <span class="text-xs text-slate-500 font-medium">${standards.length} Standard${standards.length === 1 ? '' : 's'} Evaluated</span>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-[11px] font-bold text-govnavy uppercase tracking-wider border-b border-slate-200">
+                <th class="py-2.5 px-4">Standard &amp; Description</th>
+                <th class="py-2.5 px-4">Status</th>
+                <th class="py-2.5 px-4">Compliance %</th>
+                <th class="py-2.5 px-4">Mandatory Criteria</th>
+                <th class="py-2.5 px-4">Passed Parameters</th>
+                <th class="py-2.5 px-4 text-center">Gaps</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${stdRows}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  // Combine into final view body
+  bodyEl.innerHTML = `
+    ${kpiRowHtml}
+    ${risksHtml}
+    ${gapsHtml}
+    ${standardsHtml}
+  `;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

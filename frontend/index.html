@@ -470,8 +470,13 @@
     <!-- Dashboard Content -->
     <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 animate-fadeInUp">
 
-      <!-- Welcome Banner -->
-      <div class="bg-gradient-to-r from-govnavy to-govblue rounded-xl p-6 mb-8 text-white flex items-center justify-between shadow-card">
+      <!-- ═══════════════════════════════════════════════════════════════
+           VIEW 1: UPLOAD VIEW (Default / On Page Load)
+           ═══════════════════════════════════════════════════════════════ -->
+      <div id="upload-view">
+
+        <!-- Welcome Banner -->
+        <div class="bg-gradient-to-r from-govnavy to-govblue rounded-xl p-6 mb-8 text-white flex items-center justify-between shadow-card">
         <div>
           <p class="text-blue-200 text-sm mb-1 uppercase tracking-wider font-medium">Tender Analysis Engine</p>
           <h3 id="banner-title" class="text-2xl font-bold">GeM Nodal Officer Portal</h3>
@@ -616,8 +621,43 @@
         </div>
       </div>
 
-      <!-- ══ EXTRACTION SUMMARY (hidden until result) ══════════════ -->
-      <div id="extraction-summary" class="hidden bg-white rounded-2xl shadow-card border border-slate-100 p-6 mb-6">
+      </div> <!-- /#upload-view -->
+
+      <!-- ═══════════════════════════════════════════════════════════════
+           VIEW 2: RESULTS VIEW (Hidden by default, shown on analysis)
+           ═══════════════════════════════════════════════════════════════ -->
+      <div id="results-view" class="hidden">
+
+        <!-- Results View Top Navigation Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-slate-200 gap-4">
+          <div class="flex items-center gap-3">
+            <button
+              id="back-to-upload-btn"
+              onclick="navigateToUploadView()"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+            >
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+              Back to Upload
+            </button>
+            <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div>
+              <h3 class="text-govnavy font-bold text-lg flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-govorange rounded-full inline-block"></span>
+                Tender Analysis Results
+              </h3>
+              <p class="text-xs text-slate-500">Specification extraction, BIS standards compliance ranking &amp; RAG evaluation</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="results-filename-badge" class="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200"></span>
+          </div>
+        </div>
+
+        <!-- ══ EXTRACTION SUMMARY (hidden until result) ══════════════ -->
+        <div id="extraction-summary" class="hidden bg-white rounded-2xl shadow-card border border-slate-100 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
           <h4 class="text-govnavy font-bold text-sm flex items-center gap-2">
             <span class="w-1 h-5 bg-govorange rounded-full inline-block"></span>
@@ -681,6 +721,10 @@
           </h4>
           <div class="flex items-center gap-3">
             <div id="results-summary-badges" class="flex items-center gap-2"></div>
+            <button id="view-analysis-btn" onclick="navigateToAnalysisView()" class="hidden items-center gap-1.5 bg-govorange hover:bg-govorange/90 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              View Analysis
+            </button>
             <button id="download-pdf-btn" onclick="handleDownloadPdf()" class="hidden items-center gap-1.5 bg-govnavy hover:bg-govblue text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               Download Report
@@ -702,8 +746,63 @@
         <div id="results-cards" class="flex flex-col gap-4"></div>
       </div>
 
-      <!-- ══ EMPTY STATE (shown before any upload) ══════════════════ -->
-      <div id="empty-state" class="flex flex-col items-center justify-center py-16 text-center">
+      <!-- ══ COMPLIANCE ANALYSIS VIEW (hidden by default) ════════════ -->
+      <div id="analysis-view" class="hidden mb-8">
+        <!-- Top Navigation / Header Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 pb-4 border-b border-slate-200">
+          <div class="flex items-center gap-3">
+            <button
+              id="back-to-results-btn"
+              onclick="navigateToResultsView()"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+            >
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+              Back to Recommendations
+            </button>
+            <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div>
+              <h3 class="text-govnavy font-bold text-lg flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-govorange rounded-full inline-block"></span>
+                Executive Compliance Analysis
+              </h3>
+              <p class="text-xs text-slate-500">Comprehensive gap assessment, compliance scoring &amp; statutory risk evaluation</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="analysis-standard-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+              IS Standard
+            </span>
+            <span id="analysis-spec-badge" class="text-xs font-mono bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200">
+              Tender Spec
+            </span>
+          </div>
+        </div>
+
+        <!-- Loading spinner inside analysis view -->
+        <div id="analysis-loading" class="hidden flex-col items-center justify-center py-16 bg-white rounded-2xl shadow-card border border-slate-100 text-center mb-6">
+          <svg class="w-8 h-8 text-govorange animate-spin mb-3" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <p class="text-govnavy font-semibold text-sm">Computing Compliance Analysis…</p>
+          <p class="text-slate-400 text-xs mt-1">Cross-referencing parameters against mandatory BIS clauses</p>
+        </div>
+
+        <!-- Error banner inside analysis view -->
+        <div id="analysis-error" class="hidden p-4 bg-red-50 border border-red-200 rounded-xl mb-6 text-sm text-red-700 flex items-center justify-between">
+          <span id="analysis-error-text">Failed to load analysis.</span>
+          <button onclick="_fetchAndRenderAnalysis()" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold cursor-pointer">Retry</button>
+        </div>
+
+        <!-- Dynamic Body injected by _renderAnalysisView() -->
+        <div id="analysis-body" class="flex flex-col gap-6"></div>
+      </div>
+
+      <!-- ══ EMPTY STATE (fallback) ═══════════════════════════════ -->
+      <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center">
         <div class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
           <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -712,6 +811,8 @@
         <p class="text-govnavy font-semibold text-sm mb-1">No tender analysed yet</p>
         <p class="text-slate-400 text-xs max-w-xs leading-relaxed">Upload a procurement tender PDF above. The AI pipeline will extract specifications, search the BIS standards database, and return a ranked compliance report.</p>
       </div>
+
+      </div> <!-- /#results-view -->
 
     </div>
 
