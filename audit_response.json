@@ -1,0 +1,271 @@
+{
+  "status": "ok",
+  "filename": "sample_tender_01.pdf",
+  "is_mandatory_compliant": true,
+  "mandatory_failed_fields": [],
+  "advisory_failed_fields": [],
+  "extraction": {
+    "spec_id": "sample_tender_01",
+    "spec_text": "LED street lighting fixture, Power 100-150W, Protection IP65, Lifespan 50000 hours, Voltage 230V AC, Color temperature 4000K, Warranty 5 years, Operating temperature -10°C to 50°C, Application: Municipal road lighting, IS 10322",
+    "product": "LED street lighting fixture",
+    "specs": [
+      "Power: 100-150W",
+      "Protection: IP65",
+      "Lifespan: 50000 hours",
+      "Application: Municipal road lighting",
+      "The fixture shall conform to IS 10322.",
+      "Operating voltage: 230V AC",
+      "Color temperature: 4000K",
+      "Warranty: 5 years",
+      "Operating temperature: -10°C to 50°C"
+    ],
+    "parameters": {
+      "power": "100-150W",
+      "protection": "IP65",
+      "lifespan": "50000 hours",
+      "voltage": "230V AC",
+      "color_temperature": "4000K",
+      "warranty": "5 years",
+      "operating_temperature": "-10°C to 50°C"
+    },
+    "explicit_standards": [
+      "IS 10322"
+    ],
+    "multilingual_meta": {
+      "was_translated": false,
+      "detected_scripts": [],
+      "translation_success": false,
+      "original_language": "English"
+    }
+  },
+  "ranking": {
+    "spec_id": "sample_tender_01",
+    "spec_text": "LED street lighting fixture, Power 100-150W, Protection IP65, Lifespan 50000 hours, Voltage 230V AC, Color temperature 4000K, Warranty 5 years, Operating temperature -10°C to 50°C, Application: Municipal road lighting, IS 10322",
+    "recommendations": [
+      {
+        "rank": 1,
+        "is_code": "IS 10322",
+        "title": "Luminaires - Specification for LED Street Lighting and General Lighting Requirements",
+        "description": "Specifies performance, safety, and testing requirements for luminaires including LED-based street lighting fixtures. Covers ingress protection IP65 minimum for outdoor use, thermal management, photometric performance, power factor minimum 0.90, surge protection 10 kV, and operating temperature -20 to 50 degrees C. Part 5 Section 3 specifically addresses LED road and street luminaires for municipal and highway applications with rated life 50000 hours.",
+        "l2_score": 0.6743,
+        "semantic_score": 0.6743,
+        "matched_terms": [
+          "led",
+          "protection",
+          "road",
+          "lighting",
+          "power",
+          "hours",
+          "street",
+          "50000",
+          "municipal",
+          "ip65",
+          "temperature",
+          "operating"
+        ],
+        "compliance_status": "compliant",
+        "passed_fields": [
+          "power",
+          "protection",
+          "voltage",
+          "operating_temperature",
+          "warranty",
+          "lifespan"
+        ],
+        "failed_fields": [],
+        "missing_fields": [],
+        "mandatory_failed_fields": [],
+        "advisory_failed_fields": [],
+        "is_mandatory_compliant": true
+      },
+      {
+        "rank": 2,
+        "is_code": "IS 16520",
+        "title": "Solid State Lighting Products - LED Street Lights Performance Requirements",
+        "description": "Specifies minimum performance requirements for complete LED street light systems. Covers minimum system efficacy 90 lm/W, CRI minimum 70, correlated colour temperature 2700K to 6500K, power factor minimum 0.90, total harmonic distortion THD below 20 percent, surge protection 10 kV line to earth, rated life 50000 hours at L80, ingress protection IP66 for complete luminaire, and operating voltage 180-270V AC.",
+        "l2_score": 0.7035,
+        "semantic_score": 0.7035,
+        "matched_terms": [
+          "led",
+          "protection",
+          "lighting",
+          "power",
+          "hours",
+          "street",
+          "50000",
+          "voltage",
+          "temperature",
+          "operating"
+        ],
+        "compliance_status": "compliant",
+        "passed_fields": [
+          "power",
+          "protection",
+          "voltage",
+          "lifespan",
+          "operating_temperature",
+          "warranty"
+        ],
+        "failed_fields": [],
+        "missing_fields": [],
+        "mandatory_failed_fields": [],
+        "advisory_failed_fields": [],
+        "is_mandatory_compliant": true
+      },
+      {
+        "rank": 3,
+        "is_code": "IS 10322-5-3",
+        "title": "Luminaires Part 5 Section 3 - LED Road and Street Luminaires",
+        "description": "Particular requirements for LED road and street luminaires for outdoor public lighting on highways and municipal streets. Specifies photometric classification, luminous intensity distribution, power consumption 40-250W, ingress protection IP65 or higher, IK08 mechanical impact rating, surge protection 10 kV line to earth, operating voltage 180-270V AC, and rated life L80 at 50000 hours minimum.",
+        "l2_score": 0.737,
+        "semantic_score": 0.737,
+        "matched_terms": [
+          "led",
+          "protection",
+          "road",
+          "power",
+          "lighting",
+          "hours",
+          "street",
+          "50000",
+          "municipal",
+          "voltage",
+          "ip65",
+          "operating"
+        ],
+        "compliance_status": "compliant",
+        "passed_fields": [
+          "power",
+          "protection",
+          "voltage",
+          "operating_temperature",
+          "warranty",
+          "lifespan"
+        ],
+        "failed_fields": [],
+        "missing_fields": [],
+        "mandatory_failed_fields": [],
+        "advisory_failed_fields": [],
+        "is_mandatory_compliant": true
+      },
+      {
+        "rank": 4,
+        "is_code": "IS 16107",
+        "title": "LED Module for General Lighting - Safety Requirements",
+        "description": "Specifies safety requirements for LED modules for incorporation into luminaires for general lighting. Covers maximum case temperature 105 degrees C, electrical insulation, protection against accidental contact with live parts, module identification, and compatibility with LED drivers. Operating voltage up to 250V AC with warranty minimum 3 years for outdoor modules.",
+        "l2_score": 0.77,
+        "semantic_score": 0.77,
+        "matched_terms": [
+          "led",
+          "protection",
+          "warranty",
+          "lighting",
+          "voltage",
+          "temperature",
+          "years",
+          "operating"
+        ],
+        "compliance_status": "compliant",
+        "passed_fields": [
+          "voltage",
+          "protection",
+          "warranty"
+        ],
+        "failed_fields": [],
+        "missing_fields": [],
+        "mandatory_failed_fields": [],
+        "advisory_failed_fields": [],
+        "is_mandatory_compliant": true
+      },
+      {
+        "rank": 5,
+        "is_code": "IS 16108",
+        "title": "LED Module for General Lighting - Performance Requirements",
+        "description": "Specifies performance requirements for LED modules in luminaires, including initial luminous flux, forward voltage, colour rendering index CRI minimum 70, correlated colour temperature 4000K typical for street lighting, lumen maintenance L80 at 50000 hours, and colour consistency within 3-step MacAdam ellipse. Ensures long-term photometric stability at operating temperatures -20 to 50 degrees C.",
+        "l2_score": 0.8493,
+        "semantic_score": 0.8493,
+        "matched_terms": [
+          "led",
+          "lighting",
+          "hours",
+          "street",
+          "50000",
+          "voltage",
+          "temperature",
+          "operating",
+          "4000k"
+        ],
+        "compliance_status": "compliant",
+        "passed_fields": [
+          "lifespan",
+          "protection",
+          "operating_temperature",
+          "warranty"
+        ],
+        "failed_fields": [],
+        "missing_fields": [],
+        "mandatory_failed_fields": [],
+        "advisory_failed_fields": [],
+        "is_mandatory_compliant": true
+      }
+    ],
+    "also_considered": [
+      {
+        "is_code": "IS 1944",
+        "title": "Code of Practice for Lighting of Public Thoroughfares",
+        "reason": "Lower semantic match"
+      },
+      {
+        "is_code": "IS 3646",
+        "title": "Code of Practice for Interior Illumination",
+        "reason": "Lower semantic match"
+      },
+      {
+        "is_code": "IS 16102",
+        "title": "Self-Ballasted LED Lamps for General Lighting Services - Safety Requirements",
+        "reason": "Failed on: power"
+      }
+    ]
+  },
+  "rag": {
+    "status": "ok",
+    "spec_id": "sample_tender_01",
+    "explanations": [
+      {
+        "is_code": "IS 10322",
+        "title": "Luminaires - Specification for LED Street Lighting and General Lighting Requirements",
+        "semantic_score": 0.6743,
+        "compliance_status": "compliant",
+        "explanation": "IS 10322 ('Luminaires - Specification for LED Street Lighting and General Lighting Requirements') was recommended with a semantic score of 0.6743 (a lower semantic score indicates a closer match in the ranking system). IS 10322 is reported as compliant by the compliance module. The compliance module reported power as passed. The compliance module reported protection as passed. The compliance module reported voltage as passed. The compliance module reported operating_temperature as passed. The compliance module reported warranty as passed. The compliance module reported lifespan as passed."
+      },
+      {
+        "is_code": "IS 16520",
+        "title": "Solid State Lighting Products - LED Street Lights Performance Requirements",
+        "semantic_score": 0.7035,
+        "compliance_status": "compliant",
+        "explanation": "IS 16520 ('Solid State Lighting Products - LED Street Lights Performance Requirements') was recommended with a semantic score of 0.7035 (a lower semantic score indicates a closer match in the ranking system). IS 16520 is reported as compliant by the compliance module. The compliance module reported power as passed. The compliance module reported protection as passed. The compliance module reported voltage as passed. The compliance module reported lifespan as passed. The compliance module reported operating_temperature as passed. The compliance module reported warranty as passed."
+      },
+      {
+        "is_code": "IS 10322-5-3",
+        "title": "Luminaires Part 5 Section 3 - LED Road and Street Luminaires",
+        "semantic_score": 0.737,
+        "compliance_status": "compliant",
+        "explanation": "IS 10322-5-3 ('Luminaires Part 5 Section 3 - LED Road and Street Luminaires') was recommended with a semantic score of 0.7370 (a lower semantic score indicates a closer match in the ranking system). IS 10322-5-3 is reported as compliant by the compliance module. The compliance module reported power as passed. The compliance module reported protection as passed. The compliance module reported voltage as passed. The compliance module reported operating_temperature as passed. The compliance module reported warranty as passed. The compliance module reported lifespan as passed."
+      },
+      {
+        "is_code": "IS 16107",
+        "title": "LED Module for General Lighting - Safety Requirements",
+        "semantic_score": 0.77,
+        "compliance_status": "compliant",
+        "explanation": "IS 16107 ('LED Module for General Lighting - Safety Requirements') was recommended with a semantic score of 0.7700 (a lower semantic score indicates a closer match in the ranking system). IS 16107 is reported as compliant by the compliance module. The compliance module reported voltage as passed. The compliance module reported protection as passed. The compliance module reported warranty as passed."
+      },
+      {
+        "is_code": "IS 16108",
+        "title": "LED Module for General Lighting - Performance Requirements",
+        "semantic_score": 0.8493,
+        "compliance_status": "compliant",
+        "explanation": "IS 16108 ('LED Module for General Lighting - Performance Requirements') was recommended with a semantic score of 0.8493 (a lower semantic score indicates a closer match in the ranking system). IS 16108 is reported as compliant by the compliance module. The compliance module reported lifespan as passed. The compliance module reported protection as passed. The compliance module reported operating_temperature as passed. The compliance module reported warranty as passed."
+      }
+    ]
+  }
+}
