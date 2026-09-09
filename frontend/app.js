@@ -1634,28 +1634,86 @@ function historyNext() {
 
 /**
  * "Test Log Action" button handler.
- * POST a dummy action → immediately GET page 1 → new row appears in the table.
- * This proves the full round-trip works before any real UI integration.
+ *
+ * Logs the CURRENT tender analysis result as an officer action — not hardcoded
+ * dummy data. Reads from `currentTenderData` (set by _renderResults() after
+ * a successful /process-tender call).
+ *
+ * If no tender has been analysed yet, shows a prompt instead of logging garbage.
+ *
+ * POST real data → immediately GET page 1 → new row appears in the table.
  */
 async function testLogAction() {
   const btn = document.getElementById('history-test-btn');
+
+  // ── Build action payload from the live analysis result ──────────────────
+  let action_type              = 'approved';
+  let related_standard_or_spec = '';
+  let notes                    = '';
+
+  if (currentTenderData && currentTenderData.status === 'ok') {
+    // Derive the top-ranked IS standard from the current analysis
+    const recs    = currentTenderData.ranking && currentTenderData.ranking.recommendations;
+    const topRec  = recs && recs.length > 0 ? recs[0] : null;
+    const specId  = currentTenderData.extraction && currentTenderData.extraction.spec_id
+                    ? currentTenderData.extraction.spec_id
+                    : (currentTenderData.filename ? currentTenderData.filename.replace('.pdf', '') : 'tender');
+
+    if (topRec) {
+      // Map compliance status → a meaningful action type
+      const statusToAction = {
+        'compliant':     'approved',
+        'partial':       'flagged',
+        'non-compliant': 'requested_fix',
+        'unknown':       'flagged',
+      };
+      action_type              = statusToAction[topRec.compliance_status] || 'flagged';
+      related_standard_or_spec = `${topRec.is_code} — ${topRec.title} (Spec: ${specId})`;
+      notes                    = `Compliance: ${topRec.compliance_status}. `
+                                 + (topRec.passed_fields && topRec.passed_fields.length
+                                    ? `Passed: ${topRec.passed_fields.join(', ')}. `
+                                    : '')
+                                 + (topRec.failed_fields && topRec.failed_fields.length
+                                    ? `Failed: ${topRec.failed_fields.join(', ')}. `
+                                    : '')
+                                 + (topRec.missing_fields && topRec.missing_fields.length
+                                    ? `Missing: ${topRec.missing_fields.join(', ')}.`
+                                    : '');
+    } else {
+      // Ranking present but no recommendations — use spec text as context
+      related_standard_or_spec = `Tender: ${specId}`;
+      notes                    = 'No matching standards found in current analysis.';
+      action_type              = 'flagged';
+    }
+
+  } else if (currentTenderData && currentTenderData.status === 'needs_clarification') {
+    const specId = currentTenderData.filename
+                   ? currentTenderData.filename.replace('.pdf', '')
+                   : 'tender';
+    related_standard_or_spec = `Clarification required — ${specId}`;
+    notes                    = currentTenderData.question || 'Ambiguous specification — clarification requested.';
+    action_type              = 'flagged';
+
+  } else {
+    // No analysis has been run yet — tell the officer rather than log blank data
+    alert('No tender has been analysed yet.\nUpload and analyse a tender PDF first, then click this button to log an action for that result.');
+    return;
+  }
+
   if (btn) {
     btn.disabled    = true;
     btn.textContent = 'Logging…';
   }
+
   try {
-    await logOfficerAction(
-      'approved',
-      'IS 10322 — LED Street Lighting (Test Entry)',
-      'Dummy action logged for end-to-end verification',
-    );
-    await refreshHistory(0); // jump to page 1 so the new row is immediately visible
+    await logOfficerAction(action_type, related_standard_or_spec, notes.trim());
+    await refreshHistory(0); // jump back to page 1 so the new row is visible
   } catch (err) {
-    alert(`Test log failed: ${err.message}`);
+    alert(`Failed to log action: ${err.message}`);
   } finally {
     if (btn) {
       btn.disabled    = false;
-      btn.textContent = '🧪 Test Log Action';
+      btn.textContent = '🧪 Log This Analysis';
     }
   }
 }

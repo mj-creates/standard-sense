@@ -733,16 +733,16 @@
             <h2 class="text-govnavy font-bold text-base">Officer Action History</h2>
             <p class="text-slate-400 text-xs mt-0.5">Your recent procurement actions, newest first</p>
           </div>
-          <!-- Test button: triggers POST then GET for full-cycle verification -->
+          <!-- Log current analysis as an officer action -->
           <button
             id="history-test-btn"
             onclick="testLogAction()"
             class="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200
                    text-amber-700 text-xs font-semibold px-3 py-2 rounded-lg transition-colors
                    disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Logs a dummy action then reloads the table — verifies the full POST→GET cycle"
+            title="Logs the current tender analysis as an officer action (approve/flag/fix based on compliance result)"
           >
-            🧪 Test Log Action
+            🧪 Log This Analysis
           </button>
         </div>
 
@@ -780,7 +780,7 @@
                  M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>
           <p class="text-slate-400 text-sm font-medium">No actions logged yet</p>
-          <p class="text-slate-300 text-xs mt-1">Click "Test Log Action" above to log your first action.</p>
+          <p class="text-slate-300 text-xs mt-1">Analyse a tender PDF above, then click "Log This Analysis" to record your action.</p>
         </div>
 
         <!-- Pagination footer -->
