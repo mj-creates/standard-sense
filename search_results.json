@@ -1,0 +1,74 @@
+[
+  {
+    "query": "High Yield Strength Deformed HYSD bars Grade Fe 500 reinforcement bars",
+    "is_code": "IS 1786",
+    "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
+    "score": 0.630007266998291
+  },
+  {
+    "query": "High Yield Strength Deformed HYSD bars Grade Fe 500 reinforcement bars",
+    "is_code": "IS 2062",
+    "title": "Hot Rolled Medium and High Tensile Structural Steel",
+    "score": 1.2709529399871826
+  },
+  {
+    "query": "High Yield Strength Deformed HYSD bars Grade Fe 500 reinforcement bars",
+    "is_code": "IS 1239",
+    "title": "Mild Steel Tubes, Tubulars and Other Wrought Steel Fittings",
+    "score": 1.4221465587615967
+  },
+  {
+    "query": "M25 grade concrete mix 28-day characteristic compressive strength 25 MPa",
+    "is_code": "IS 8112",
+    "title": "43 Grade Ordinary Portland Cement",
+    "score": 1.0393496751785278
+  },
+  {
+    "query": "M25 grade concrete mix 28-day characteristic compressive strength 25 MPa",
+    "is_code": "IS 383",
+    "title": "Coarse and Fine Aggregate for Concrete ΓÇö Specification",
+    "score": 1.152410864830017
+  },
+  {
+    "query": "M25 grade concrete mix 28-day characteristic compressive strength 25 MPa",
+    "is_code": "IS 456",
+    "title": "Plain and Reinforced Concrete ΓÇö Code of Practice",
+    "score": 1.1784274578094482
+  },
+  {
+    "query": "maximum allowable water-cement ratio 0.45 structural concrete",
+    "is_code": "IS 8112",
+    "title": "43 Grade Ordinary Portland Cement",
+    "score": 0.840190052986145
+  },
+  {
+    "query": "maximum allowable water-cement ratio 0.45 structural concrete",
+    "is_code": "IS 383",
+    "title": "Coarse and Fine Aggregate for Concrete ΓÇö Specification",
+    "score": 1.156432867050171
+  },
+  {
+    "query": "maximum allowable water-cement ratio 0.45 structural concrete",
+    "is_code": "IS 1489",
+    "title": "Portland Pozzolana Cement ΓÇö Specification",
+    "score": 1.2402524948120117
+  },
+  {
+    "query": "Ordinary Portland Cement OPC 43 Grade fineness setting time chemical composition",
+    "is_code": "IS 8112",
+    "title": "43 Grade Ordinary Portland Cement",
+    "score": 0.567844569683075
+  },
+  {
+    "query": "Ordinary Portland Cement OPC 43 Grade fineness setting time chemical composition",
+    "is_code": "IS 1489",
+    "title": "Portland Pozzolana Cement ΓÇö Specification",
+    "score": 1.0800399780273438
+  },
+  {
+    "query": "Ordinary Portland Cement OPC 43 Grade fineness setting time chemical composition",
+    "is_code": "IS 383",
+    "title": "Coarse and Fine Aggregate for Concrete ΓÇö Specification",
+    "score": 1.1244778633117676
+  }
+]
