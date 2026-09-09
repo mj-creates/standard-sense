@@ -3,3 +3,8 @@ __pycache__/
 .env
 node_modules/
 .venv/
+audit_response.json
+audit_summary.json
+sanity_out.txt
+backend_output.log
+package-lock.json

@@ -280,29 +280,7 @@
       <!-- Card body -->
       <div class="bg-white rounded-b-2xl shadow-card-lg border border-slate-200 overflow-hidden">
 
-        <!-- Role Tabs -->
-        <div class="flex border-b border-slate-200">
-          <button
-            id="tab-officer"
-            onclick="selectTab('officer')"
-            class="tab-active flex-1 py-3.5 px-4 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-            GeM Nodal Officer
-          </button>
-          <button
-            id="tab-vendor"
-            onclick="selectTab('vendor')"
-            class="tab-inactive flex-1 py-3.5 px-4 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-            </svg>
-            MSME / OEM Vendor
-          </button>
-        </div>
+
 
         <!-- Role Description Banner -->
         <div id="role-banner" class="bg-blue-50 border-b border-blue-100 px-6 py-2.5">
@@ -376,36 +354,31 @@
             <a href="#" class="text-xs text-blue-700 hover:underline font-medium">Forgot password?</a>
           </div>
 
-          <!-- Primary Login Button -->
-          <button
-            type="submit"
-            class="w-full bg-govnavy hover:bg-govblue text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm tracking-wide"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-            </svg>
-            Secure Login
-          </button>
+          <!-- Buttons -->
+          <div class="flex gap-3">
+            <!-- Primary Login Button -->
+            <button
+              type="submit"
+              class="w-1/2 bg-govnavy hover:bg-govblue text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm tracking-wide"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+              </svg>
+              Secure Login
+            </button>
 
-          <!-- Divider -->
-          <div class="relative flex items-center">
-            <div class="flex-grow border-t border-slate-200"></div>
-            <span class="mx-3 text-slate-400 text-xs font-medium">OR</span>
-            <div class="flex-grow border-t border-slate-200"></div>
+            <!-- Signup Button -->
+            <button
+              type="button"
+              onclick="handleSignup(event)"
+              class="w-1/2 bg-govgreen hover:bg-govgreenlight text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm tracking-wide"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              Sign Up
+            </button>
           </div>
-
-          <!-- SSO Button -->
-          <button
-            type="button"
-            onclick="handleLogin(event)"
-            class="w-full bg-govgreen hover:bg-govgreenlight text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm tracking-wide"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-            Login via Parichay / NIC SSO
-          </button>
-
         </form>
 
         <!-- Card Footer -->
@@ -421,7 +394,7 @@
 
       <!-- Bottom disclaimer -->
       <p class="text-center text-slate-500 text-xs mt-4 leading-relaxed">
-        This portal is for authorized Government of India personnel &amp; registered vendors only.<br/>
+        This portal is for authorized Government of India personnel only.<br/>
         Unauthorized access is punishable under <strong>IT Act, 2000</strong>.
       </p>
 
@@ -714,6 +687,7 @@
       </div>
 
     </div>
+
 
     <!-- ═══════════════════════════════════════════════════════════════════
          OFFICER HISTORY SECTION

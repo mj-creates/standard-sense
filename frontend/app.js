@@ -31,10 +31,11 @@ const AUTO_FIX_ENDPOINT = `${API_BASE}/auto-fix`;
 // B. APPLICATION STATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-let selectedRole  = 'officer';   // 'officer' | 'vendor'
+let selectedRole  = 'officer';   // 'officer'
 let selectedFile  = null;        // File object currently staged for upload
 let isProcessing  = false;       // True while a fetch is in-flight
 let currentTenderData = null;    // Stores the last successful analysis result
+let jwtToken = null;             // Stores the authentication token
 
 const ROLE_CONFIG = {
   officer: {
@@ -45,37 +46,13 @@ const ROLE_CONFIG = {
     bannerTitle: 'GeM Nodal Officer Portal',
     welcome:     'Welcome to the GeM Nodal Officer Portal',
   },
-  vendor: {
-    label:       'MSME / OEM Vendor',
-    email:       'vendor@msme.gov.in',
-    description: 'Upload product specs, check BIS compliance status & manage certifications.',
-    initials:    'MV',
-    bannerTitle: 'MSME / OEM Vendor Portal',
-    welcome:     'Welcome to the MSME / OEM Vendor Portal',
-  },
+
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // C. ROLE / LOGIN UI
 // ═══════════════════════════════════════════════════════════════════════════
 
-function selectTab(role) {
-  selectedRole = role;
-  const config     = ROLE_CONFIG[role];
-  const tabOfficer = document.getElementById('tab-officer');
-  const tabVendor  = document.getElementById('tab-vendor');
-  const emailInput = document.getElementById('email-input');
-  const roleDesc   = document.getElementById('role-description');
-
-  const ACTIVE   = 'tab-active flex-1 py-3.5 px-4 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2';
-  const INACTIVE = 'tab-inactive flex-1 py-3.5 px-4 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2';
-
-  tabOfficer.className = role === 'officer' ? ACTIVE : INACTIVE;
-  tabVendor.className  = role === 'vendor'  ? ACTIVE : INACTIVE;
-
-  if (emailInput) emailInput.value = config.email;
-  if (roleDesc)   roleDesc.textContent = config.description;
-}
 
 function handleLogin(event) {
   event.preventDefault();
@@ -89,23 +66,102 @@ function handleLogin(event) {
   const emailInput  = document.getElementById('email-input');
 
   const submitBtn = event.target.closest('button') || event.target.querySelector('button[type="submit"]');
+  const email = emailInput ? emailInput.value : config.email;
+  // Fallback default password if the user is using the prepopulated email
+  const password = "default_password_123!";
+
   if (submitBtn) {
     const orig = submitBtn.innerHTML;
-    submitBtn.innerHTML = `
-      <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-      </svg>
-      Authenticating…`;
+    submitBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Authenticating...';
     submitBtn.disabled = true;
-    setTimeout(() => {
+
+    fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email: email, password: password })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Login failed. Check credentials.');
+      }
+      return response.json();
+    })
+    .then(data => {
+      jwtToken = data.access_token;
       submitBtn.innerHTML = orig;
       submitBtn.disabled  = false;
       _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, avatarEl, subtitleEl, emailInput);
-    }, 900);
+    })
+    .catch(error => {
+      alert(error.message);
+      submitBtn.innerHTML = orig;
+      submitBtn.disabled  = false;
+    });
+
     return;
   }
-  _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, avatarEl, subtitleEl, emailInput);
+}
+
+function handleSignup(event) {
+  event.preventDefault();
+  const config = ROLE_CONFIG[selectedRole];
+  const emailInput = document.getElementById('email-input');
+  const email = emailInput ? emailInput.value : config.email;
+  const password = "default_password_123!";
+
+  const submitBtn = event.target.closest('button');
+  const orig = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Signing up...';
+  submitBtn.disabled = true;
+
+  fetch(`${API_BASE}/auth/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email: email, password: password })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Signup failed. Email might already be registered.');
+    }
+    return response.json();
+  })
+  .then(data => {
+    // Treat signup as auto-login
+    jwtToken = data.access_token;
+    submitBtn.innerHTML = orig;
+    submitBtn.disabled = false;
+    const loginPage = document.getElementById('login-page');
+    const dashPage = document.getElementById('dashboard-page');
+    const dashTitle = document.getElementById('dashboard-title');
+    const bannerTitle = document.getElementById('banner-title');
+    const avatarEl = document.getElementById('avatar-initials');
+    const subtitleEl = document.getElementById('dashboard-subtitle');
+    _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, avatarEl, subtitleEl, emailInput);
+  })
+  .catch(error => {
+    alert(error.message);
+    submitBtn.innerHTML = orig;
+    submitBtn.disabled = false;
+  });
+}
+
+function handleLogout() {
+  // Clear the token and return to login page
+  jwtToken = null;
+  const loginPage = document.getElementById('login-page');
+  const dashPage = document.getElementById('dashboard-page');
+
+  dashPage.classList.add('hidden');
+  dashPage.classList.remove('flex');
+  loginPage.classList.remove('hidden');
+  loginPage.classList.add('flex');
+
+  // Optional: clear file input
+  _resetUploadState();
 }
 
 function _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, avatarEl, subtitleEl, emailInput) {
@@ -300,8 +356,11 @@ async function submitTender() {
 
   let data;
   try {
+    const headers = {};
+    if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
     const response = await fetch(PROCESS_TENDER_ENDPOINT, {
       method:  'POST',
+      headers: headers,
       body:    formData,
       // NOTE: Do NOT set credentials:'include' — backend uses allow_origins=["*"]
       //       with allow_credentials=True which is a server misconfiguration;
@@ -467,13 +526,8 @@ function _renderResults(data) {
   _renderExtractionSummary(data.extraction);
 
   const chart = document.getElementById('compliance-summary-chart');
-  if (selectedRole === 'vendor') {
-    if (chart) chart.classList.add('hidden');
-    _renderVendorResults(data.rag, data.ranking);
-  } else {
-    if (chart) chart.classList.remove('hidden');
-    _renderComplianceResults(data.rag, data.ranking);
-  }
+  if (chart) chart.classList.remove('hidden');
+  _renderComplianceResults(data.rag, data.ranking);
 }
 
 // ── G1. Extraction Summary Panel ────────────────────────────────────────────
@@ -870,11 +924,11 @@ async function _handleAutoFix(idx, payload) {
   }
 
   try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
     const response = await fetch(AUTO_FIX_ENDPOINT, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: headers,
       body: JSON.stringify({
         spec_text: originalSpec,
         is_code: payload.is_code || '',
@@ -1076,125 +1130,6 @@ function toggleCard(bodyId) {
 
   const btn = body.previousElementSibling?.querySelector(`button[aria-controls="${bodyId}"]`);
   if (btn) btn.setAttribute('aria-expanded', String(!isOpen));
-}
-
-// ── G3. Vendor View (Simplified) ────────────────────────────────────────────
-
-function _renderVendorResults(rag, ranking) {
-  const section = document.getElementById('results-section');
-  const cards   = document.getElementById('results-cards');
-  const badges  = document.getElementById('results-summary-badges');
-  if (!section || !cards) return;
-
-  // Handle needs_clarification passthrough
-  if (rag && rag.status === 'needs_clarification') {
-    const panel = document.getElementById('clarification-panel');
-    const q     = document.getElementById('clarification-question');
-    if (panel) panel.classList.remove('hidden');
-    if (q)     q.textContent = rag.question || 'Could you clarify the product category or intended use?';
-    section.classList.add('hidden');
-    document.getElementById('empty-state')?.classList.add('hidden');
-    return;
-  }
-
-  const explanations   = (rag && rag.explanations)              || [];
-  const recommendations = (ranking && ranking.recommendations)  || [];
-
-  if (explanations.length === 0) {
-    section.classList.add('hidden');
-    document.getElementById('empty-state')?.classList.remove('hidden');
-    return;
-  }
-
-  if (badges) badges.innerHTML = ''; // Vendor view doesn't need summary badges
-
-  const recMap = {};
-  recommendations.forEach(r => { recMap[r.is_code] = r; });
-
-  cards.innerHTML = '';
-  explanations.forEach((exp, idx) => {
-    const rec    = recMap[exp.is_code] || {};
-    const card   = _buildVendorResultCard(exp, rec, idx);
-    cards.appendChild(card);
-  });
-
-  section.classList.remove('hidden');
-  document.getElementById('empty-state')?.classList.add('hidden');
-
-  // Hide PDF download button for Vendor
-  const pdfBtn = document.getElementById('download-pdf-btn');
-  if (pdfBtn) {
-    pdfBtn.classList.add('hidden');
-    pdfBtn.classList.remove('flex');
-  }
-
-  // Smooth-scroll to first card
-  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-}
-
-function _buildVendorResultCard(exp, rec, idx) {
-  const status  = exp.compliance_status || 'unknown';
-
-  let verdictText = '⚠️ Needs Review';
-  let verdictColor = 'text-amber-700 bg-amber-50 border-amber-200';
-  let headerBg = 'bg-amber-50 border-b border-amber-100';
-
-  if (status === 'compliant') {
-    verdictText = '✅ Likely Compliant';
-    verdictColor = 'text-green-700 bg-green-50 border-green-200';
-    headerBg = 'bg-green-50 border-b border-green-100';
-  } else if (status === 'non-compliant') {
-    verdictText = '❌ Not Compliant';
-    verdictColor = 'text-red-700 bg-red-50 border-red-200';
-    headerBg = 'bg-red-50 border-b border-red-100';
-  } else if (status === 'unknown') {
-    verdictText = '⚠️ Needs Review';
-    verdictColor = 'text-amber-700 bg-amber-50 border-amber-200';
-    headerBg = 'bg-amber-50 border-b border-amber-100';
-  }
-
-  const failed  = rec.failed_fields  || [];
-  const missing = rec.missing_fields || [];
-  const allFixes = [...failed, ...missing];
-
-  let fixSummary = 'All requirements appear to be met.';
-  if (allFixes.length > 0) {
-    const plainFields = allFixes.map(f => f.replace(/_/g, ' '));
-    if (plainFields.length === 1) {
-      fixSummary = `Please review and provide details for: ${plainFields[0]}`;
-    } else if (plainFields.length === 2) {
-      fixSummary = `Please review and provide details for: ${plainFields[0]} and ${plainFields[1]}`;
-    } else {
-      fixSummary = `Please review and provide details for: ${plainFields.slice(0, -1).join(', ')}, and ${plainFields[plainFields.length - 1]}`;
-    }
-  }
-
-  const cardId  = `vendor-result-card-${idx}`;
-
-  const card = document.createElement('div');
-  card.id        = cardId;
-  card.className = 'bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden mb-4';
-
-  card.innerHTML = `
-    <div class="\${headerBg} px-5 py-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="min-w-0">
-            <p class="text-govnavy font-bold text-base leading-tight truncate">\${_escHtml(exp.title || '—')}</p>
-            <p class="text-slate-500 text-xs mt-1 leading-tight">\${_escHtml(exp.is_code || '—')}</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <span class="text-sm font-bold px-3 py-1.5 rounded-full border \${verdictColor}">\${verdictText}</span>
-        </div>
-      </div>
-      <div class="mt-4 p-3 bg-white/60 rounded-lg border border-white/40">
-        <p class="text-slate-700 text-sm font-medium">💡 \${fixSummary}</p>
-      </div>
-    </div>
-  `;
-
-  return card;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1422,7 +1357,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (urlDisplay) urlDisplay.textContent = PROCESS_TENDER_ENDPOINT;
 
   // Role tabs — keyboard Enter/Space
-  ['tab-officer', 'tab-vendor'].forEach(id => {
+  ['tab-officer'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.setAttribute('role', 'tab');
@@ -1435,6 +1370,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Wire up dropzone
   _initDropzone();
 });
+
 
 
 // ═══════════════════════════════════════════════════════════════════════════

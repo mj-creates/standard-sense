@@ -414,12 +414,12 @@ def extract_parameters(text: str) -> dict[str, str]:
             # Compose them into a single material string so IS 694 / IS 1554 rules
             # that require a "material" field are satisfiable from cable specs.
             conductor_match = re.search(
-                r"(?:^|\b)conductor\s*(?:[:\-–]\s*|\n\s*)([^\n\r,;]+)",
+                r"(?:^|\b)conductor\s*(?:[:\-ΓÇô]\s*|\n\s*)([^\n\r,;]+)",
                 text,
                 re.IGNORECASE | re.MULTILINE,
             )
             insulation_match = re.search(
-                r"(?:^|\b)insulation\s*(?:[:\-–]\s*|\n\s*)([^\n\r,;]+)",
+                r"(?:^|\b)insulation\s*(?:[:\-ΓÇô]\s*|\n\s*)([^\n\r,;]+)",
                 text,
                 re.IGNORECASE | re.MULTILINE,
             )

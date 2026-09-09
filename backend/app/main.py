@@ -12,6 +12,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from backend.app.auth.router import router as auth_router
 from rag_feedback.rag.llm import get_llm
 
 # Officer History router (isolated feature — does not touch auth or search)
@@ -48,6 +49,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router, prefix="/auth")
 
 # Register the officer history router (prefix: /api/officer-history)
 app.include_router(officer_history_router)
