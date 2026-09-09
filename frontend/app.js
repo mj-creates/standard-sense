@@ -1175,7 +1175,7 @@ function _buildVendorResultCard(exp, rec, idx) {
   card.id        = cardId;
   card.className = 'bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden mb-4';
 
-  card.innerHTML = \`
+  card.innerHTML = `
     <div class="\${headerBg} px-5 py-4">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
@@ -1192,7 +1192,7 @@ function _buildVendorResultCard(exp, rec, idx) {
         <p class="text-slate-700 text-sm font-medium">💡 \${fixSummary}</p>
       </div>
     </div>
-  \`;
+  `;
 
   return card;
 }
