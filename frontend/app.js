@@ -1435,3 +1435,274 @@ document.addEventListener('DOMContentLoaded', () => {
   // Wire up dropzone
   _initDropzone();
 });
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// J. OFFICER HISTORY
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Officer identity resolution.
+ *
+ * Reads the email from the login form (which maps to ROLE_CONFIG.officer.email)
+ * so it matches what the backend stores via the X-Officer-ID header.
+ *
+ * // TODO: Wire up to real auth context once Task 01 merges.
+ *          Replace _getOfficerId() with a token / session read.
+ */
+const MOCK_OFFICER_ID = 'user_123'; // mirrors backend MOCK_OFFICER_ID fallback
+
+function _getOfficerId() {
+  // TODO: Wire up to real auth context once Task 01 merges.
+  const emailInput = document.getElementById('email-input');
+  if (emailInput && emailInput.value && emailInput.value.trim()) {
+    return emailInput.value.trim();
+  }
+  return MOCK_OFFICER_ID;
+}
+
+// ── Pagination state ────────────────────────────────────────────────────────
+const HISTORY_LIMIT = 10;
+let   historyOffset = 0;
+let   historyTotal  = 0;
+
+// ── Endpoint constants ──────────────────────────────────────────────────────
+const HISTORY_ENDPOINT = `${API_BASE}/api/officer-history`;
+
+// ── Fetch helpers ───────────────────────────────────────────────────────────
+
+/**
+ * POST /api/officer-history — log one officer action.
+ * @param {string}      action_type
+ * @param {string}      related_standard_or_spec
+ * @param {string|null} notes
+ * @returns {Promise<Object>} the saved ActionRecord
+ */
+async function logOfficerAction(action_type, related_standard_or_spec, notes = null) {
+  const response = await fetch(HISTORY_ENDPOINT, {
+    method:  'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Officer-Id': _getOfficerId(),   // FastAPI lowercases header names
+    },
+    body: JSON.stringify({ action_type, related_standard_or_spec, notes }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+/**
+ * GET /api/officer-history?limit=N&offset=N
+ * @param {number} offset
+ * @returns {Promise<{items: Array, total: number, limit: number, offset: number}>}
+ */
+async function fetchOfficerHistory(offset = 0) {
+  const url      = `${HISTORY_ENDPOINT}?limit=${HISTORY_LIMIT}&offset=${offset}`;
+  const response = await fetch(url, {
+    method:  'GET',
+    headers: { 'X-Officer-Id': _getOfficerId() },
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+// ── Render ──────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch the latest history page and re-render the table + pagination.
+ * @param {number} [newOffset]  – if provided, updates historyOffset first
+ */
+async function refreshHistory(newOffset) {
+  if (typeof newOffset === 'number') historyOffset = newOffset;
+
+  const tbody      = document.getElementById('history-tbody');
+  const emptyState = document.getElementById('history-empty');
+  const pagination = document.getElementById('history-pagination');
+  const pageInfo   = document.getElementById('history-page-info');
+  const prevBtn    = document.getElementById('history-prev');
+  const nextBtn    = document.getElementById('history-next');
+  const errorEl    = document.getElementById('history-error');
+
+  if (!tbody) return; // section not in DOM (non-officer role or page not loaded)
+
+  // Loading indicator
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="4" class="text-center text-slate-400 text-xs py-8">
+        <svg class="inline w-4 h-4 animate-spin mr-2 text-govnavy" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>Loading history…
+      </td>
+    </tr>`;
+  if (errorEl) errorEl.classList.add('hidden');
+
+  let data;
+  try {
+    data = await fetchOfficerHistory(historyOffset);
+  } catch (err) {
+    tbody.innerHTML = '';
+    if (errorEl) {
+      errorEl.textContent = `Failed to load history: ${err.message}`;
+      errorEl.classList.remove('hidden');
+    }
+    return;
+  }
+
+  historyTotal = data.total;
+
+  // Empty state
+  if (data.items.length === 0) {
+    tbody.innerHTML = '';
+    if (emptyState)  emptyState.classList.remove('hidden');
+    if (pagination)  pagination.classList.add('hidden');
+    return;
+  }
+
+  if (emptyState) emptyState.classList.add('hidden');
+  if (pagination) pagination.classList.remove('hidden');
+
+  // Action type → badge colour / label
+  const BADGE_CLASS = {
+    approved:      'bg-green-100 text-green-700',
+    flagged:       'bg-red-100 text-red-700',
+    requested_fix: 'bg-amber-100 text-amber-700',
+  };
+  const BADGE_LABEL = {
+    approved:      'Approved',
+    flagged:       'Flagged',
+    requested_fix: 'Fix Requested',
+  };
+
+  // Build table rows
+  tbody.innerHTML = data.items.map(item => {
+    const dt      = new Date(item.timestamp);
+    const dateStr = dt.toLocaleDateString('en-IN',  { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = dt.toLocaleTimeString('en-IN',  { hour: '2-digit', minute: '2-digit', hour12: true });
+    const badge   = BADGE_CLASS[item.action_type]  || 'bg-slate-100 text-slate-600';
+    const label   = BADGE_LABEL[item.action_type]  || item.action_type;
+    const notes   = item.notes
+      ? `<span class="text-slate-600">${_histEscapeHtml(item.notes)}</span>`
+      : `<span class="text-slate-300 italic">—</span>`;
+
+    return `
+      <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+        <td class="py-3 px-4 text-xs text-slate-500 whitespace-nowrap">
+          <div class="font-medium text-slate-700">${dateStr}</div>
+          <div class="text-slate-400">${timeStr}</div>
+        </td>
+        <td class="py-3 px-4">
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${badge}">
+            ${label}
+          </span>
+        </td>
+        <td class="py-3 px-4 text-xs text-slate-700 max-w-xs truncate"
+            title="${_histEscapeHtml(item.related_standard_or_spec)}">
+          ${_histEscapeHtml(item.related_standard_or_spec)}
+        </td>
+        <td class="py-3 px-4 text-xs">${notes}</td>
+      </tr>`;
+  }).join('');
+
+  // Pagination state
+  const pageNum  = Math.floor(historyOffset / HISTORY_LIMIT) + 1;
+  const totalPgs = Math.ceil(historyTotal   / HISTORY_LIMIT) || 1;
+  if (pageInfo) pageInfo.textContent = `Page ${pageNum} of ${totalPgs} · ${historyTotal} action${historyTotal !== 1 ? 's' : ''}`;
+  if (prevBtn)  prevBtn.disabled  = historyOffset === 0;
+  if (nextBtn)  nextBtn.disabled  = historyOffset + HISTORY_LIMIT >= historyTotal;
+}
+
+/** Navigate to the previous history page. */
+function historyPrev() {
+  if (historyOffset > 0) {
+    refreshHistory(Math.max(0, historyOffset - HISTORY_LIMIT));
+  }
+}
+
+/** Navigate to the next history page. */
+function historyNext() {
+  if (historyOffset + HISTORY_LIMIT < historyTotal) {
+    refreshHistory(historyOffset + HISTORY_LIMIT);
+  }
+}
+
+/**
+ * "Test Log Action" button handler.
+ * POST a dummy action → immediately GET page 1 → new row appears in the table.
+ * This proves the full round-trip works before any real UI integration.
+ */
+async function testLogAction() {
+  const btn = document.getElementById('history-test-btn');
+  if (btn) {
+    btn.disabled    = true;
+    btn.textContent = 'Logging…';
+  }
+  try {
+    await logOfficerAction(
+      'approved',
+      'IS 10322 — LED Street Lighting (Test Entry)',
+      'Dummy action logged for end-to-end verification',
+    );
+    await refreshHistory(0); // jump to page 1 so the new row is immediately visible
+  } catch (err) {
+    alert(`Test log failed: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled    = false;
+      btn.textContent = '🧪 Test Log Action';
+    }
+  }
+}
+
+/**
+ * Minimal HTML-escape helper scoped to the history section.
+ * Prevents XSS from officer notes or IS code strings rendered into the table.
+ */
+function _histEscapeHtml(str) {
+  return String(str)
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;')
+    .replace(/'/g,  '&#39;');
+}
+
+// ── Auto-load history on login ──────────────────────────────────────────────
+//
+// We patch the existing _showDashboard() function (defined in Section C) so
+// that the history panel loads automatically when the officer logs in.
+// The original function is NOT modified — we wrap it here.
+//
+// ISOLATION NOTE: this is the only cross-section wiring in this feature.
+// It does not touch semantic-search, theme, or auth logic.
+//
+(function _patchShowDashboard() {
+  const _original = window._showDashboard || _showDashboard;
+
+  function _patched(config, loginPage, dashPage, ...rest) {
+    // Call original first so the dashboard is visible before we fetch
+    _original(config, loginPage, dashPage, ...rest);
+
+    const historySection = document.getElementById('officer-history-section');
+    if (!historySection) return;
+
+    if (config === ROLE_CONFIG.officer) {
+      // Show the history panel and load page 1
+      historySection.classList.remove('hidden');
+      historyOffset = 0;
+      refreshHistory(0);
+    } else {
+      // Hide for vendor role — history is officer-only
+      historySection.classList.add('hidden');
+    }
+  }
+
+  // Expose so the login handler (which calls _showDashboard by name) picks it up
+  window._showDashboard = _patched;
+})();

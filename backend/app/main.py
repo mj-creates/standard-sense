@@ -14,6 +14,9 @@ from pydantic import BaseModel, Field
 
 from rag_feedback.rag.llm import get_llm
 
+# Officer History router (isolated feature — does not touch auth or search)
+from backend.app.officer_history import router as officer_history_router
+
 from nlp_extraction.extractor import extract_from_pdf
 
 from semantic_search.search import (
@@ -45,6 +48,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register the officer history router (prefix: /api/officer-history)
+app.include_router(officer_history_router)
 
 
 @app.get("/")

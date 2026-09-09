@@ -715,6 +715,107 @@
 
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════════════
+         OFFICER HISTORY SECTION
+         Visible only for the officer role.
+         Shown/hidden by _showDashboard() in app.js (Section J).
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section
+      id="officer-history-section"
+      class="hidden w-full max-w-5xl mx-auto px-4 sm:px-6 pb-10"
+      aria-label="Officer Action History"
+    >
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+
+        <!-- Header row -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-govnavy font-bold text-base">Officer Action History</h2>
+            <p class="text-slate-400 text-xs mt-0.5">Your recent procurement actions, newest first</p>
+          </div>
+          <!-- Test button: triggers POST then GET for full-cycle verification -->
+          <button
+            id="history-test-btn"
+            onclick="testLogAction()"
+            class="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200
+                   text-amber-700 text-xs font-semibold px-3 py-2 rounded-lg transition-colors
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Logs a dummy action then reloads the table — verifies the full POST→GET cycle"
+          >
+            🧪 Test Log Action
+          </button>
+        </div>
+
+        <!-- Error banner (hidden by default) -->
+        <p
+          id="history-error"
+          class="hidden text-red-600 text-xs font-medium bg-red-50 border-b border-red-100 px-6 py-3"
+        ></p>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left" aria-label="Officer action history table">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-100">
+                <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Date / Time</th>
+                <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
+                <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Standard / Spec</th>
+                <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody">
+              <!-- Populated by refreshHistory() in app.js Section J -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty state -->
+        <div
+          id="history-empty"
+          class="hidden flex-col items-center justify-center py-12 text-center"
+        >
+          <svg class="w-10 h-10 text-slate-200 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+                 M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          <p class="text-slate-400 text-sm font-medium">No actions logged yet</p>
+          <p class="text-slate-300 text-xs mt-1">Click "Test Log Action" above to log your first action.</p>
+        </div>
+
+        <!-- Pagination footer -->
+        <div
+          id="history-pagination"
+          class="hidden items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50"
+        >
+          <span id="history-page-info" class="text-slate-400 text-xs"></span>
+          <div class="flex items-center gap-2">
+            <button
+              id="history-prev"
+              onclick="historyPrev()"
+              disabled
+              class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200
+                     text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-40
+                     disabled:cursor-not-allowed transition-colors"
+            >
+              &#8592; Previous
+            </button>
+            <button
+              id="history-next"
+              onclick="historyNext()"
+              disabled
+              class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200
+                     text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-40
+                     disabled:cursor-not-allowed transition-colors"
+            >
+              Next &#8594;
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
     <!-- Dashboard Footer -->
     <footer class="border-t border-slate-200 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
