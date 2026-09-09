@@ -138,11 +138,6 @@ function handleLogout() {
   clearFile();
   _resetResults();
 
-  // Always return to analysis view on next login
-  document.getElementById('dashboard-view')?.classList.remove('hidden');
-  document.getElementById('officer-history-section')?.classList.add('hidden');
-  document.getElementById('nav-history-btn')?.classList.add('hidden');
-
   dashPage.classList.add('hidden');
   dashPage.classList.remove('flex');
   loginPage.classList.remove('hidden');
@@ -781,10 +776,6 @@ function _renderComplianceResults(rag, ranking) {
   document.getElementById('download-pdf-btn')?.classList.add('flex');
   document.getElementById('view-analysis-btn')?.classList.remove('hidden');
   document.getElementById('view-analysis-btn')?.classList.add('flex');
-  // Show Log This Analysis bar below IS cards (officer role only)
-  if (selectedRole === 'officer') {
-    document.getElementById('log-analysis-bar')?.classList.remove('hidden');
-  }
 
   // Smooth-scroll to first card
   setTimeout(() => {
@@ -1743,7 +1734,6 @@ function _resetResults() {
   document.getElementById('download-pdf-btn')?.classList.remove('flex');
   document.getElementById('view-analysis-btn')?.classList.add('hidden');
   document.getElementById('view-analysis-btn')?.classList.remove('flex');
-  document.getElementById('log-analysis-bar')?.classList.add('hidden');
 
   document
     .getElementById('results-section')
@@ -2672,8 +2662,7 @@ function historyNext() {
  * POST real data → immediately GET page 1 → new row appears in the table.
  */
 async function testLogAction() {
-  // Target the new contextual button (below IS cards); fall back to old id if present
-  const btn = document.getElementById('log-analysis-btn') || document.getElementById('history-test-btn');
+  const btn = document.getElementById('history-test-btn');
 
   // ── Build action payload from the live analysis result ──────────────────
   let action_type              = 'approved';
@@ -2746,7 +2735,7 @@ async function testLogAction() {
   } finally {
     if (btn) {
       btn.disabled    = false;
-      btn.textContent = 'Log This Analysis';
+      btn.textContent = '🧪 Log This Analysis';
     }
   }
 }
@@ -2780,84 +2769,20 @@ function _histEscapeHtml(str) {
     // Call original first so the dashboard is visible before we fetch
     _original(config, loginPage, dashPage, ...rest);
 
-    // Show History nav button only for officer role
-    const historyNavBtn = document.getElementById('nav-history-btn');
-    if (historyNavBtn) {
-      if (config === ROLE_CONFIG.officer) {
-        historyNavBtn.classList.remove('hidden');
-      } else {
-        historyNavBtn.classList.add('hidden');
-      }
-    }
-
-    // Start in analysis view — history section hidden
     const historySection = document.getElementById('officer-history-section');
-    if (historySection) historySection.classList.add('hidden');
+    if (!historySection) return;
 
-    // Pre-fetch history so it's ready when the officer navigates to it
     if (config === ROLE_CONFIG.officer) {
+      // Show the history panel and load page 1
+      historySection.classList.remove('hidden');
       historyOffset = 0;
       refreshHistory(0);
+    } else {
+      // Hide for vendor role — history is officer-only
+      historySection.classList.add('hidden');
     }
   }
 
   // Expose so the login handler (which calls _showDashboard by name) picks it up
   window._showDashboard = _patched;
 })();
-
-// ─── View switching: Analysis ↔ History ────────────────────────────────────
-
-/**
- * Switch to the History view.
- * Hides the analysis content (#dashboard-view) and shows the history section.
- * Called by the "History" button in the topbar.
- */
-function showHistoryView() {
-  const dashView      = document.getElementById('dashboard-view');
-  const historySection = document.getElementById('officer-history-section');
-  const navHistoryBtn  = document.getElementById('nav-history-btn');
-
-  if (dashView)       dashView.classList.add('hidden');
-  if (historySection) {
-    historySection.classList.remove('hidden');
-    // Refresh the table so it always shows the latest entries when navigated to
-    refreshHistory(0);
-  }
-
-  // Update topbar: swap History button for a Back button appearance
-  if (navHistoryBtn) {
-    navHistoryBtn.textContent = '';
-    navHistoryBtn.innerHTML = `
-      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-      </svg>
-      Back to Analysis`;
-    navHistoryBtn.onclick = showDashboardView;
-    navHistoryBtn.title   = 'Back to tender analysis';
-  }
-}
-
-/**
- * Switch back to the Analysis view.
- * Hides the history section and restores the analysis content.
- * Called by "Back to Analysis" in the history header or the topbar back button.
- */
-function showDashboardView() {
-  const dashView       = document.getElementById('dashboard-view');
-  const historySection = document.getElementById('officer-history-section');
-  const navHistoryBtn  = document.getElementById('nav-history-btn');
-
-  if (historySection) historySection.classList.add('hidden');
-  if (dashView)       dashView.classList.remove('hidden');
-
-  // Restore topbar History button
-  if (navHistoryBtn) {
-    navHistoryBtn.innerHTML = `
-      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-      History`;
-    navHistoryBtn.onclick = showHistoryView;
-    navHistoryBtn.title   = 'View Officer Action History';
-  }
-}
