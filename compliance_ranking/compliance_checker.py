@@ -162,37 +162,28 @@ def _extract_ip_number(value: str) -> int | None:
     return None
 
 
-def _extract_grade_number(value: str) -> tuple[str, int] | None:
+def _extract_grade_number(value: str) -> tuple[str, float] | None:
     """
     Parse a grade string into (prefix, numeric_part).
 
     Supported formats:
-        "Fe415"  -> ("Fe", 415)
-        "Fe500D" -> ("Fe", 500)     # trailing letter stripped
-        "E250"   -> ("E",  250)
-        "43"     -> ("",   43)      # cement grade - no prefix
+        "Fe415"  -> ("FE", 415.0)
+        "Fe 500D" -> ("FE", 500.0)
+        "E250"   -> ("E",  250.0)
+        "43"     -> ("",   43.0)
+        "M 25"   -> ("M",  25.0)
 
     Returns None on parse failure.
-
-    Cross-prefix comparison rule (documented in prompt spec):
-        Fe### grades and E### grades belong to different standard families
-        (reinforcement steel vs structural steel).  Comparing Fe415 against
-        an E250 requirement is meaningless, so if prefixes differ we return
-        a mismatch signal rather than a numeric verdict.
     """
     v = value.strip()
 
-    # Named prefix families: Fe, E
-    match = re.match(r"^(Fe|E)(\d+)", v, re.IGNORECASE)
+    # Matches optional prefix letters (and spaces/hyphens), followed by digits
+    match = re.search(r"^([A-Za-z]+(?:[\s\-]*[A-Za-z]+)*)?\s*(\d+(?:\.\d+)?)", v, re.IGNORECASE)
     if match:
-        prefix = match.group(1).capitalize()   # normalise "fe" -> "Fe"
-        number = int(match.group(2))
+        prefix = match.group(1).upper() if match.group(1) else ""
+        prefix = prefix.replace(" ", "").replace("-", "")
+        number = float(match.group(2))
         return prefix, number
-
-    # Plain number (cement grade etc.)
-    match = re.match(r"^(\d+)$", v)
-    if match:
-        return "", int(match.group(1))
 
     return None
 
@@ -292,7 +283,8 @@ def _compare_numeric_with_unit(
 
     req_num = _extract_numeric(str(req_raw))
     if req_num is None:
-        return None
+        # Fallback for non-numeric categorical requirements
+        return str(spec_value).strip().lower() == str(req_raw).strip().lower()
 
     # Attempt range parse first
     range_result = _extract_range(str(spec_value))
