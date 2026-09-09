@@ -881,11 +881,8 @@ function _buildResultCard(exp, rec, idx, specText = '') {
   const fullExplanation =
     String(exp.explanation || '').trim();
 
-  const shortExplanation =
-    _truncateText(fullExplanation, 150);
-
-  const hasMoreExplanation =
-    fullExplanation.length > 150;
+  const { summary: shortExplanation, hasMore: hasMoreExplanation } =
+    _smartSummary(fullExplanation, 160, 2);
 
   // Build Auto-Fix markup only if eligible
   let autoFixHtml = '';
@@ -966,7 +963,7 @@ function _buildResultCard(exp, rec, idx, specText = '') {
               ? `
                 <button
                   type="button"
-                  onclick="toggleCard('${bodyId}')"
+                  onclick="toggleCard('${bodyId}', this)"
                   aria-expanded="false"
                   aria-controls="${bodyId}"
                   aria-label="Show full explanation"
@@ -1003,6 +1000,20 @@ function _buildResultCard(exp, rec, idx, specText = '') {
 
       </div>
 
+      <!-- Short explanation preview — always visible on initial render.
+           Hidden when the full explanation body is expanded, restored on collapse.
+           line-clamp:3 hard-caps this at 3 lines regardless of card width —
+           character truncation alone can't guarantee that. -->
+      ${
+        fullExplanation
+          ? `
+            <p id="short-explanation-${idx}" class="mt-3 text-slate-600 text-xs leading-relaxed" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
+              ${_escHtml(shortExplanation)}
+            </p>
+          `
+          : ''
+      }
+
       <!-- Semantic score row -->
       <div class="mt-3 flex items-center gap-3">
 
@@ -1036,8 +1047,9 @@ function _buildResultCard(exp, rec, idx, specText = '') {
 
     </div>
 
-    <!-- Expandable explanation body -->
-    <div id="${bodyId}" class="explanation-body">
+    <!-- Expandable explanation body — starts collapsed via inline style so
+         this doesn't depend on an external .explanation-body CSS rule existing. -->
+    <div id="${bodyId}" class="explanation-body" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;">
       <div class="px-5 py-4">
         <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-2.5 flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-govorange" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -1304,19 +1316,36 @@ function _fallbackCopy(text) {
  *
  * @param {string} bodyId
  */
-function toggleCard(bodyId) {
+function toggleCard(bodyId, btnEl) {
   const body = document.getElementById(bodyId);
 
   if (!body) return;
 
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  if (isOpen) {
-    body.style.maxHeight = '';
-  } else {
+  // bodyId is always `result-body-<idx>` (see _buildResultCard) — pull idx
+  // back out so we can find this card's own chevron / label / short-preview
+  // instead of relying on outer-scope variables that don't exist here.
+  const idx     = bodyId.replace('result-body-', '');
+  const chevron = document.getElementById(`chevron-${idx}`);
+  const label   = document.getElementById(`toggle-label-${idx}`);
+  const shortEl = document.getElementById(`short-explanation-${idx}`);
+  const btn     = btnEl || (chevron && chevron.closest('button'));
+
+  const isOpen   = body.classList.contains('open');
+  const nextOpen = !isOpen;
+
+  body.classList.toggle('open', nextOpen);
+  if (nextOpen) {
     // When expanding, accommodate any auto-fix result content
     body.style.maxHeight = `${Math.max(800, body.scrollHeight + 100)}px`;
+  } else {
+    body.style.maxHeight = '0px';
   }
+
+  // Swap the short preview for the full explanation body (and back again)
+  if (shortEl) {
+    shortEl.classList.toggle('hidden', nextOpen);
+  }
+
   if (chevron) {
     chevron.style.transform =
       nextOpen
@@ -1500,7 +1529,7 @@ function _escHtml(str) {
 }
 
 /**
- * Create a short client-side explanation preview.
+ * Create a short click Show-more-on preview.
  * Maximum length is approximately 150 characters.
  */
 function _truncateText(text, maxLength = 150) {
@@ -1528,10 +1557,66 @@ function _truncateText(text, maxLength = 150) {
 }
 
 /**
- * Lightly format the Groq explanation text:
- * - **bold** → <strong>
- * - *italic* → <em>
- * - Lines starting with "- " → list items
+ * Build the card's short summary out of WHOLE sentences only, so it always
+ * ends cleanly (e.g. "...ranking system).") instead of getting hard-cut
+ * mid-word or mid-parenthesis with a dangling "…" (e.g. "...score of
+ * 1.4265 (a…"), which is what character-count truncation was doing before.
+ *
+ * Takes sentences one at a time until either `maxSentences` is reached or
+ * adding the next sentence would push the summary past `maxChars` — but
+ * always keeps at least one full sentence, however long it is. The 3-line
+ * CSS clamp on the card handles any remaining visual overflow.
+ *
+ * @param {string} text
+ * @param {number} maxChars     soft length budget (~2-3 lines worth)
+ * @param {number} maxSentences hard cap on how many sentences to include
+ * @returns {{summary: string, hasMore: boolean}}
+ */
+function _smartSummary(text, maxChars = 160, maxSentences = 2) {
+  const normalized = String(text || '').replace(/\s+/g, ' ').trim();
+
+  if (!normalized) {
+    return { summary: '', hasMore: false };
+  }
+
+  const sentences = normalized
+    .split(/(?<=[.!?])\s+(?=[A-Z"'(0-9])/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  if (sentences.length <= 1) {
+    return { summary: normalized, hasMore: false };
+  }
+
+  let summary = '';
+  let used = 0;
+
+  for (let i = 0; i < sentences.length && i < maxSentences; i++) {
+    const next = summary ? `${summary} ${sentences[i]}` : sentences[i];
+
+    // Don't add a 2nd sentence if it would blow the budget — but always
+    // keep at least the first sentence, even if it alone is long.
+    if (summary && next.length > maxChars) break;
+
+    summary = next;
+    used = i + 1;
+  }
+
+  return { summary, hasMore: used < sentences.length };
+}
+
+/**
+ * Format the Groq explanation text for readability:
+ * - **bold** → <strong>, *italic* → <em>
+ * - If the text already contains explicit "- " / "•" bullet lines, respect
+ *   that structure (existing behaviour, unchanged).
+ * - Otherwise (a dense run-on paragraph, which is what the backend actually
+ *   sends today — see the repeated "The compliance module reported X as Y."
+ *   pattern) split it into sentences and render each as its own bullet, so
+ *   it reads as a scannable list instead of a wall of text.
+ * - Highlights compliance status words (passed / failed / missing /
+ *   compliant / partially compliant / non-compliant) in colour so the
+ *   verdict for each field jumps out at a glance.
  * Escapes HTML first to prevent XSS.
  */
 function _formatExplanation(text) {
@@ -1551,41 +1636,61 @@ function _formatExplanation(text) {
     '<em>$1</em>'
   );
 
-  // Bullet list lines
-  const lines = safe.split('\n');
+  const hasExplicitBullets = /^[-•]\s+/m.test(safe);
 
-  let inList = false;
-  const result = [];
+  let items;
 
-  for (const line of lines) {
-
-    if (/^[-•]\s+/.test(line.trimStart())) {
-
-      if (!inList) {
-        result.push('<ul>');
-        inList = true;
-      }
-
-      result.push(
-        `<li>${line.replace(/^[-•]\s+/, '').trim()}</li>`
-      );
-
-    } else {
-
-      if (inList) {
-        result.push('</ul>');
-        inList = false;
-      }
-
-      result.push(line);
-    }
+  if (hasExplicitBullets) {
+    // Respect the author's own line breaks / "- " bullets (e.g. real
+    // markdown-style output from Groq), same as before.
+    items = safe
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/^[-•]\s+/, ''));
+  } else {
+    // No structure at all — split the prose into sentences so a dense
+    // paragraph becomes a scannable list. Lookbehind/lookahead keeps
+    // decimal numbers (e.g. "1.3798") and parenthetical asides intact.
+    items = safe
+      .split(/(?<=[.!?])\s+(?=[A-Z"'(0-9])/)
+      .map(s => s.trim())
+      .filter(Boolean);
   }
 
-  if (inList) {
-    result.push('</ul>');
+  items = items.map(_highlightStatusWords);
+
+  // A single short sentence doesn't need a bullet — just show it as text.
+  if (items.length <= 1) {
+    return items[0] || safe;
   }
 
-  return result.join('\n');
+  return `<ul class="list-disc list-outside pl-4 space-y-1.5">${
+    items.map(i => `<li>${i}</li>`).join('')
+  }</ul>`;
+}
+
+/**
+ * Wrap compliance-status keywords in a coloured <span> so verdicts are
+ * visually scannable inside the bullet list (matches the ✓ / ✗ / ? chip
+ * colours already used elsewhere on the card). Longest phrases are matched
+ * first in one combined regex pass so "non-compliant" / "partially
+ * compliant" never get double-wrapped by the standalone "compliant" match.
+ */
+function _highlightStatusWords(html) {
+  const COLOR = {
+    'non-compliant':        'text-red-600',
+    'partially compliant':  'text-amber-600',
+    'compliant':            'text-green-600',
+    'passed':               'text-green-600',
+    'failed':               'text-red-600',
+    'missing':              'text-slate-500',
+  };
+
+  return html.replace(
+    /\b(non-compliant|partially compliant|compliant|passed|failed|missing)\b/gi,
+    (match) => `<span class="font-semibold ${COLOR[match.toLowerCase()] || ''}">${match}</span>`
+  );
 }
 
 function _setText(id, text) {
