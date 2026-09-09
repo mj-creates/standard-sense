@@ -30,24 +30,24 @@
     "description": "Specifies requirements for hot-rolled steel plates, strips, shapes, and sections used in structural applications such as bridges, buildings, transmission towers, and general engineering fabrication. Covers chemical composition, mechanical properties including yield strength and elongation, and weldability grades E250 to E650."
   },
   "6": {
-    "is_code": "IS 456",
-    "title": "Plain and Reinforced Concrete ΓÇö Code of Practice",
-    "description": "Provides comprehensive guidelines for design and construction of plain and reinforced concrete structures. Covers materials quality including cement and aggregate, mix design, durability requirements, structural design principles, formwork, curing, and inspection of concrete works."
+    "is_code": "IS 456:2000",
+    "title": "Plain and Reinforced Concrete — Code of Practice",
+    "description": "Standard for Concrete / Structural Construction. Key fields include concrete_durability."
   },
   "7": {
-    "is_code": "IS 383",
-    "title": "Coarse and Fine Aggregate for Concrete ΓÇö Specification",
-    "description": "Specifies grading, physical properties, and deleterious substance limits for natural and manufactured coarse and fine aggregates used in concrete production. Covers sieve analysis requirements, flakiness index, water absorption, soundness, and alkali-silica reactivity testing."
+    "is_code": "IS 383:2016",
+    "title": "Coarse and Fine Aggregate for Concrete — Specification (Third Revision)",
+    "description": "Standard for Concrete Aggregates. Key fields include aggregate_grading."
   },
   "8": {
-    "is_code": "IS 1786",
-    "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
-    "description": "Covers requirements for deformed steel bars and wires used as reinforcement in reinforced concrete construction. Specifies chemical composition, mechanical properties including tensile strength and bend test, rib geometry for bond strength, and mass tolerances for grades Fe415, Fe500, and Fe550."
+    "is_code": "IS 1786:2008",
+    "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement — Specification (Fourth Revision)",
+    "description": "Standard for Steel Reinforcement Bars. Key fields include characteristic_yield_strength."
   },
   "9": {
-    "is_code": "IS 8112",
-    "title": "43 Grade Ordinary Portland Cement",
-    "description": "Specifies physical and chemical requirements for 43 grade ordinary portland cement used in general construction work. Covers fineness, soundness, setting time, compressive strength at 3, 7, and 28 days, and limits on chemical constituents including tricalcium aluminate and free lime content."
+    "is_code": "IS 8112:2013",
+    "title": "43 Grade Ordinary Portland Cement — Specification (Third Revision)",
+    "description": "Standard for Cement. Key fields include cement_grade, 28_day_compressive_strength."
   },
   "10": {
     "is_code": "IS 1489",
@@ -218,5 +218,275 @@
     "is_code": "IS 13118",
     "title": "High Voltage Alternating Current Circuit Breakers for Street Lighting Panels",
     "description": "Specifies requirements for high voltage AC circuit breakers used in outdoor power distribution networks and street lighting feeder panels. Covers rated voltage up to 11 kV, rated normal current, rated short circuit breaking capacity, mechanical endurance 10000 operations, and protection class IP54 for outdoor panels. Relevant to protection of street lighting feeder circuits at pole-mounted distribution boards."
+  },
+  "44": {
+    "is_code": "IS STANDARDS — CIVIL / CONSTRUCTION (Unknown/unverified values removed)",
+    "title": "",
+    "description": "Standard for . Key fields include ."
+  },
+  "45": {
+    "is_code": "IS 269:2015",
+    "title": "Ordinary Portland Cement — Specification (Third Revision)",
+    "description": "Standard for Cement. Key fields include grade_classification, 28_day_compressive_strength."
+  },
+  "46": {
+    "is_code": "IS 12269:1987",
+    "title": "53 Grade Ordinary Portland Cement — Specification",
+    "description": "Standard for Cement. Key fields include cement_grade, 28_day_compressive_strength."
+  },
+  "47": {
+    "is_code": "IS 1077:1992",
+    "title": "Common Burnt Clay Building Bricks — Specification",
+    "description": "Standard for Bricks / Masonry. Key fields include compressive_strength_class."
+  },
+  "48": {
+    "is_code": "IS 3589:2001",
+    "title": "Steel Pipes for Water and Sewage (168.3 mm to 2540 mm Outside Diameter) — Specification",
+    "description": "Standard for Steel Water / Sewage Pipes. Key fields include outside_diameter."
+  },
+  "49": {
+    "is_code": "IS 3391:1965",
+    "title": "Specification for Stethoscopes",
+    "description": "Standard for stethoscopes. Key fields include instrument_type, application, main_construction, performance."
+  },
+  "50": {
+    "is_code": "IS 17063:2018",
+    "title": "Rehabilitation Equipment — Rough Terrain Active Wheelchairs, Folding, Rider-I, Adult and Child Size",
+    "description": "Standard for rehabilitation wheelchairs. Key fields include wheelchair_type, design, user_category, application."
+  },
+  "51": {
+    "is_code": "IS 10383:1982",
+    "title": "Nail-Cutting Scissors",
+    "description": "Standard for medical/surgical scissors. Key fields include instrument_type, application, cutting_mechanism, construction."
+  },
+  "52": {
+    "is_code": "IS 11502:1992",
+    "title": "Medical Electrical Equipment — Part 2-30: Particular Requirements for Basic Safety and Essential Performance of Automated Non-Invasive Sphygmomanometers",
+    "description": "Standard for automated sphygmomanometers. Key fields include instrument_type, application, operating_mechanism, construction, measurement_method, operation, measurement, equipment_type."
+  },
+  "53": {
+    "is_code": "IS 10568:2024",
+    "title": "Teat Knife — McLean's — Specification (First Revision)",
+    "description": "Standard for veterinary surgical instruments. Key fields include instrument_type, application, design, user_field."
+  },
+  "54": {
+    "is_code": "IS 3390:1988",
+    "title": "Sphygmomanometer — Mercurial",
+    "description": "Standard for mercurial sphygmomanometers. Key fields include instrument_type, measurement, pressure_indication, application."
+  },
+  "55": {
+    "is_code": "IS 7652:1988",
+    "title": "Sphygmomanometer, Aneroid Type — Specification",
+    "description": "Standard for aneroid sphygmomanometers. Key fields include instrument_type, measurement, pressure_indication, main_components."
+  },
+  "56": {
+    "is_code": "IS 3055 (Part 1):1994",
+    "title": "Clinical Thermometers: Part 1 Solid Stem Type — Specification",
+    "description": "Standard for clinical thermometers. Key fields include thermometer_type, application, indicating_system, construction."
+  },
+  "57": {
+    "is_code": "IS 3055 (Part 2):2004",
+    "title": "Clinical Thermometers: Part 2 Enclosed Scale Type — Specification",
+    "description": "Standard for clinical thermometers. Key fields include thermometer_type, application, scale, indication."
+  },
+  "58": {
+    "is_code": "IS 5022:1989",
+    "title": "Sterilizers, Instruments — Table Model",
+    "description": "Standard for instrument sterilizers. Key fields include sterilizer_type, application, installation, operation."
+  },
+  "59": {
+    "is_code": "IS 3831:1979",
+    "title": "Sterilizer, Shallow (Dressing Drum)",
+    "description": "Standard for hospital sterilizers. Key fields include equipment_type, application, design, construction."
+  },
+  "60": {
+    "is_code": "IS 4266:1967",
+    "title": "Specification for Lockers, Bedside for Hospital Use",
+    "description": "Standard for hospital furniture. Key fields include furniture_type, application, storage, construction."
+  },
+  "61": {
+    "is_code": "IS 5029:1979",
+    "title": "Bedsteads, Hospital, General Purposes",
+    "description": "Standard for hospital beds. Key fields include bed_type, application, structure, design_requirement."
+  },
+  "62": {
+    "is_code": "IS 4035:1967",
+    "title": "Trolleys, Stretcher",
+    "description": "Standard for hospital stretcher trolleys. Key fields include equipment_type, application, mobility, patient_support."
+  },
+  "63": {
+    "is_code": "IS 3993:1993",
+    "title": "Trays, Instruments — Specification",
+    "description": "Standard for medical instrument trays. Key fields include equipment_type, application, design, material."
+  },
+  "64": {
+    "is_code": "IS 4533:1995",
+    "title": "Suction Apparatus — Specification",
+    "description": "Standard for medical suction equipment. Key fields include equipment_type, application, suction_generation, collection."
+  },
+  "65": {
+    "is_code": "IS 7620 (Part 1):1986",
+    "title": "Diagnostic Medical X-ray Equipment — Part 1: General and Safety Requirements",
+    "description": "Standard for diagnostic X-ray equipment. Key fields include equipment_type, application, radiation_source, safety."
+  },
+  "66": {
+    "is_code": "IS 13450 (Part 1/Sec 2):2024",
+    "title": "Medical Electrical Equipment — Part 1: General Requirements for Basic Safety and Essential Performance — Section 2: Electromagnetic Disturbances — Requirements and Tests",
+    "description": "Standard for medical electrical equipment. Key fields include equipment_class, safety, performance, emc."
+  },
+  "67": {
+    "is_code": "IS 13450 (Part 2/Sec 12):2023",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 12: Critical Care Ventilators",
+    "description": "Standard for critical-care ventilators. Key fields include equipment_type, application, function, safety."
+  },
+  "68": {
+    "is_code": "IS 13450 (Part 2/Sec 46):2020",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 46: Operating Tables",
+    "description": "Standard for medical operating tables. Key fields include equipment_type, application, adjustment, safety."
+  },
+  "69": {
+    "is_code": "IS 13450 (Part 2/Sec 19):2023",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 19: Infant Incubators",
+    "description": "Standard for infant incubators. Key fields include equipment_type, application, environment_control, safety."
+  },
+  "70": {
+    "is_code": "IS 13450 (Part 2/Sec 21):2023",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 21: Infant Radiant Warmer",
+    "description": "Standard for infant radiant warmers. Key fields include equipment_type, application, heating_method, control."
+  },
+  "71": {
+    "is_code": "IS 13422:2024",
+    "title": "Single-Use Sterile Rubber Surgical Gloves — Specification",
+    "description": "Standard for surgical gloves. Key fields include glove_type, material, sterility, size_range, bis's_product_manual_listing_specifically_identifies_is_13422."
+  },
+  "72": {
+    "is_code": "IS 13450 (Part 2/Sec 27):2018",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 27: Electrocardiographic Monitoring Equipment",
+    "description": "Standard for electrocardiographic monitoring equipment. Key fields include equipment_type, application, measurement, safety."
+  },
+  "73": {
+    "is_code": "IS 171:1993",
+    "title": "Textiles - Ring Spun Grey Cotton Yarn for Weaving - Specification",
+    "description": "Standard for Textile. Key fields include single_yarn_tenacity, coefficient_of_variation."
+  },
+  "74": {
+    "is_code": "IS 1390:1983",
+    "title": "Methods for Determination of pH Value of Aqueous Extracts of Textile Materials",
+    "description": "Standard for Textile. Key fields include ph_value_range, extraction_method."
+  },
+  "75": {
+    "is_code": "IS 175:2023",
+    "title": "Sheeting, Tickings and Bedsheets — Specification",
+    "description": "Standard for Textile. Key fields include fabric_composition, numerical_rounding."
+  },
+  "76": {
+    "is_code": "IS 1969 (Part 1):2009",
+    "title": "Textiles - Tensile Properties of Fabrics - Determination of Maximum Force and Elongation at Maximum Force",
+    "description": "Standard for Textile. Key fields include testing_capacity, test_method_type."
+  },
+  "77": {
+    "is_code": "IS 3771:2019",
+    "title": "Textiles — Long Cloth, Cotton Khadi, Bleached — Specification",
+    "description": "Standard for Textile. Key fields include fibre_type, fabric_finish."
+  },
+  "78": {
+    "is_code": "IS 186:2022",
+    "title": "Textiles - Cotton Mulls - Specification",
+    "description": "Standard for Textile. Key fields include ends_per_decimetre, picks_per_decimetre."
+  },
+  "79": {
+    "is_code": "IS 15798 (Part 2):2021",
+    "title": "Textiles Requirements for Labelling and Marking Specification Part 2 Fabrics Apparels and Made-up Items",
+    "description": "Standard for Textile. Key fields include fiber_content_declaration, care_instructions_label."
+  },
+  "80": {
+    "is_code": "IS 14452:2009",
+    "title": "Textiles - Care Labelling Code Using Symbols",
+    "description": "Standard for Textile. Key fields include washing_temperature, symbol_order."
+  },
+  "81": {
+    "is_code": "IS 15768:2008",
+    "title": "Textiles - Resistance to ignition of upholstered composites used for non-domestic furniture",
+    "description": "Standard for Textile. Key fields include ignition_source, flaming_time."
+  },
+  "82": {
+    "is_code": "IS 15742:2007",
+    "title": "Textiles - Requirements for clothing made of limited flame spread materials",
+    "description": "Standard for Textile. Key fields include flame_spread_index, after_flame_time."
+  },
+  "83": {
+    "is_code": "IS 16890:2018",
+    "title": "Textiles - Protective Clothing for Firefighters - Specification",
+    "description": "Standard for Textile. Key fields include heat_transfer_flame, water_penetration_resistance."
+  },
+  "84": {
+    "is_code": "IS 1963:1981",
+    "title": "Methods for Determination of Threads per Unit Length in Woven Fabrics",
+    "description": "Standard for Textile. Key fields include counting_glass_magnification, test_specimen_dimension."
+  },
+  "85": {
+    "is_code": "IS 1954:1990",
+    "title": "Determination of Length and Width of Woven Fabrics",
+    "description": "Standard for Textile. Key fields include tension_applied, measurement_accuracy."
+  },
+  "86": {
+    "is_code": "IS 1966:1975",
+    "title": "Methods for Determination of Bursting Strength and Bursting Distension of Fabrics",
+    "description": "Standard for Textile. Key fields include diaphragm_thickness, pumping_rate."
+  },
+  "87": {
+    "is_code": "IS 688:1988",
+    "title": "Method for Determination of Colour Fastness of Textile Materials to Organic Solvents",
+    "description": "Standard for Textile. Key fields include solvent_type, treatment_time."
+  },
+  "88": {
+    "is_code": "IS 764:1979",
+    "title": "Method for Determination of Colour Fastness of Textile Materials to Washing: Test 3",
+    "description": "Standard for Textile. Key fields include wash_temperature, soap_concentration."
+  },
+  "89": {
+    "is_code": "IS 1383:1977",
+    "title": "Methods for Determination of Scouring Loss in Grey and Finished Cotton Textile Materials",
+    "description": "Standard for Textile. Key fields include reagent_concentration, boiling_time."
+  },
+  "90": {
+    "is_code": "IS 1184:1968",
+    "title": "Textiles Auxiliaries - Maize Starch for Cotton Textile Industry",
+    "description": "Standard for Textile. Key fields include moisture_content, cold_water_solubles."
+  },
+  "91": {
+    "is_code": "IS 667:1981",
+    "title": "Methods for Identification of Textile Fibres",
+    "description": "Standard for Textile. Key fields include burning_test, solubility_sulfuric_acid."
+  },
+  "92": {
+    "is_code": "IS 13157:1991",
+    "title": "Textile Fibres - Commercial Moisture Regains",
+    "description": "Standard for Textile. Key fields include cotton_moisture_regain, polyester_moisture_regain."
+  },
+  "93": {
+    "is_code": "IS 14281:2004",
+    "title": "Textiles - Glossary of Terms Relating to Made-up Textile Items and Ready-Made Garments",
+    "description": "Standard for Textile. Key fields include seam_allowance, grain_line."
+  },
+  "94": {
+    "is_code": "IS 745:1990",
+    "title": "Handloom Cotton Bed Sheets - Specification",
+    "description": "Standard for Textile. Key fields include warp_yarn_count, shrinkage_limit."
+  },
+  "95": {
+    "is_code": "IS 2977:1989",
+    "title": "Fabrics for Men's and Boys' Woven Dress Shirts",
+    "description": "Standard for Textile. Key fields include mass_per_square_meter, crease_recovery_angle."
+  },
+  "96": {
+    "is_code": "IS 10015 (Part 1):1981",
+    "title": "Size Designation of Clothes: Part 1 Men's and Boys' Outerwear Garments",
+    "description": "Standard for Textile. Key fields include primary_dimension, secondary_dimension."
+  },
+  "97": {
+    "is_code": "IS 16874:2018",
+    "title": "Protective Gloves for Firefighters",
+    "description": "Standard for Textile. Key fields include contact_heat_resistance, dexterity_level."
   }
 }

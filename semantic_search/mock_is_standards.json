@@ -30,24 +30,60 @@
     "description": "Specifies requirements for hot-rolled steel plates, strips, shapes, and sections used in structural applications such as bridges, buildings, transmission towers, and general engineering fabrication. Covers chemical composition, mechanical properties including yield strength and elongation, and weldability grades E250 to E650."
   },
   {
-    "is_code": "IS 456",
+    "is_code": "IS 456:2000",
     "title": "Plain and Reinforced Concrete ΓÇö Code of Practice",
-    "description": "Provides comprehensive guidelines for design and construction of plain and reinforced concrete structures. Covers materials quality including cement and aggregate, mix design, durability requirements, structural design principles, formwork, curing, and inspection of concrete works."
+    "description": "Provides comprehensive guidelines for design and construction of plain and reinforced concrete structures. Covers materials quality including cement and aggregate, mix design, durability requirements, structural design principles, formwork, curing, and inspection of concrete works.",
+    "category": "Concrete / Structural Construction",
+    "source_url": "https://law.resource.org/pub/in/bis/S03/is.456.2000.pdf",
+    "requirements": {
+      "concrete_durability": {
+        "value": "Exposure-class requirements specified; exact cover/mix requirements depend on exposure",
+        "mandatory": true
+      }
+    }
   },
   {
-    "is_code": "IS 383",
+    "is_code": "IS 383:2016",
     "title": "Coarse and Fine Aggregate for Concrete ΓÇö Specification",
-    "description": "Specifies grading, physical properties, and deleterious substance limits for natural and manufactured coarse and fine aggregates used in concrete production. Covers sieve analysis requirements, flakiness index, water absorption, soundness, and alkali-silica reactivity testing."
+    "description": "Specifies grading, physical properties, and deleterious substance limits for natural and manufactured coarse and fine aggregates used in concrete production. Covers sieve analysis requirements, flakiness index, water absorption, soundness, and alkali-silica reactivity testing.",
+    "category": "Concrete Aggregates",
+    "source_url": "https://law.resource.org/pub/in/bis/S03/is.383.2016.pdf",
+    "requirements": {
+      "aggregate_grading": {
+        "value": "Specified grading limits; exact range depends on aggregate size/type",
+        "mandatory": true
+      }
+    }
   },
   {
-    "is_code": "IS 1786",
+    "is_code": "IS 1786:2008",
     "title": "High Strength Deformed Steel Bars and Wires for Concrete Reinforcement",
-    "description": "Covers requirements for deformed steel bars and wires used as reinforcement in reinforced concrete construction. Specifies chemical composition, mechanical properties including tensile strength and bend test, rib geometry for bond strength, and mass tolerances for grades Fe415, Fe500, and Fe550."
+    "description": "Covers requirements for deformed steel bars and wires used as reinforcement in reinforced concrete construction. Specifies chemical composition, mechanical properties including tensile strength and bend test, rib geometry for bond strength, and mass tolerances for grades Fe415, Fe500, and Fe550.",
+    "category": "Steel Reinforcement Bars",
+    "source_url": "https://law.resource.org/pub/in/bis/S05/is.1786.2008.pdf",
+    "requirements": {
+      "characteristic_yield_strength": {
+        "value": "Grades include Fe 415 and Fe 500; other grades are also specified",
+        "mandatory": true
+      }
+    }
   },
   {
-    "is_code": "IS 8112",
+    "is_code": "IS 8112:2013",
     "title": "43 Grade Ordinary Portland Cement",
-    "description": "Specifies physical and chemical requirements for 43 grade ordinary portland cement used in general construction work. Covers fineness, soundness, setting time, compressive strength at 3, 7, and 28 days, and limits on chemical constituents including tricalcium aluminate and free lime content."
+    "description": "Specifies physical and chemical requirements for 43 grade ordinary portland cement used in general construction work. Covers fineness, soundness, setting time, compressive strength at 3, 7, and 28 days, and limits on chemical constituents including tricalcium aluminate and free lime content.",
+    "category": "Cement",
+    "source_url": "https://law.resource.org/pub/in/bis/S03/is.8112.2013.pdf",
+    "requirements": {
+      "cement_grade": {
+        "value": "43 Grade",
+        "mandatory": true
+      },
+      "28_day_compressive_strength": {
+        "value": "Minimum 43 MPa",
+        "mandatory": true
+      }
+    }
   },
   {
     "is_code": "IS 1489",
@@ -395,5 +431,1118 @@
       "11kV",
       "pole-mounted"
     ]
+  },
+  {
+    "is_code": "IS STANDARDS — CIVIL / CONSTRUCTION (Unknown/unverified values removed)",
+    "title": "",
+    "description": "Standard for . Key fields include .",
+    "category": "",
+    "source_url": "",
+    "requirements": {}
+  },
+  {
+    "is_code": "IS 269:2015",
+    "title": "Ordinary Portland Cement — Specification (Third Revision)",
+    "description": "Standard for Cement. Key fields include grade_classification, 28_day_compressive_strength.",
+    "category": "Cement",
+    "source_url": "https://law.resource.org/pub/in/bis/S03/is.269.2015.pdf",
+    "requirements": {
+      "grade_classification": {
+        "value": "33, 43 and 53 grades",
+        "mandatory": true
+      },
+      "28_day_compressive_strength": {
+        "value": "Grade designation is 33/43/53 MPa; exact tabulated requirement should be checked in the standard",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 12269:1987",
+    "title": "53 Grade Ordinary Portland Cement — Specification",
+    "description": "Standard for Cement. Key fields include cement_grade, 28_day_compressive_strength.",
+    "category": "Cement",
+    "source_url": "https://law.resource.org/pub/in/bis/S03/is.12269.1987.pdf",
+    "requirements": {
+      "cement_grade": {
+        "value": "53 Grade",
+        "mandatory": true
+      },
+      "28_day_compressive_strength": {
+        "value": "Minimum 53 MPa",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 1077:1992",
+    "title": "Common Burnt Clay Building Bricks — Specification",
+    "description": "Standard for Bricks / Masonry. Key fields include compressive_strength_class.",
+    "category": "Bricks / Masonry",
+    "source_url": "https://law.resource.org/pub/in/bis/S03/is.1077.1992.pdf",
+    "requirements": {
+      "compressive_strength_class": {
+        "value": "Classes include 3.5 to 35 MPa; exact class must be declared/verified",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 3589:2001",
+    "title": "Steel Pipes for Water and Sewage (168.3 mm to 2540 mm Outside Diameter) — Specification",
+    "description": "Standard for Steel Water / Sewage Pipes. Key fields include outside_diameter.",
+    "category": "Steel Water / Sewage Pipes",
+    "source_url": "https://law.resource.org/pub/in/bis/S05/is.3589.2001.pdf",
+    "requirements": {
+      "outside_diameter": {
+        "value": "168.3 mm to 2540 mm",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 3391:1965",
+    "title": "Specification for Stethoscopes",
+    "description": "Standard for stethoscopes. Key fields include instrument_type, application, main_construction, performance.",
+    "category": "stethoscopes",
+    "source_url": "BIS — IS 3391:1965",
+    "requirements": {
+      "instrument_type": {
+        "value": "Stethoscope",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Auscultation of body sounds",
+        "mandatory": true
+      },
+      "main_construction": {
+        "value": "Chest piece, flexible tubing and earpieces",
+        "mandatory": true
+      },
+      "performance": {
+        "value": "Acoustic transmission of body sounds",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 17063:2018",
+    "title": "Rehabilitation Equipment — Rough Terrain Active Wheelchairs, Folding, Rider-I, Adult and Child Size",
+    "description": "Standard for rehabilitation wheelchairs. Key fields include wheelchair_type, design, user_category, application.",
+    "category": "rehabilitation wheelchairs",
+    "source_url": "BIS — IS 17063:2018",
+    "requirements": {
+      "wheelchair_type": {
+        "value": "Rough-terrain active wheelchair",
+        "mandatory": true
+      },
+      "design": {
+        "value": "Folding",
+        "mandatory": true
+      },
+      "user_category": {
+        "value": "Adult and child",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Mobility over rough terrain",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 10383:1982",
+    "title": "Nail-Cutting Scissors",
+    "description": "Standard for medical/surgical scissors. Key fields include instrument_type, application, cutting_mechanism, construction.",
+    "category": "medical/surgical scissors",
+    "source_url": "BIS — IS 10383:1982",
+    "requirements": {
+      "instrument_type": {
+        "value": "Nail-cutting scissors",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Cutting fingernails/toenails",
+        "mandatory": true
+      },
+      "cutting_mechanism": {
+        "value": "Two-blade scissor mechanism",
+        "mandatory": true
+      },
+      "construction": {
+        "value": "Metal surgical-instrument construction",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 11502:1992",
+    "title": "Medical Electrical Equipment — Part 2-30: Particular Requirements for Basic Safety and Essential Performance of Automated Non-Invasive Sphygmomanometers",
+    "description": "Standard for automated sphygmomanometers. Key fields include instrument_type, application, operating_mechanism, construction, measurement_method, operation, measurement, equipment_type.",
+    "category": "automated sphygmomanometers",
+    "source_url": "BIS — IS/IEC 80601-2-30:2018",
+    "requirements": {
+      "instrument_type": {
+        "value": "Tissue forceps",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Grasping and holding body tissue",
+        "mandatory": true
+      },
+      "operating_mechanism": {
+        "value": "Hand-operated forceps",
+        "mandatory": true
+      },
+      "construction": {
+        "value": "Surgical-instrument metal construction",
+        "mandatory": true
+      },
+      "measurement_method": {
+        "value": "Non-invasive",
+        "mandatory": true
+      },
+      "operation": {
+        "value": "Automated",
+        "mandatory": true
+      },
+      "measurement": {
+        "value": "Blood pressure",
+        "mandatory": true
+      },
+      "equipment_type": {
+        "value": "Automated sphygmomanometer",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 10568:2024",
+    "title": "Teat Knife — McLean's — Specification (First Revision)",
+    "description": "Standard for veterinary surgical instruments. Key fields include instrument_type, application, design, user_field.",
+    "category": "veterinary surgical instruments",
+    "source_url": "BIS — IS 10568:2024",
+    "requirements": {
+      "instrument_type": {
+        "value": "McLean's teat knife",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Veterinary teat treatment",
+        "mandatory": true
+      },
+      "design": {
+        "value": "Knife/blade instrument",
+        "mandatory": true
+      },
+      "user_field": {
+        "value": "Veterinary practice",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 3390:1988",
+    "title": "Sphygmomanometer — Mercurial",
+    "description": "Standard for mercurial sphygmomanometers. Key fields include instrument_type, measurement, pressure_indication, application.",
+    "category": "mercurial sphygmomanometers",
+    "source_url": "BIS — IS 3390:1988",
+    "requirements": {
+      "instrument_type": {
+        "value": "Mercurial sphygmomanometer",
+        "mandatory": true
+      },
+      "measurement": {
+        "value": "Blood pressure",
+        "mandatory": true
+      },
+      "pressure_indication": {
+        "value": "Mercury column",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Clinical blood-pressure measurement",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 7652:1988",
+    "title": "Sphygmomanometer, Aneroid Type — Specification",
+    "description": "Standard for aneroid sphygmomanometers. Key fields include instrument_type, measurement, pressure_indication, main_components.",
+    "category": "aneroid sphygmomanometers",
+    "source_url": "BIS — IS 7652:1988",
+    "requirements": {
+      "instrument_type": {
+        "value": "Aneroid sphygmomanometer",
+        "mandatory": true
+      },
+      "measurement": {
+        "value": "Blood pressure",
+        "mandatory": true
+      },
+      "pressure_indication": {
+        "value": "Mechanical/aneroid pressure mechanism",
+        "mandatory": true
+      },
+      "main_components": {
+        "value": "Cuff, pressure system, gauge and associated rubber components",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 3055 (Part 1):1994",
+    "title": "Clinical Thermometers: Part 1 Solid Stem Type — Specification",
+    "description": "Standard for clinical thermometers. Key fields include thermometer_type, application, indicating_system, construction.",
+    "category": "clinical thermometers",
+    "source_url": "BIS — IS 3055 Part 1:1994",
+    "requirements": {
+      "thermometer_type": {
+        "value": "Solid-stem",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Clinical temperature measurement",
+        "mandatory": true
+      },
+      "indicating_system": {
+        "value": "Maximum-indicating thermometer",
+        "mandatory": true
+      },
+      "construction": {
+        "value": "Stem-type clinical thermometer",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 3055 (Part 2):2004",
+    "title": "Clinical Thermometers: Part 2 Enclosed Scale Type — Specification",
+    "description": "Standard for clinical thermometers. Key fields include thermometer_type, application, scale, indication.",
+    "category": "clinical thermometers",
+    "source_url": "BIS — IS 3055 Part 2:2004",
+    "requirements": {
+      "thermometer_type": {
+        "value": "Enclosed-scale",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Clinical temperature measurement",
+        "mandatory": true
+      },
+      "scale": {
+        "value": "Enclosed temperature scale",
+        "mandatory": true
+      },
+      "indication": {
+        "value": "Maximum temperature indication",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 5022:1989",
+    "title": "Sterilizers, Instruments — Table Model",
+    "description": "Standard for instrument sterilizers. Key fields include sterilizer_type, application, installation, operation.",
+    "category": "instrument sterilizers",
+    "source_url": "BIS — IS 5022:1989",
+    "requirements": {
+      "sterilizer_type": {
+        "value": "Table model",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Sterilization of medical instruments",
+        "mandatory": true
+      },
+      "installation": {
+        "value": "Table-top configuration",
+        "mandatory": true
+      },
+      "operation": {
+        "value": "Heat/sterilization cycle according to specified requirements",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 3831:1979",
+    "title": "Sterilizer, Shallow (Dressing Drum)",
+    "description": "Standard for hospital sterilizers. Key fields include equipment_type, application, design, construction.",
+    "category": "hospital sterilizers",
+    "source_url": "BIS — IS 3831:1979",
+    "requirements": {
+      "equipment_type": {
+        "value": "Shallow sterilizer/dressing drum",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Sterilization of dressings and hospital articles",
+        "mandatory": true
+      },
+      "design": {
+        "value": "Drum-type sterilizer",
+        "mandatory": true
+      },
+      "construction": {
+        "value": "Metal sterilization container",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 4266:1967",
+    "title": "Specification for Lockers, Bedside for Hospital Use",
+    "description": "Standard for hospital furniture. Key fields include furniture_type, application, storage, construction.",
+    "category": "hospital furniture",
+    "source_url": "BIS — IS 4266:1967",
+    "requirements": {
+      "furniture_type": {
+        "value": "Bedside locker",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Hospital patient rooms",
+        "mandatory": true
+      },
+      "storage": {
+        "value": "Patient belongings and bedside articles",
+        "mandatory": true
+      },
+      "construction": {
+        "value": "Hospital-furniture cabinet/locker",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 5029:1979",
+    "title": "Bedsteads, Hospital, General Purposes",
+    "description": "Standard for hospital beds. Key fields include bed_type, application, structure, design_requirement.",
+    "category": "hospital beds",
+    "source_url": "BIS — IS 5029:1979",
+    "requirements": {
+      "bed_type": {
+        "value": "Hospital bedstead",
+        "mandatory": true
+      },
+      "application": {
+        "value": "General-purpose hospital use",
+        "mandatory": true
+      },
+      "structure": {
+        "value": "Bed frame with patient-supporting surface",
+        "mandatory": true
+      },
+      "design_requirement": {
+        "value": "Structural stability and safe patient support",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 4035:1967",
+    "title": "Trolleys, Stretcher",
+    "description": "Standard for hospital stretcher trolleys. Key fields include equipment_type, application, mobility, patient_support.",
+    "category": "hospital stretcher trolleys",
+    "source_url": "BIS — IS 4035:1967",
+    "requirements": {
+      "equipment_type": {
+        "value": "Stretcher trolley",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Transporting patients",
+        "mandatory": true
+      },
+      "mobility": {
+        "value": "Wheeled/trolley configuration",
+        "mandatory": true
+      },
+      "patient_support": {
+        "value": "Stretcher platform",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 3993:1993",
+    "title": "Trays, Instruments — Specification",
+    "description": "Standard for medical instrument trays. Key fields include equipment_type, application, design, material.",
+    "category": "medical instrument trays",
+    "source_url": "BIS — IS 3993:1993",
+    "requirements": {
+      "equipment_type": {
+        "value": "Instrument tray",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Holding medical/surgical instruments",
+        "mandatory": true
+      },
+      "design": {
+        "value": "Tray/container",
+        "mandatory": true
+      },
+      "material": {
+        "value": "Medical-grade construction material as specified by the standard",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 4533:1995",
+    "title": "Suction Apparatus — Specification",
+    "description": "Standard for medical suction equipment. Key fields include equipment_type, application, suction_generation, collection.",
+    "category": "medical suction equipment",
+    "source_url": "BIS — IS 4533:1995",
+    "requirements": {
+      "equipment_type": {
+        "value": "Suction apparatus",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Removal of fluids/material from the patient",
+        "mandatory": true
+      },
+      "suction_generation": {
+        "value": "Suction/vacuum mechanism",
+        "mandatory": true
+      },
+      "collection": {
+        "value": "Suction collection container/system",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 7620 (Part 1):1986",
+    "title": "Diagnostic Medical X-ray Equipment — Part 1: General and Safety Requirements",
+    "description": "Standard for diagnostic X-ray equipment. Key fields include equipment_type, application, radiation_source, safety.",
+    "category": "diagnostic X-ray equipment",
+    "source_url": "BIS — IS 7620 Part 1:1986",
+    "requirements": {
+      "equipment_type": {
+        "value": "Diagnostic medical X-ray equipment",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Medical radiographic imaging",
+        "mandatory": true
+      },
+      "radiation_source": {
+        "value": "X-ray tube",
+        "mandatory": true
+      },
+      "safety": {
+        "value": "Radiation and equipment safety requirements",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 13450 (Part 1/Sec 2):2024",
+    "title": "Medical Electrical Equipment — Part 1: General Requirements for Basic Safety and Essential Performance — Section 2: Electromagnetic Disturbances — Requirements and Tests",
+    "description": "Standard for medical electrical equipment. Key fields include equipment_class, safety, performance, emc.",
+    "category": "medical electrical equipment",
+    "source_url": "BIS — IS 13450:2024 series",
+    "requirements": {
+      "equipment_class": {
+        "value": "Medical electrical equipment",
+        "mandatory": true
+      },
+      "safety": {
+        "value": "Basic safety",
+        "mandatory": true
+      },
+      "performance": {
+        "value": "Essential performance",
+        "mandatory": true
+      },
+      "emc": {
+        "value": "Electromagnetic disturbance requirements and tests",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 13450 (Part 2/Sec 12):2023",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 12: Critical Care Ventilators",
+    "description": "Standard for critical-care ventilators. Key fields include equipment_type, application, function, safety.",
+    "category": "critical-care ventilators",
+    "source_url": "BIS — IS 13450:2023 series",
+    "requirements": {
+      "equipment_type": {
+        "value": "Critical-care ventilator",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Mechanical ventilation for critically ill patients",
+        "mandatory": true
+      },
+      "function": {
+        "value": "Provides controlled respiratory support",
+        "mandatory": true
+      },
+      "safety": {
+        "value": "Basic safety and essential-performance requirements",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 13450 (Part 2/Sec 46):2020",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 46: Operating Tables",
+    "description": "Standard for medical operating tables. Key fields include equipment_type, application, adjustment, safety.",
+    "category": "medical operating tables",
+    "source_url": "BIS — IS 13450:2020 series",
+    "requirements": {
+      "equipment_type": {
+        "value": "Operating table",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Surgical procedures",
+        "mandatory": true
+      },
+      "adjustment": {
+        "value": "Position/height adjustment",
+        "mandatory": true
+      },
+      "safety": {
+        "value": "Mechanical and electrical safety requirements",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 13450 (Part 2/Sec 19):2023",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 19: Infant Incubators",
+    "description": "Standard for infant incubators. Key fields include equipment_type, application, environment_control, safety.",
+    "category": "infant incubators",
+    "source_url": "BIS — IS 13450:2023 series",
+    "requirements": {
+      "equipment_type": {
+        "value": "Infant incubator",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Care of newborn infants",
+        "mandatory": true
+      },
+      "environment_control": {
+        "value": "Controlled temperature environment",
+        "mandatory": true
+      },
+      "safety": {
+        "value": "Basic safety and essential-performance requirements",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 13450 (Part 2/Sec 21):2023",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 21: Infant Radiant Warmer",
+    "description": "Standard for infant radiant warmers. Key fields include equipment_type, application, heating_method, control.",
+    "category": "infant radiant warmers",
+    "source_url": "BIS — IS 13450:2023 series",
+    "requirements": {
+      "equipment_type": {
+        "value": "Infant radiant warmer",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Newborn thermal care",
+        "mandatory": true
+      },
+      "heating_method": {
+        "value": "Radiant heating",
+        "mandatory": true
+      },
+      "control": {
+        "value": "Controlled warming environment",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 13422:2024",
+    "title": "Single-Use Sterile Rubber Surgical Gloves — Specification",
+    "description": "Standard for surgical gloves. Key fields include glove_type, material, sterility, size_range, bis's_product_manual_listing_specifically_identifies_is_13422.",
+    "category": "surgical gloves",
+    "source_url": "BIS — IS 13422:2024",
+    "requirements": {
+      "glove_type": {
+        "value": "Single-use surgical glove",
+        "mandatory": true
+      },
+      "material": {
+        "value": "Rubber",
+        "mandatory": true
+      },
+      "sterility": {
+        "value": "Sterile",
+        "mandatory": true
+      },
+      "size_range": {
+        "value": "Sizes including 5.5 through 9.0",
+        "mandatory": true
+      },
+      "bis's_product_manual_listing_specifically_identifies_is_13422": {
+        "value": "2024 / ISO 10282:2023 as the standard for single-use sterile rubber surgical gloves.",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 13450 (Part 2/Sec 27):2018",
+    "title": "Medical Electrical Equipment — Part 2: Particular Requirements for Basic Safety and Essential Performance — Section 27: Electrocardiographic Monitoring Equipment",
+    "description": "Standard for electrocardiographic monitoring equipment. Key fields include equipment_type, application, measurement, safety.",
+    "category": "electrocardiographic monitoring equipment",
+    "source_url": "BIS — IS 13450:2018 series",
+    "requirements": {
+      "equipment_type": {
+        "value": "ECG monitoring equipment",
+        "mandatory": true
+      },
+      "application": {
+        "value": "Monitoring electrical activity of the heart",
+        "mandatory": true
+      },
+      "measurement": {
+        "value": "Electrocardiographic signals",
+        "mandatory": true
+      },
+      "safety": {
+        "value": "Basic safety and essential-performance requirements",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 171:1993",
+    "title": "Textiles - Ring Spun Grey Cotton Yarn for Weaving - Specification",
+    "description": "Standard for Textile. Key fields include single_yarn_tenacity, coefficient_of_variation.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.171.1993",
+    "requirements": {
+      "single_yarn_tenacity": {
+        "value": "12.0 to 14.0 cN/tex minimum",
+        "mandatory": true
+      },
+      "coefficient_of_variation": {
+        "value": "Maximum 14.0 percent",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 1390:1983",
+    "title": "Methods for Determination of pH Value of Aqueous Extracts of Textile Materials",
+    "description": "Standard for Textile. Key fields include ph_value_range, extraction_method.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.1390.1983",
+    "requirements": {
+      "ph_value_range": {
+        "value": "5.5 to 8.0",
+        "mandatory": true
+      },
+      "extraction_method": {
+        "value": "Cold method / aqueous extraction",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 175:2023",
+    "title": "Sheeting, Tickings and Bedsheets — Specification",
+    "description": "Standard for Textile. Key fields include fabric_composition, numerical_rounding.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.175.2023",
+    "requirements": {
+      "fabric_composition": {
+        "value": "100 percent cotton or 48/52 percent polyester/cotton blend",
+        "mandatory": true
+      },
+      "numerical_rounding": {
+        "value": "Must be rounded off in accordance with IS 2 : 2022",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 1969 (Part 1):2009",
+    "title": "Textiles - Tensile Properties of Fabrics - Determination of Maximum Force and Elongation at Maximum Force",
+    "description": "Standard for Textile. Key fields include testing_capacity, test_method_type.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.1969.1.2009",
+    "requirements": {
+      "testing_capacity": {
+        "value": "100 N and 2 kN for most apparel and furnishing fabrics",
+        "mandatory": true
+      },
+      "test_method_type": {
+        "value": "Strip method (full width clamped)",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 3771:2019",
+    "title": "Textiles — Long Cloth, Cotton Khadi, Bleached — Specification",
+    "description": "Standard for Textile. Key fields include fibre_type, fabric_finish.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.3771.2019",
+    "requirements": {
+      "fibre_type": {
+        "value": "Cotton Khadi",
+        "mandatory": true
+      },
+      "fabric_finish": {
+        "value": "Bleached",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 186:2022",
+    "title": "Textiles - Cotton Mulls - Specification",
+    "description": "Standard for Textile. Key fields include ends_per_decimetre, picks_per_decimetre.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.186.2022",
+    "requirements": {
+      "ends_per_decimetre": {
+        "value": "240 to 320 ends/dm",
+        "mandatory": true
+      },
+      "picks_per_decimetre": {
+        "value": "200 to 280 picks/dm",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 15798 (Part 2):2021",
+    "title": "Textiles Requirements for Labelling and Marking Specification Part 2 Fabrics Apparels and Made-up Items",
+    "description": "Standard for Textile. Key fields include fiber_content_declaration, care_instructions_label.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.15798.2.2021",
+    "requirements": {
+      "fiber_content_declaration": {
+        "value": "Required if content is >= 5%",
+        "mandatory": true
+      },
+      "care_instructions_label": {
+        "value": "Must include washing and ironing symbols",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 14452:2009",
+    "title": "Textiles - Care Labelling Code Using Symbols",
+    "description": "Standard for Textile. Key fields include washing_temperature, symbol_order.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.14452.2009",
+    "requirements": {
+      "washing_temperature": {
+        "value": "Celsius degrees within wash tub symbol (e.g., 30, 40, 60)",
+        "mandatory": true
+      },
+      "symbol_order": {
+        "value": "Washing, Bleaching, Drying, Ironing, Professional Textile Care",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 15768:2008",
+    "title": "Textiles - Resistance to ignition of upholstered composites used for non-domestic furniture",
+    "description": "Standard for Textile. Key fields include ignition_source, flaming_time.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.15768.2008",
+    "requirements": {
+      "ignition_source": {
+        "value": "Smouldering cigarette and match flame equivalent",
+        "mandatory": true
+      },
+      "flaming_time": {
+        "value": "Maximum 120 seconds after removal of ignition source",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 15742:2007",
+    "title": "Textiles - Requirements for clothing made of limited flame spread materials",
+    "description": "Standard for Textile. Key fields include flame_spread_index, after_flame_time.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.15742.2007",
+    "requirements": {
+      "flame_spread_index": {
+        "value": "Index 1, 2, or 3 based on application",
+        "mandatory": true
+      },
+      "after_flame_time": {
+        "value": "Less than 2 seconds (for Index 3 materials)",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 16890:2018",
+    "title": "Textiles - Protective Clothing for Firefighters - Specification",
+    "description": "Standard for Textile. Key fields include heat_transfer_flame, water_penetration_resistance.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.16890.2018",
+    "requirements": {
+      "heat_transfer_flame": {
+        "value": "HTI24 >= 13.0 s and HTI24 - HTI12 >= 4.0 s",
+        "mandatory": true
+      },
+      "water_penetration_resistance": {
+        "value": ">= 20 kPa (hydrostatic head)",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 1963:1981",
+    "title": "Methods for Determination of Threads per Unit Length in Woven Fabrics",
+    "description": "Standard for Textile. Key fields include counting_glass_magnification, test_specimen_dimension.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.1963.1981",
+    "requirements": {
+      "counting_glass_magnification": {
+        "value": "Minimum 4x to 10x depending on thread density",
+        "mandatory": false
+      },
+      "test_specimen_dimension": {
+        "value": "Traversing distance of at least 2.5 cm or 1 inch",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 1954:1990",
+    "title": "Determination of Length and Width of Woven Fabrics",
+    "description": "Standard for Textile. Key fields include tension_applied, measurement_accuracy.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.1954.1990",
+    "requirements": {
+      "tension_applied": {
+        "value": "Zero tension (fabric laid flat and relaxed)",
+        "mandatory": true
+      },
+      "measurement_accuracy": {
+        "value": "Length to nearest 0.01 m, Width to nearest 1 mm",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 1966:1975",
+    "title": "Methods for Determination of Bursting Strength and Bursting Distension of Fabrics",
+    "description": "Standard for Textile. Key fields include diaphragm_thickness, pumping_rate.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.1966.1975",
+    "requirements": {
+      "diaphragm_thickness": {
+        "value": "1.8 mm to 2.0 mm (synthetic rubber)",
+        "mandatory": true
+      },
+      "pumping_rate": {
+        "value": "95 +/- 5 ml/min of hydraulic fluid",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 688:1988",
+    "title": "Method for Determination of Colour Fastness of Textile Materials to Organic Solvents",
+    "description": "Standard for Textile. Key fields include solvent_type, treatment_time.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.688.1988",
+    "requirements": {
+      "solvent_type": {
+        "value": "Perchloroethylene",
+        "mandatory": true
+      },
+      "treatment_time": {
+        "value": "30 minutes at room temperature",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 764:1979",
+    "title": "Method for Determination of Colour Fastness of Textile Materials to Washing: Test 3",
+    "description": "Standard for Textile. Key fields include wash_temperature, soap_concentration.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.764.1979",
+    "requirements": {
+      "wash_temperature": {
+        "value": "60 +/- 2 degrees Celsius",
+        "mandatory": true
+      },
+      "soap_concentration": {
+        "value": "5 g/l standard soap and 2 g/l anhydrous sodium carbonate",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 1383:1977",
+    "title": "Methods for Determination of Scouring Loss in Grey and Finished Cotton Textile Materials",
+    "description": "Standard for Textile. Key fields include reagent_concentration, boiling_time.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.1383.1977",
+    "requirements": {
+      "reagent_concentration": {
+        "value": "Sodium carbonate 5 g/l solution",
+        "mandatory": true
+      },
+      "boiling_time": {
+        "value": "1 hour under reflux condenser",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 1184:1968",
+    "title": "Textiles Auxiliaries - Maize Starch for Cotton Textile Industry",
+    "description": "Standard for Textile. Key fields include moisture_content, cold_water_solubles.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.1184.1968",
+    "requirements": {
+      "moisture_content": {
+        "value": "Maximum 12.5 percent by mass",
+        "mandatory": true
+      },
+      "cold_water_solubles": {
+        "value": "Maximum 0.5 percent by mass",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 667:1981",
+    "title": "Methods for Identification of Textile Fibres",
+    "description": "Standard for Textile. Key fields include burning_test, solubility_sulfuric_acid.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.667.1981",
+    "requirements": {
+      "burning_test": {
+        "value": "Observe odor, flame behavior, and ash characteristics",
+        "mandatory": false
+      },
+      "solubility_sulfuric_acid": {
+        "value": "75% sulfuric acid at room temperature (dissolves cotton/viscose)",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 13157:1991",
+    "title": "Textile Fibres - Commercial Moisture Regains",
+    "description": "Standard for Textile. Key fields include cotton_moisture_regain, polyester_moisture_regain.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.13157.1991",
+    "requirements": {
+      "cotton_moisture_regain": {
+        "value": "8.5 percent",
+        "mandatory": true
+      },
+      "polyester_moisture_regain": {
+        "value": "0.4 percent",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 14281:2004",
+    "title": "Textiles - Glossary of Terms Relating to Made-up Textile Items and Ready-Made Garments",
+    "description": "Standard for Textile. Key fields include seam_allowance, grain_line.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.14281.2004",
+    "requirements": {
+      "seam_allowance": {
+        "value": "Distance between stitching line and raw edge",
+        "mandatory": false
+      },
+      "grain_line": {
+        "value": "Direction of warp yarns in a woven fabric",
+        "mandatory": false
+      }
+    }
+  },
+  {
+    "is_code": "IS 745:1990",
+    "title": "Handloom Cotton Bed Sheets - Specification",
+    "description": "Standard for Textile. Key fields include warp_yarn_count, shrinkage_limit.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.745.1990",
+    "requirements": {
+      "warp_yarn_count": {
+        "value": "2/20s, 2/40s, or equivalent tex",
+        "mandatory": true
+      },
+      "shrinkage_limit": {
+        "value": "Maximum 5.0 percent (warp and weft directions)",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 2977:1989",
+    "title": "Fabrics for Men's and Boys' Woven Dress Shirts",
+    "description": "Standard for Textile. Key fields include mass_per_square_meter, crease_recovery_angle.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.2977.1989",
+    "requirements": {
+      "mass_per_square_meter": {
+        "value": "Minimum 100 g/m2",
+        "mandatory": true
+      },
+      "crease_recovery_angle": {
+        "value": "Minimum 200 degrees (sum of warp and weft for resin treated)",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 10015 (Part 1):1981",
+    "title": "Size Designation of Clothes: Part 1 Men's and Boys' Outerwear Garments",
+    "description": "Standard for Textile. Key fields include primary_dimension, secondary_dimension.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.10015.1.1981",
+    "requirements": {
+      "primary_dimension": {
+        "value": "Chest girth (in cm)",
+        "mandatory": true
+      },
+      "secondary_dimension": {
+        "value": "Height (in cm)",
+        "mandatory": true
+      }
+    }
+  },
+  {
+    "is_code": "IS 16874:2018",
+    "title": "Protective Gloves for Firefighters",
+    "description": "Standard for Textile. Key fields include contact_heat_resistance, dexterity_level.",
+    "category": "Textile",
+    "source_url": "https://archive.org/details/gov.in.is.16874.2018",
+    "requirements": {
+      "contact_heat_resistance": {
+        "value": "Threshold time >= 10.0 s at 250 degrees Celsius",
+        "mandatory": true
+      },
+      "dexterity_level": {
+        "value": "Must pass minimum Level 1 (picking up 11mm diameter pin)",
+        "mandatory": true
+      }
+    }
   }
 ]
