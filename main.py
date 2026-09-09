@@ -50,6 +50,7 @@ init_audit_db()
 class TenderPayload(BaseModel):
     reference_id: str = Field(..., example="NHAI/2026/CIVIL-049")
     tender_text: str = Field(..., min_length=10, example="M25 grade concrete mix with max 0.45 w/c ratio.")
+    department_override: Optional[str] = Field(None, example="CIVIL")
 
 class AuditLogItem(BaseModel):
     timestamp: str
@@ -107,7 +108,14 @@ def validate_tender(payload: TenderPayload):
         raise HTTPException(status_code=503, detail="Compliance Engine is not initialized.")
     
     try:
-        # Step 1: Simulated NLP Extraction (Tokenizing simple clauses by sentence for demo)
+        from nlp_extraction.extractor import extract_from_text
+        extraction = extract_from_text(payload.tender_text)
+        
+        # Step 1 & 2: Department extraction with fallback override
+        department = payload.department_override or extraction.get("department")
+        explicit_codes = {c.replace(" ", "").upper() for c in extraction.get("explicit_standards", [])}
+        
+        # Step 3: Extract keywords & split clauses
         clauses = [c.strip() for c in payload.tender_text.split('.') if len(c.strip()) > 5]
         if not clauses:
             clauses = [payload.tender_text]
@@ -122,8 +130,11 @@ def validate_tender(payload: TenderPayload):
         c = conn.cursor()
 
         for clause in clauses:
-            # Step 2: Vector Semantic Retrieval
-            top_standards = engine.search_top_standards(clause, k=10)
+            # Add extracted keywords to clause search context
+            clause_with_kw = clause + " " + " ".join(extraction.get("keywords", []))
+            
+            # Step 4 & 5: Scoped Vector Semantic Retrieval with Explicit Boost
+            top_standards = engine.search_top_standards(clause_with_kw, k=10, department=department, explicit_codes=explicit_codes)
             if not top_standards:
                 continue
                 

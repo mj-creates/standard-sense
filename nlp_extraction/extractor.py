@@ -667,6 +667,53 @@ def build_spec_text(
     return ", ".join(parts)
 
 
+def extract_department(text: str) -> str | None:
+    """Extract and map tender department metadata to canonical taxonomy."""
+    if not text:
+        return None
+
+    dept_label = re.search(r"(?:Department|Domain|Category|Sector|Procurement Type)\s*[:\-–]\s*([^\n\r]+)", text, re.IGNORECASE)
+    text_lower = text.lower()
+    
+    medical_kws = {"hospital", "medical", "clinical", "critical care", "surgical", "health", "ecg", "spo2", "patient", "monitor"}
+    electrical_kws = {"electrical", "power supply", "cable", "lighting", "voltage", "substation", "switchgear", "led"}
+    civil_kws = {"civil", "construction", "highway", "bridge", "concrete", "structural", "cement", "reinforcement", "road"}
+    it_kws = {"it infrastructure", "software", "server", "networking", "data center", "computing", "router"}
+    
+    if dept_label:
+        val = dept_label.group(1).lower()
+        if any(kw in val for kw in medical_kws): return "MEDICAL_EQUIPMENT"
+        if any(kw in val for kw in electrical_kws): return "ELECTRICAL"
+        if any(kw in val for kw in civil_kws): return "CIVIL"
+        if any(kw in val for kw in it_kws): return "IT_INFRASTRUCTURE"
+
+    scores = {
+        "MEDICAL_EQUIPMENT": sum(1 for kw in medical_kws if kw in text_lower),
+        "ELECTRICAL": sum(1 for kw in electrical_kws if kw in text_lower),
+        "CIVIL": sum(1 for kw in civil_kws if kw in text_lower),
+        "IT_INFRASTRUCTURE": sum(1 for kw in it_kws if kw in text_lower),
+    }
+    
+    best_match = max(scores, key=scores.get)
+    if scores[best_match] > 0:
+        return best_match
+    return None
+
+def extract_keywords(text: str) -> list[str]:
+    """Extract core technical nouns, acronyms, and parameter units."""
+    if not text:
+        return []
+    keywords = []
+    # Acronyms (e.g., ECG, SpO2, MRI)
+    acronyms = re.findall(r"\b[A-Z][a-zA-Z0-9]{1,5}\b", text)
+    # Numbers with units (e.g., 220-240V, 50Hz)
+    units = re.findall(r"\b\d+(?:-\d+)?\s*(?:V|kV|W|kW|Hz|A|mA|mmHg|MPa)\b", text, re.IGNORECASE)
+    
+    for word in acronyms + units:
+        if word not in keywords:
+            keywords.append(word)
+    return keywords
+
 def extract_from_text(text: str, spec_id: str = "") -> dict[str, Any]:
     """
     Primary extraction entry point. Processes raw text through cleaning and rule-based
@@ -688,42 +735,33 @@ def extract_from_text(text: str, spec_id: str = "") -> dict[str, Any]:
     Returns
     -------
     dict[str, Any]
-        Structured dictionary containing:
-        - "spec_id": str
-        - "spec_text": str
-        - "product": str
-        - "specs": list[str]
-        - "parameters": dict[str, str]
-        - "explicit_standards": list[str]
-        - "multilingual_meta": dict  — translation diagnostics:
-            {
-              "was_translated":      bool,
-              "detected_scripts":    list[str],
-              "translation_success": bool,
-              "original_language":   str,
-            }
+        Structured dictionary containing extracted fields.
     """
     # ── Multilingual normalization (pre-processing) ──────────────────────────
-    # For English text this is a pure pass-through (no API call, no latency).
-    # For regional-language text this translates once via Groq before the
-    # existing English regex pipeline runs completely unchanged.
     normalized_text, multilingual_meta = normalize_text(text)
 
     cleaned = clean_text(normalized_text)
 
+    department = extract_department(cleaned)
     product = extract_product(cleaned)
     specs = extract_specifications(cleaned)
     parameters = extract_parameters(cleaned)
     standards = extract_standards(cleaned)
+    keywords = extract_keywords(cleaned)
+    
     spec_text = build_spec_text(product, parameters, specs, standards)
+    if keywords:
+        spec_text += " " + " ".join(keywords)
 
     return {
         "spec_id": spec_id or "spec_001",
         "spec_text": spec_text,
+        "department": department,
         "product": product,
         "specs": specs,
         "parameters": parameters,
         "explicit_standards": standards,
+        "keywords": keywords,
         "multilingual_meta": multilingual_meta,
     }
 

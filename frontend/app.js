@@ -360,6 +360,12 @@ async function submitTender() {
   const formData = new FormData();
   formData.append('file', selectedFile, selectedFile.name);
 
+  // Append department override if manually selected (not empty)
+  const deptSelect = document.getElementById('department-select');
+  if (deptSelect && deptSelect.value) {
+    formData.append('department_override', deptSelect.value);
+  }
+
   // Staggered step animations while we wait for the pipeline
   const stepTimers = [
     setTimeout(() => {

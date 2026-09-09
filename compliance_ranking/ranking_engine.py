@@ -77,6 +77,17 @@ def rank_recommendations(
     if not isinstance(spec_parameters, dict):
         spec_parameters = {}
 
+    import re
+    explicit_codes = set()
+    for key in ["is_code", "standard", "standard_code", "code"]:
+        val = spec_parameters.get(key)
+        if isinstance(val, str) and "IS" in val.upper():
+            explicit_codes.add(val.replace(" ", "").replace(":", "").upper())
+            
+    found_codes = re.findall(r'IS\s*:?\s*\d+(?:-\d+)*', spec_text, re.IGNORECASE)
+    for c in found_codes:
+        explicit_codes.add(c.replace(" ", "").replace(":", "").upper())
+
     # 2. Check compliance for each candidate and build enriched list
     enriched: list[dict[str, Any]] = []
 
@@ -87,6 +98,11 @@ def rank_recommendations(
         is_code = candidate.get("is_code", "")
         title = candidate.get("title", "")
         score = _semantic_score(candidate)
+
+        norm_is_code = is_code.replace(" ", "").replace(":", "").upper()
+        is_explicitly_cited = norm_is_code and norm_is_code in explicit_codes
+        if is_explicitly_cited:
+            score *= 0.2
 
         try:
             compliance = check_compliance(spec_parameters, is_code)
@@ -120,6 +136,7 @@ def rank_recommendations(
             "is_code": is_code,
             "title": title,
             "semantic_score": score,
+            "explicitly_cited": is_explicitly_cited,
             "matched_terms": matched_terms,
             "compliance_status": compliance["status"],
             "passed_fields": compliance["passed_fields"],

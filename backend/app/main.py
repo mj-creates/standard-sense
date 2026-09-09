@@ -9,7 +9,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Any
 from pydantic import BaseModel, Field
@@ -114,6 +114,7 @@ def _compute_mandatory_fields(
 @app.post("/process-tender")
 async def process_tender(
     file: UploadFile = File(...),
+    department_override: str = Form(None),
 ):
     """
     Process a tender specification PDF through
@@ -200,6 +201,8 @@ async def process_tender(
             "parameters",
             {},
         )
+        
+        department = department_override or extracted.get("department")
 
         # --------------------------------------------------
         # Validate extracted specification
@@ -264,6 +267,7 @@ async def process_tender(
         semantic_results = semantic_search(
             spec_text,
             top_k=8,
+            department=department,
         )
 
         # --------------------------------------------------

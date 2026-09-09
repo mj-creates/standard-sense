@@ -37,7 +37,7 @@ print(f"Ready. Index contains {_index.ntotal} IS standards.\n")
 
 
 # ── Search function ───────────────────────────────────────────────────────────
-def semantic_search(query_text: str, top_k: int = 5) -> list[dict]:
+def semantic_search(query_text: str, top_k: int = 5, department: str = None) -> list[dict]:
     """
     Embed query_text and return the top_k closest IS standards.
 
@@ -46,20 +46,43 @@ def semantic_search(query_text: str, top_k: int = 5) -> list[dict]:
 
     Lower l2_score = closer match.
     """
+    # Pre-filter: get valid codes from SQLite
+    import sqlite3
+    import os
+    db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "sih_standards.db")
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    if department:
+        c.execute("SELECT is_code FROM standards WHERE department=?", (department,))
+    else:
+        c.execute("SELECT is_code FROM standards")
+    valid_codes = {row[0] for row in c.fetchall()}
+    conn.close()
+
     query_vec = _model.encode([query_text], convert_to_numpy=True).astype(np.float32)
-    distances, indices = _index.search(query_vec, top_k)
+    # Execute FAISS search across all to allow exhaustive subset filtering
+    distances, indices = _index.search(query_vec, _index.ntotal)
 
     results = []
-    for rank, (idx, dist) in enumerate(zip(indices[0], distances[0]), start=1):
+    for idx, dist in zip(indices[0], distances[0]):
         meta = _metadata[str(idx)]
+        is_code = meta["is_code"]
+        if is_code not in valid_codes:
+            continue
+            
         results.append({
-            "rank":        rank,
-            "is_code":     meta["is_code"],
+            "is_code":     is_code,
             "title":       meta["title"],
             "description": meta["description"],
             "l2_score":    round(float(dist), 4),
         })
-    return results
+        
+    results.sort(key=lambda x: x["l2_score"])
+    top_results = results[:top_k]
+    for rank, res in enumerate(top_results, start=1):
+        res["rank"] = rank
+        
+    return top_results
 
 
 # ── Ambiguity detection ───────────────────────────────────────────────────────

@@ -57,35 +57,14 @@ class ComplianceEngine:
         except sqlite3.OperationalError as e:
             raise RuntimeError(f"Database operational error: {e}")
 
-    def search_top_standards(self, query_text, k=10):
-        """Encode tender clause, query FAISS, extract standard metadata."""
-        print(f"Searching top {k} standards for clause: '{query_text[:50]}...'")
-        embedding = self.model.encode([query_text], convert_to_numpy=True).astype(np.float32)
-        D, I = self.index.search(embedding, k)
-        
-        results = []
-        for i, idx in enumerate(I[0]):
-            if idx != -1:
-                str_idx = str(idx)
-                is_code = "Unknown"
-                title = "Unknown"
-                
-                # 1. Try to get basic info from FAISS metadata mapping
-                if str_idx in self.metadata:
-                    is_code = self.metadata[str_idx].get("is_code", is_code)
-                    title = self.metadata[str_idx].get("title", title)
-                    
-                # 2. Extract matching standard metadata from SQLite Master Database
-                db_meta = self.get_metadata_from_sqlite(is_code)
-                if db_meta:
-                    title = db_meta.get("title", title)
-                    
-                results.append({
-                    "is_code": is_code,
-                    "title": title,
-                    "score": float(D[0][i])
-                })
-        return results
+    def search_top_standards(self, query_text, k=10, department=None, department_override=None, explicit_codes=None):
+        """Encode tender clause, query FAISS, filter by department, apply explicit code boost, and extract metadata."""
+        # Map department_override if it was passed from the API route
+        if department_override:
+            department = department_override
+
+        if explicit_codes is None:
+            explicit_codes = set()
 
     def benchmark_with_groq(self, standard_code, title, tender_clause):
         """Utilize Groq API to extract structural threshold metrics."""

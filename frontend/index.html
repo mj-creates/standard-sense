@@ -489,6 +489,20 @@
           <span class="ml-1 text-slate-400 font-normal text-xs">(PDF — English, Hindi, Tamil, Telugu supported)</span>
         </h4>
 
+        <!-- Department Selection -->
+        <div class="mb-5">
+          <label for="department-select" class="block text-slate-600 text-xs font-semibold uppercase tracking-wider mb-2">
+            Procurement Domain / Department
+          </label>
+          <select id="department-select" class="w-full sm:w-2/3 md:w-1/2 bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors">
+            <option value="">Auto-Detect (AI / NLP)</option>
+            <option value="MEDICAL_EQUIPMENT">Medical Equipment</option>
+            <option value="ELECTRICAL">Electrical &amp; Lighting</option>
+            <option value="CIVIL">Civil Infrastructure</option>
+            <option value="IT_INFRASTRUCTURE">IT &amp; Electronics</option>
+          </select>
+        </div>
+
         <!-- Hidden real file input -->
         <input type="file" id="file-input" accept=".pdf" class="hidden" aria-label="Select tender PDF" />
 
