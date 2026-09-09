@@ -8,3 +8,4 @@ audit_summary.json
 sanity_out.txt
 backend_output.log
 package-lock.json
+data/officer_history/

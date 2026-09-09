@@ -1,5 +1,6 @@
 from pathlib import Path
 import tempfile
+import json
 import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -10,6 +11,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Any
 from pydantic import BaseModel, Field
 
 from backend.app.auth.router import router as auth_router
@@ -521,4 +523,220 @@ def auto_fix(payload: AutoFixRequest):
     return {
         "status": "ok",
         "corrected_specification": corrected_text,
+    }
+
+
+# --------------------------------------------------
+# COMPLIANCE ANALYSIS ENDPOINT
+# --------------------------------------------------
+
+class ComplianceAnalysisRequest(BaseModel):
+    spec_parameters: dict[str, Any] = Field(default_factory=dict)
+    is_codes: list[str] = Field(default_factory=list)
+    spec_id: str = Field(default="")
+    spec_text: str = Field(default="")
+
+ComplianceAnalysisRequest.model_rebuild()
+
+
+@app.post("/compliance-analysis")
+def compliance_analysis(payload: ComplianceAnalysisRequest):
+    """
+    Generate comprehensive compliance analysis:
+    - Compliance percentage
+    - Gap summary (critical & advisory)
+    - Key risks & procurement recommendations
+    Calls existing check_compliance() and _REQUIREMENTS from compliance_ranking.
+    """
+    from compliance_ranking.compliance_checker import check_compliance, _REQUIREMENTS
+
+    try:
+        req_path = PROJECT_ROOT / "compliance_ranking" / "mock_requirements.json"
+        with open(req_path, "r", encoding="utf-8") as f:
+            raw_meta = json.load(f)
+            title_map = {entry["is_code"]: entry.get("title", "") for entry in raw_meta}
+    except Exception:
+        title_map = {}
+
+    def _format_rule_req(rule: dict) -> str:
+        if not rule:
+            return "Required specification"
+        if "min" in rule and "max" in rule:
+            return f"Range: {rule['min']} to {rule['max']}"
+        if "min" in rule:
+            return f"Min threshold: {rule['min']}"
+        if "max" in rule:
+            return f"Max ceiling: {rule['max']}"
+        if "options" in rule:
+            return f"Allowed options: {', '.join(str(o) for o in rule['options'])}"
+        if "pattern" in rule:
+            return f"Format: {rule['pattern']}"
+        if rule.get("required"):
+            return "Mandatory specification required"
+        return "Compliant parameter specification"
+
+    spec_parameters = payload.spec_parameters or {}
+    is_codes = [str(c).strip() for c in payload.is_codes if str(c).strip()]
+
+    # If no specific IS codes provided, use top available from requirements
+    if not is_codes:
+        is_codes = list(_REQUIREMENTS.keys())[:5]
+
+    standards_analysis = []
+    all_gaps = []
+    all_passed_fields = set()
+    all_failed_fields = set()
+    all_missing_fields = set()
+    total_checks = 0
+    total_passed = 0
+
+    for is_code in is_codes:
+        comp = check_compliance(spec_parameters, is_code)
+        reqs = _REQUIREMENTS.get(is_code, {})
+        title = title_map.get(is_code, f"BIS Standard {is_code}")
+
+        passed = comp.get("passed_fields", [])
+        failed = comp.get("failed_fields", [])
+        missing = comp.get("missing_fields", [])
+        mandatory_failed = comp.get("mandatory_failed_fields", [])
+        advisory_failed = comp.get("advisory_failed_fields", [])
+        is_mand_comp = comp.get("is_mandatory_compliant", False)
+        status = comp.get("status", "unknown")
+
+        num_rules = len(reqs) if reqs else (len(passed) + len(failed) + len(missing))
+        std_pct = round((len(passed) / num_rules * 100), 1) if num_rules > 0 else 0.0
+
+        total_checks += num_rules
+        total_passed += len(passed)
+        all_passed_fields.update(passed)
+        all_failed_fields.update(failed)
+        all_missing_fields.update(missing)
+
+        # Build gaps for this standard
+        std_gaps = []
+        for f in failed:
+            rule = reqs.get(f, {})
+            is_mand = bool(rule.get("mandatory", True))
+            std_gaps.append({
+                "field": f,
+                "type": "failed",
+                "severity": "critical" if is_mand else "advisory",
+                "is_code": is_code,
+                "requirement": _format_rule_req(rule),
+                "found_value": str(spec_parameters.get(f, "Non-compliant value")),
+                "rationale": rule.get("rationale", "Parameter failed technical threshold requirement"),
+            })
+
+        for f in missing:
+            rule = reqs.get(f, {})
+            is_mand = bool(rule.get("mandatory", True))
+            std_gaps.append({
+                "field": f,
+                "type": "missing",
+                "severity": "critical" if is_mand else "advisory",
+                "is_code": is_code,
+                "requirement": _format_rule_req(rule),
+                "found_value": "Absent / Not specified",
+                "rationale": rule.get("rationale", "Mandatory technical parameter missing from tender"),
+            })
+
+        all_gaps.extend(std_gaps)
+
+        standards_analysis.append({
+            "is_code": is_code,
+            "title": title,
+            "status": status,
+            "compliance_percentage": std_pct,
+            "is_mandatory_compliant": is_mand_comp,
+            "passed_fields": passed,
+            "failed_fields": failed,
+            "missing_fields": missing,
+            "mandatory_failed_fields": mandatory_failed,
+            "advisory_failed_fields": advisory_failed,
+            "total_requirements": num_rules,
+            "gaps": std_gaps,
+        })
+
+    # Primary standard (first in list)
+    primary = standards_analysis[0] if standards_analysis else {}
+    primary_pct = primary.get("compliance_percentage", 0.0) if primary else 0.0
+    overall_pct = round((total_passed / total_checks * 100), 1) if total_checks > 0 else 0.0
+
+    critical_gaps = [g for g in all_gaps if g["severity"] == "critical"]
+    advisory_gaps = [g for g in all_gaps if g["severity"] == "advisory"]
+
+    # Key Risks generation
+    key_risks = []
+    primary_is_code = primary.get("is_code", "BIS Standard")
+
+    if critical_gaps:
+        crit_fields = list(dict.fromkeys([g["field"] for g in critical_gaps]))
+        key_risks.append({
+            "title": "Statutory & Legal Non-Compliance Risk",
+            "level": "HIGH",
+            "category": "Regulatory",
+            "description": f"Tender specification violates mandatory technical requirements for {', '.join(crit_fields[:3])}.",
+            "impact": "Risk of formal audit objections, supplier bid disqualification, or cancellation under mandatory BIS Quality Control Orders (QCO).",
+            "mitigation": f"Incorporate mandatory limits for {', '.join(crit_fields[:3])} in the tender scope before issuing the RFP.",
+        })
+
+    if advisory_gaps:
+        adv_fields = list(dict.fromkeys([g["field"] for g in advisory_gaps]))
+        key_risks.append({
+            "title": "Operational Scope Ambiguity Risk",
+            "level": "MEDIUM",
+            "category": "Operational",
+            "description": f"Advisory specifications ({', '.join(adv_fields[:3])}) are absent or substandard in the tender document.",
+            "impact": "Vendors may supply lower-tier components leading to early degradation, higher maintenance costs, or contractual disputes.",
+            "mitigation": "Clarify lifecycle, warranty, and environmental endurance requirements in the tender technical schedule.",
+        })
+
+    if not critical_gaps and not advisory_gaps:
+        key_risks.append({
+            "title": "Low Procurement Risk",
+            "level": "LOW",
+            "category": "Compliance",
+            "description": f"Specification fully satisfies all checked safety, operational, and statutory criteria under {primary_is_code}.",
+            "impact": "Tender is legally defensible and adheres to central procurement guidelines.",
+            "mitigation": "Ensure post-delivery inspection mandates BIS ISI-marked / certified verification documentation from the winning bidder.",
+        })
+    elif not critical_gaps:
+        key_risks.append({
+            "title": "Statutory Compliance Satisfied",
+            "level": "LOW",
+            "category": "Safety & Statutory",
+            "description": f"All core safety and mandatory requirements under {primary_is_code} are completely satisfied.",
+            "impact": "No statutory violation under current BIS standards.",
+            "mitigation": "Address secondary advisory recommendations to optimize total cost of ownership.",
+        })
+
+    return {
+        "status": "ok",
+        "spec_id": payload.spec_id,
+        "primary_standard": primary_is_code,
+        "primary_title": primary.get("title", ""),
+        "primary_compliance_percentage": primary_pct,
+        "overall_compliance_percentage": overall_pct,
+        "is_mandatory_compliant": primary.get("is_mandatory_compliant", False),
+        "compliance_status": primary.get("status", "unknown"),
+        "metrics": {
+            "standards_evaluated": len(standards_analysis),
+            "total_parameters_checked": total_checks,
+            "total_passed": total_passed,
+            "total_failed": len(all_failed_fields),
+            "total_missing": len(all_missing_fields),
+            "total_gaps": len(all_gaps),
+            "critical_gaps_count": len(critical_gaps),
+            "advisory_gaps_count": len(advisory_gaps),
+        },
+        "gap_summary": {
+            "total_gaps": len(all_gaps),
+            "critical_count": len(critical_gaps),
+            "advisory_count": len(advisory_gaps),
+            "critical_gaps": critical_gaps,
+            "advisory_gaps": advisory_gaps,
+            "all_gaps": all_gaps,
+        },
+        "key_risks": key_risks,
+        "standards_breakdown": standards_analysis,
     }
