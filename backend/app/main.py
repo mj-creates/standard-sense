@@ -609,7 +609,14 @@ def compliance_analysis(payload: ComplianceAnalysisRequest):
         status = comp.get("status", "unknown")
 
         num_rules = len(reqs) if reqs else (len(passed) + len(failed) + len(missing))
-        std_pct = round((len(passed) / num_rules * 100), 1) if num_rules > 0 else 0.0
+        # If this standard has no rules at all it is "not yet rule-mapped" —
+        # report None so the frontend can show N/A rather than a misleading 0%.
+        is_rule_mapped = num_rules > 0
+        std_pct = round((len(passed) / num_rules * 100), 1) if is_rule_mapped else None
+        # An unmapped standard has never been checked, so it cannot be
+        # reported as "violating" mandatory criteria.
+        if not is_rule_mapped:
+            is_mand_comp = None   # neutral / not evaluated
 
         total_checks += num_rules
         total_passed += len(passed)
@@ -664,8 +671,13 @@ def compliance_analysis(payload: ComplianceAnalysisRequest):
 
     # Primary standard (first in list)
     primary = standards_analysis[0] if standards_analysis else {}
-    primary_pct = primary.get("compliance_percentage", 0.0) if primary else 0.0
-    overall_pct = round((total_passed / total_checks * 100), 1) if total_checks > 0 else 0.0
+    # Use None (→ N/A in UI) when the primary standard has no rule coverage.
+    primary_pct = primary.get("compliance_percentage") if primary else None
+    overall_pct = round((total_passed / total_checks * 100), 1) if total_checks > 0 else None
+
+    # Count how many standards in this run had no rule mappings.
+    unmapped_count = sum(1 for s in standards_analysis if s.get("compliance_percentage") is None)
+    mapped_count   = len(standards_analysis) - unmapped_count
 
     critical_gaps = [g for g in all_gaps if g["severity"] == "critical"]
     advisory_gaps = [g for g in all_gaps if g["severity"] == "advisory"]
@@ -697,14 +709,35 @@ def compliance_analysis(payload: ComplianceAnalysisRequest):
         })
 
     if not critical_gaps and not advisory_gaps:
-        key_risks.append({
-            "title": "Low Procurement Risk",
-            "level": "LOW",
-            "category": "Compliance",
-            "description": f"Specification fully satisfies all checked safety, operational, and statutory criteria under {primary_is_code}.",
-            "impact": "Tender is legally defensible and adheres to central procurement guidelines.",
-            "mitigation": "Ensure post-delivery inspection mandates BIS ISI-marked / certified verification documentation from the winning bidder.",
-        })
+        if unmapped_count > 0 and mapped_count == 0:
+            # Every standard is unmapped — no rules were evaluated at all,
+            # so we cannot make a risk claim in either direction.
+            key_risks.append({
+                "title": "Coverage Pending — Rules Not Yet Mapped",
+                "level": "LOW",
+                "category": "Information",
+                "description": f"Detailed compliance rules have not yet been loaded for {primary_is_code}. Semantic relevance has been confirmed; rule-based checking will be available in the next standards release.",
+                "impact": "No statutory violations were detected. Rule-based parameter analysis is not yet available for this standard category.",
+                "mitigation": "Verify procurement specification against the printed IS document. Automated parameter checking will activate once rules are mapped.",
+            })
+        elif unmapped_count > 0:
+            key_risks.append({
+                "title": "Partial Coverage — Some Standards Not Yet Rule-Mapped",
+                "level": "LOW",
+                "category": "Information",
+                "description": f"Specification fully satisfies all checked criteria under the {mapped_count} rule-mapped standard(s). {unmapped_count} additional standard(s) are pending rule mapping.",
+                "impact": "Tender is legally defensible for all evaluated parameters.",
+                "mitigation": "Ensure post-delivery inspection mandates BIS ISI-marked / certified verification documentation from the winning bidder.",
+            })
+        else:
+            key_risks.append({
+                "title": "Low Procurement Risk",
+                "level": "LOW",
+                "category": "Compliance",
+                "description": f"Specification fully satisfies all checked safety, operational, and statutory criteria under {primary_is_code}.",
+                "impact": "Tender is legally defensible and adheres to central procurement guidelines.",
+                "mitigation": "Ensure post-delivery inspection mandates BIS ISI-marked / certified verification documentation from the winning bidder.",
+            })
     elif not critical_gaps:
         key_risks.append({
             "title": "Statutory Compliance Satisfied",
@@ -726,6 +759,8 @@ def compliance_analysis(payload: ComplianceAnalysisRequest):
         "compliance_status": primary.get("status", "unknown"),
         "metrics": {
             "standards_evaluated": len(standards_analysis),
+            "rule_mapped_count": mapped_count,
+            "not_rule_mapped_count": unmapped_count,
             "total_parameters_checked": total_checks,
             "total_passed": total_passed,
             "total_failed": len(all_failed_fields),

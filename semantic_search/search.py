@@ -36,6 +36,25 @@ _model = SentenceTransformer(MODEL_NAME)
 print(f"Ready. Index contains {_index.ntotal} IS standards.\n")
 
 
+# ── Department label normalisation ───────────────────────────────────────────
+# extractor.py returns internal labels; sih_standards.db uses different strings.
+# Map every extractor label → DB column value so the WHERE filter is never empty.
+_DEPT_LABEL_TO_DB: dict[str, str] = {
+    "MEDICAL_EQUIPMENT":    "MedicalEquipment",
+    "ELECTRICAL":           "Electrotechnical",
+    "CIVIL":                "CivilEngineering",
+    "IT_INFRASTRUCTURE":    "Electronics & InformationTechnology",
+    # also accept the DB strings themselves (idempotent pass-through)
+    "MedicalEquipment":                        "MedicalEquipment",
+    "Electrotechnical":                        "Electrotechnical",
+    "CivilEngineering":                        "CivilEngineering",
+    "Electronics & InformationTechnology":     "Electronics & InformationTechnology",
+    "Food & Agriculture":                      "Food & Agriculture",
+    "Textile":                                 "Textile",
+    "TransportEngineering":                    "TransportEngineering",
+}
+
+
 # ── Search function ───────────────────────────────────────────────────────────
 def semantic_search(query_text: str, top_k: int = 5, department: str = None) -> list[dict]:
     """
@@ -53,11 +72,22 @@ def semantic_search(query_text: str, top_k: int = 5, department: str = None) -> 
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     if department:
-        c.execute("SELECT is_code FROM standards WHERE department=?", (department,))
+        # Normalise extractor labels (e.g. "MEDICAL_EQUIPMENT") to DB column
+        # values (e.g. "MedicalEquipment") before querying.
+        db_department = _DEPT_LABEL_TO_DB.get(department, department)
+        c.execute("SELECT is_code FROM standards WHERE department=?", (db_department,))
     else:
         c.execute("SELECT is_code FROM standards")
     valid_codes = {row[0] for row in c.fetchall()}
     conn.close()
+
+    # Safety net: if the mapping produced no rows (unknown label), fall back to
+    # the full index so we never silently return an empty list.
+    if not valid_codes:
+        c2 = sqlite3.connect(db_path).cursor()
+        c2.execute("SELECT is_code FROM standards")
+        valid_codes = {row[0] for row in c2.fetchall()}
+        c2.connection.close()
 
     query_vec = _model.encode([query_text], convert_to_numpy=True).astype(np.float32)
     # Execute FAISS search across all to allow exhaustive subset filtering

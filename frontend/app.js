@@ -1953,18 +1953,26 @@ function _renderAnalysisView(data) {
     stdBadge.textContent = data.primary_standard ? `Primary: ${data.primary_standard}` : 'BIS Standard';
   }
 
-  const primaryPct = typeof data.primary_compliance_percentage === 'number' ? data.primary_compliance_percentage : 0;
-  const overallPct = typeof data.overall_compliance_percentage === 'number' ? data.overall_compliance_percentage : 0;
+  // null means "no rules mapped for this standard" — render as N/A, never as 0%.
+  const primaryPctRaw = data.primary_compliance_percentage;
+  const overallPctRaw = data.overall_compliance_percentage;
+  const primaryPct = typeof primaryPctRaw === 'number' ? primaryPctRaw : null;
+  const overallPct = typeof overallPctRaw === 'number' ? overallPctRaw : null;
+  const primaryPctLabel = primaryPct !== null ? `${primaryPct}%` : 'N/A';
+  const overallPctLabel = overallPct !== null ? `${overallPct}%` : 'N/A';
+
   const metrics = data.metrics || {};
   const gaps = data.gap_summary || {};
   const criticalGaps = gaps.critical_gaps || [];
   const advisoryGaps = gaps.advisory_gaps || [];
   const risks = data.key_risks || [];
   const standards = data.standards_breakdown || [];
+  const unmappedCount = metrics.not_rule_mapped_count || 0;
+  const mappedCount   = metrics.rule_mapped_count || 0;
 
-  // Color determination for primary %
-  const primaryColor = primaryPct >= 80 ? 'bg-green-500' : (primaryPct >= 50 ? 'bg-amber-500' : 'bg-red-500');
-  const overallColor = overallPct >= 80 ? 'bg-green-500' : (overallPct >= 50 ? 'bg-amber-500' : 'bg-red-500');
+  // Color determination — neutral gray when N/A (no rules mapped)
+  const primaryColor = primaryPct === null ? 'bg-slate-300' : (primaryPct >= 80 ? 'bg-green-500' : (primaryPct >= 50 ? 'bg-amber-500' : 'bg-red-500'));
+  const overallColor = overallPct === null ? 'bg-slate-300' : (overallPct >= 80 ? 'bg-green-500' : (overallPct >= 50 ? 'bg-amber-500' : 'bg-red-500'));
 
   // Format field helper
   const fmtField = (f) => _escHtml(String(f).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
@@ -1980,19 +1988,21 @@ function _renderAnalysisView(data) {
             <span class="text-xs font-bold text-govnavy bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${_escHtml(data.primary_standard || '—')}</span>
           </div>
           <div class="flex items-baseline gap-2 mb-2">
-            <span class="text-3xl font-extrabold text-govnavy">${primaryPct}%</span>
+            <span class="text-3xl font-extrabold ${primaryPct === null ? 'text-slate-400' : 'text-govnavy'}">${primaryPctLabel}</span>
             <span class="text-xs text-slate-500 font-medium">Compliance</span>
           </div>
         </div>
         <div>
           <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden mb-2">
-            <div class="${primaryColor} h-2 rounded-full transition-all duration-500" style="width: ${primaryPct}%"></div>
+            <div class="${primaryColor} h-2 rounded-full transition-all duration-500" style="width: ${primaryPct !== null ? primaryPct : 100}%"></div>
           </div>
           <div class="flex items-center justify-between text-xs">
             <span class="text-slate-400">Mandatory:</span>
-            ${data.is_mandatory_compliant
+            ${data.is_mandatory_compliant === true
               ? '<span class="text-green-700 font-semibold flex items-center gap-1">✓ Passed</span>'
-              : '<span class="text-red-600 font-semibold flex items-center gap-1">✗ Violation</span>'}
+              : data.is_mandatory_compliant === false
+                ? '<span class="text-red-600 font-semibold flex items-center gap-1">✗ Violation</span>'
+                : '<span class="text-slate-400 font-semibold flex items-center gap-1">— Not Evaluated</span>'}
           </div>
         </div>
       </div>
@@ -2007,13 +2017,13 @@ function _renderAnalysisView(data) {
             </span>
           </div>
           <div class="flex items-baseline gap-2 mb-2">
-            <span class="text-3xl font-extrabold text-govnavy">${overallPct}%</span>
+            <span class="text-3xl font-extrabold ${overallPct === null ? 'text-slate-400' : 'text-govnavy'}">${overallPctLabel}</span>
             <span class="text-xs text-slate-500 font-medium">Aggregate</span>
           </div>
         </div>
         <div>
           <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden mb-2">
-            <div class="${overallColor} h-2 rounded-full transition-all duration-500" style="width: ${overallPct}%"></div>
+            <div class="${overallColor} h-2 rounded-full transition-all duration-500" style="width: ${overallPct !== null ? overallPct : 100}%"></div>
           </div>
           <div class="flex items-center justify-between text-xs">
             <span class="text-slate-400">Evaluated:</span>
@@ -2141,18 +2151,40 @@ function _renderAnalysisView(data) {
   // 3. Gap Summary Section
   let gapsHtml = '';
   if (criticalGaps.length === 0 && advisoryGaps.length === 0) {
+    // Distinguish between "checked and passed" vs "no rules to check at all"
+    const allUnmapped = unmappedCount > 0 && mappedCount === 0;
+    const someUnmapped = unmappedCount > 0 && mappedCount > 0;
+
+    let gapBannerTitle, gapBannerBody, gapBannerTheme;
+    if (allUnmapped) {
+      gapBannerTheme = 'bg-slate-50 border-slate-200';
+      const iconColor = 'text-slate-400';
+      gapBannerTitle = `<h5 class="text-sm font-bold text-slate-700 mb-1">No Rule-Mapped Standards in This Set</h5>`;
+      gapBannerBody  = `<p class="text-xs text-slate-500 max-w-md mx-auto">Detailed compliance rules have not yet been loaded for these ${unmappedCount} standard(s). No parameter gaps can be reported — this is not a pass result, just a coverage gap in the rule database.</p>`;
+    } else if (someUnmapped) {
+      gapBannerTheme = 'bg-blue-50 border-blue-200';
+      gapBannerTitle = `<h5 class="text-sm font-bold text-blue-900 mb-1">Zero Gaps Across ${mappedCount} Rule-Mapped Standard${mappedCount === 1 ? '' : 's'}</h5>`;
+      gapBannerBody  = `<p class="text-xs text-blue-700 max-w-md mx-auto">All checked parameters pass. ${unmappedCount} additional standard${unmappedCount === 1 ? ' is' : 's are'} not yet rule-mapped and were not evaluated.</p>`;
+    } else {
+      gapBannerTheme = 'bg-green-50 border-green-200';
+      gapBannerTitle = `<h5 class="text-sm font-bold text-green-900 mb-1">Zero Specification Gaps</h5>`;
+      gapBannerBody  = `<p class="text-xs text-green-700 max-w-md mx-auto">The extracted tender specification satisfies all mandatory and advisory technical parameters evaluated across the applicable BIS standards.</p>`;
+    }
+
     gapsHtml = `
       <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-card">
         <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
           <span class="w-1 h-5 bg-govgreen rounded-full inline-block"></span>
           <h4 class="text-govnavy font-bold text-base">Specification Gap Summary</h4>
         </div>
-        <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-          <div class="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto mb-2">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <div class="${gapBannerTheme} border rounded-xl p-6 text-center">
+          <div class="w-10 h-10 rounded-full ${allUnmapped ? 'bg-slate-100 text-slate-400' : 'bg-green-100 text-green-700'} flex items-center justify-center mx-auto mb-2">
+            ${allUnmapped
+              ? `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
+              : `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`}
           </div>
-          <h5 class="text-sm font-bold text-green-900 mb-1">Zero Specification Gaps</h5>
-          <p class="text-xs text-green-700 max-w-md mx-auto">The extracted tender specification satisfies all mandatory and advisory technical parameters evaluated across the applicable BIS standards.</p>
+          ${gapBannerTitle}
+          ${gapBannerBody}
         </div>
       </div>
     `;
@@ -2264,11 +2296,39 @@ function _renderAnalysisView(data) {
   let standardsHtml = '';
   if (standards.length > 0) {
     const stdRows = standards.map(s => {
-      const pct = typeof s.compliance_percentage === 'number' ? s.compliance_percentage : 0;
-      const barColor = pct >= 80 ? 'bg-green-500' : (pct >= 50 ? 'bg-amber-500' : 'bg-red-500');
+      // compliance_percentage is null when this standard has no rule mappings yet.
+      const pctRaw = s.compliance_percentage;
+      const isRuleMapped = typeof pctRaw === 'number';
+      const pct = isRuleMapped ? pctRaw : null;
+      const pctLabel = pct !== null ? `${pct}%` : 'N/A';
+      const barColor = !isRuleMapped ? 'bg-slate-300'
+        : pct >= 80 ? 'bg-green-500'
+        : pct >= 50 ? 'bg-amber-500'
+        : 'bg-red-500';
+      const barWidth = pct !== null ? pct : 100; // full-width neutral bar for N/A
+
       const passedChips = (s.passed_fields || []).map(f =>
         `<span class="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 bg-green-50 text-green-700 rounded border border-green-200">✓ ${fmtField(f)}</span>`
       ).join(' ');
+
+      // Mandatory criteria cell — three possible states:
+      //   true  → green ✓ Fully Compliant
+      //   false → red ✗ Violations Present   (only when rules were actually checked)
+      //   null  → slate — Not Rule-Mapped
+      let mandatoryCell;
+      if (s.is_mandatory_compliant === true) {
+        mandatoryCell = '<span class="text-green-700">✓ Fully Compliant</span>';
+      } else if (s.is_mandatory_compliant === false && isRuleMapped) {
+        mandatoryCell = '<span class="text-red-600">✗ Violations Present</span>';
+      } else {
+        mandatoryCell = '<span class="text-slate-400">— Not Rule-Mapped</span>';
+      }
+
+      // Gaps column — only meaningful when rules exist
+      const gapCount = (s.gaps || []).length;
+      const gapCell = isRuleMapped
+        ? `<span class="font-bold ${gapCount > 0 ? 'text-red-600' : 'text-green-700'}">${gapCount}</span>`
+        : '<span class="text-slate-400">—</span>';
 
       return `
         <tr class="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
@@ -2283,24 +2343,22 @@ function _renderAnalysisView(data) {
           </td>
           <td class="py-3 px-4">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-govnavy w-10">${pct}%</span>
+              <span class="text-xs font-bold w-10 ${pct === null ? 'text-slate-400' : 'text-govnavy'}">${pctLabel}</span>
               <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div class="${barColor} h-2 rounded-full" style="width: ${pct}%"></div>
+                <div class="${barColor} h-2 rounded-full" style="width: ${barWidth}%"></div>
               </div>
             </div>
           </td>
           <td class="py-3 px-4 text-xs font-semibold">
-            ${s.is_mandatory_compliant
-              ? '<span class="text-green-700">✓ Fully Compliant</span>'
-              : '<span class="text-red-600">✗ Violations Present</span>'}
+            ${mandatoryCell}
           </td>
           <td class="py-3 px-4">
             <div class="flex flex-wrap gap-1 max-w-sm">
               ${passedChips || '<span class="text-slate-400 text-xs">—</span>'}
             </div>
           </td>
-          <td class="py-3 px-4 text-xs text-center font-bold ${(s.gaps || []).length > 0 ? 'text-red-600' : 'text-green-700'}">
-            ${(s.gaps || []).length}
+          <td class="py-3 px-4 text-xs text-center">
+            ${gapCell}
           </td>
         </tr>
       `;
