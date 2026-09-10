@@ -226,16 +226,28 @@ def extract_and_check_compliance_llm(
             "advisory_failed_fields":   [],
             "is_mandatory_compliant":   is_mandatory_compliant,
         }
+        # Only cache successful verdicts. Transient failures (rate limits,
+        # timeouts, network errors) must NOT be cached — they would permanently
+        # poison the cache slot for the lifetime of the server process, causing
+        # all future requests for the same (is_code, spec_params) to return a
+        # stale "unknown" without ever retrying the LLM.
+        _llm_cache[key] = result
+        return result
 
     except json.JSONDecodeError as exc:
         logger.warning(
             "LLM compliance JSON parse error for %s: %s", is_code, exc
         )
     except Exception as exc:  # noqa: BLE001
+        # Log the full exception class so transient errors (RateLimitError,
+        # timeout, etc.) are visible in server logs rather than silently
+        # swallowed as generic "unknown" results.
         logger.warning(
-            "LLM compliance check failed for %s: %s", is_code, exc
+            "LLM compliance check failed for %s [%s]: %s",
+            is_code, type(exc).__name__, exc,
         )
 
-    # Cache and return (even the fallback, to avoid hammering the API on repeated failures)
-    _llm_cache[key] = result
-    return result
+    # Do NOT cache failures — return the neutral fallback without persisting it.
+    # The next request will retry the LLM call, which is correct behaviour for
+    # transient errors like rate limits (which reset in minutes).
+    return _unknown(is_code)

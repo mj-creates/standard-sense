@@ -553,7 +553,7 @@ def compliance_analysis(payload: ComplianceAnalysisRequest):
     - Key risks & procurement recommendations
     Calls existing check_compliance() and _REQUIREMENTS from compliance_ranking.
     """
-    from compliance_ranking.compliance_checker import check_compliance, _REQUIREMENTS
+    from compliance_ranking.compliance_checker import check_compliance, _REQUIREMENTS  # noqa: F401 (check_compliance kept for _run_compliance's fast-path use)
 
     try:
         req_path = PROJECT_ROOT / "compliance_ranking" / "mock_requirements.json"
@@ -595,10 +595,34 @@ def compliance_analysis(payload: ComplianceAnalysisRequest):
     total_checks = 0
     total_passed = 0
 
+    # Build a lookup for standard titles and descriptions from the FAISS metadata
+    # so _run_compliance() can pass them to the LLM for unmapped standards.
+    try:
+        import json as _json
+        import pathlib as _pathlib
+        _meta_path = PROJECT_ROOT / "semantic_search" / "is_metadata.json"
+        _raw_meta = _json.loads(_meta_path.read_text(encoding="utf-8"))
+        # Index metadata by is_code for O(1) lookup
+        _meta_by_code = {v["is_code"]: v for v in _raw_meta.values() if isinstance(v, dict)}
+    except Exception:
+        _meta_by_code = {}
+
     for is_code in is_codes:
-        comp = check_compliance(spec_parameters, is_code)
+        # Build a synthetic candidate dict so _run_compliance() has title+description
+        # available for the LLM prompt (same shape as FAISS search results).
+        _meta_entry = _meta_by_code.get(is_code, {})
+        candidate = {
+            "is_code":     is_code,
+            "title":       _meta_entry.get("title",       title_map.get(is_code, f"BIS Standard {is_code}")),
+            "description": _meta_entry.get("description", ""),
+        }
+        # Route through the same dispatcher used by ranking_engine.py:
+        # - Legacy standards (in mock_requirements.json) → deterministic check_compliance()
+        # - All other standards → LLM-based extract_and_check_compliance_llm()
+        from compliance_ranking.ranking_engine import _run_compliance
+        comp = _run_compliance(candidate, spec_parameters, use_llm=True)
         reqs = _REQUIREMENTS.get(is_code, {})
-        title = title_map.get(is_code, f"BIS Standard {is_code}")
+        title = candidate["title"]
 
         passed = comp.get("passed_fields", [])
         failed = comp.get("failed_fields", [])
