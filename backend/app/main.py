@@ -269,6 +269,7 @@ async def process_tender(
             top_k=8,
             department=department,
         )
+        print(f"DEBUG: semantic_search returned {len(semantic_results)} results: {semantic_results[:2]}")
 
         # --------------------------------------------------
         # 3. AMBIGUITY DETECTION
