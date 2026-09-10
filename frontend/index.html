@@ -10,18 +10,19 @@
       theme: {
         extend: {
           colors: {
-            govnavy: '#0D2137',
-            govorange: '#F47820',
-            govblue: '#1A3A5C',
-            govgreen: '#1A6B3C',
-            govgreenlight: '#2D8A52',
+            govnavy:       '#080357',
+            govorange:     '#C45000',
+            govblue:       '#1E3A5F',
+            govgreen:      '#1A5C3A',
+            govgreenlight: '#21724A',
+            inst:          '#2563EB',
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
           },
           boxShadow: {
-            card: '0 4px 32px 0 rgba(13,33,55,0.18)',
-            'card-lg': '0 8px 48px 0 rgba(13,33,55,0.22)',
+            card:    '0 1px 3px 0 rgba(0,0,0,0.06), 0 0 0 1px rgba(203,213,225,0.8)',
+            'card-lg': '0 2px 8px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(203,213,225,0.9)',
           }
         }
       }
@@ -90,133 +91,143 @@
     body { font-family: 'Inter', system-ui, sans-serif; }
 
     .tab-active {
-      background-color: #0D2137;
+      background-color: #080357;
       color: #ffffff;
-      border-bottom: 3px solid #F47820;
+      border-bottom: 2px solid #C45000;
     }
     .tab-inactive {
-      background-color: #f1f5f9;
+      background-color: #f8fafc;
       color: #475569;
-      border-bottom: 3px solid transparent;
+      border-bottom: 2px solid transparent;
     }
     .tab-inactive:hover {
-      background-color: #e2e8f0;
-      color: #1A3A5C;
+      background-color: #f1f5f9;
+      color: #1E3A5F;
     }
 
-    /* Ashoka Chakra decorative ring */
     .chakra-ring {
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      border: 3px solid #F47820;
+      border: 2px solid #C45000;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
 
-    /* Subtle grid background */
     .bg-grid {
-      background-color: #EEF2F7;
+      background-color: #F8FAFC;
       background-image:
-        linear-gradient(rgba(13,33,55,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(13,33,55,0.04) 1px, transparent 1px);
-      background-size: 28px 28px;
+        linear-gradient(rgba(8,3,87,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(8,3,87,0.025) 1px, transparent 1px);
+      background-size: 32px 32px;
     }
 
     .input-field {
       width: 100%;
-      padding: 0.625rem 0.875rem;
-      border: 1.5px solid #CBD5E1;
-      border-radius: 0.5rem;
-      font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #CBD5E1;
+      border-radius: 4px;
+      font-size: 0.875rem;
       color: #1e293b;
-      background: #f8fafc;
-      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      background: #ffffff;
+      transition: border-color 0.12s, box-shadow 0.12s;
       outline: none;
     }
     .input-field:focus {
-      border-color: #0D2137;
+      border-color: #2563EB;
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(13,33,55,0.10);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
     }
 
-    /* Fade-in animation */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(18px); }
+      from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     .animate-fadeInUp {
-      animation: fadeInUp 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+      animation: fadeInUp 0.3s ease both;
     }
 
-    /* Dashboard card hover */
-    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(13,33,55,0.14); }
-    .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .stat-card:hover { transform: translateY(-1px); }
+    .stat-card { transition: transform 0.15s; }
 
-    /* ── Upload Dropzone ── */
     #dropzone {
-      border: 2px dashed #CBD5E1;
-      border-radius: 1rem;
-      transition: border-color 0.2s, background 0.2s;
+      border: 1.5px dashed #CBD5E1;
+      border-radius: 6px;
+      transition: border-color 0.15s, background 0.15s;
       cursor: pointer;
+      background: #ffffff;
     }
     #dropzone.drag-over {
-      border-color: #F47820;
-      background: rgba(244,120,32,0.04);
+      border-color: #2563EB;
+      background: rgba(37,99,235,0.03);
     }
     #dropzone.file-selected {
-      border-color: #1A6B3C;
-      background: rgba(26,107,60,0.04);
+      border-color: #1A5C3A;
+      background: rgba(26,92,58,0.03);
     }
 
-    /* ── Processing pipeline step animation ── */
-    .pipeline-step { opacity: 0.35; transition: opacity 0.3s, transform 0.3s; }
-    .pipeline-step.active { opacity: 1; transform: scale(1.02); }
-    .pipeline-step.done { opacity: 1; }
+    .pipeline-step { opacity: 0.3; transition: opacity 0.25s; }
+    .pipeline-step.active { opacity: 1; }
+    .pipeline-step.done   { opacity: 1; }
     .step-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #CBD5E1; flex-shrink: 0; margin-top: 3px;
-      transition: background 0.3s;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #CBD5E1; flex-shrink: 0; margin-top: 4px;
+      transition: background 0.25s;
     }
-    .pipeline-step.active .step-dot { background: #F47820; animation: pulse-dot 1s infinite; }
-    .pipeline-step.done .step-dot   { background: #1A6B3C; }
+    .pipeline-step.active .step-dot { background: #2563EB; animation: pulse-dot 1.1s infinite; }
+    .pipeline-step.done .step-dot   { background: #1A5C3A; }
     @keyframes pulse-dot {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(244,120,32,0.4); }
-      50%       { box-shadow: 0 0 0 5px rgba(244,120,32,0); }
+      0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.35); }
+      50%       { box-shadow: 0 0 0 4px rgba(37,99,235,0); }
     }
 
-    /* ── Compliance badge colours ── */
-    .badge-compliant     { background:#D1FAE5; color:#065F46; border:1px solid #6EE7B7; }
-    .badge-partial       { background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; }
-    .badge-non-compliant { background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; }
-    .badge-unknown       { background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; }
+    .badge-compliant {
+      background: #ECFDF5; color: #065F46;
+      border: 1px solid #A7F3D0; font-weight: 500;
+    }
+    .badge-partial {
+      background: #FFFBEB; color: #78350F;
+      border: 1px solid #FDE68A; font-weight: 500;
+    }
+    .badge-non-compliant {
+      background: #FEF2F2; color: #991B1B;
+      border: 1px solid #FECACA; font-weight: 500;
+    }
+    .badge-unknown {
+      background: #F8FAFC; color: #475569;
+      border: 1px solid #E2E8F0; font-weight: 500;
+    }
 
-    /* ── Result card expand/collapse ── */
-    .explanation-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .explanation-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
     .explanation-body.open { max-height: 800px; }
 
-    /* ── Markdown-like formatting for Groq explanation text ── */
-    .explanation-text strong { font-weight: 700; color: #0D2137; }
-    .explanation-text em     { font-style: italic; color: #1A3A5C; }
+    .explanation-text strong { font-weight: 600; color: #1E3A5F; }
+    .explanation-text em     { font-style: italic; color: #334155; }
     .explanation-text ul     { list-style: disc; padding-left: 1.25rem; margin-top: 0.25rem; }
     .explanation-text li     { margin-bottom: 0.2rem; }
 
-    /* ── Multilingual badge ── */
     .lang-badge {
       display: inline-flex; align-items: center; gap: 4px;
-      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em;
-      padding: 2px 7px; border-radius: 9999px;
-      background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD;
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.02em;
+      padding: 2px 6px; border-radius: 3px;
+      background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE;
     }
 
-    /* ── National Emblem watermark ────────────────────────────────────────
-       Sits behind every page view via a fixed pseudo-element on body.
-       z-index: -1 keeps it below all content including Tailwind's default
-       stacking (auto/0).  pointer-events: none ensures it never blocks
-       clicks, links, or form fields.
-       ────────────────────────────────────────────────────────────────── */
+    /* Flatten the rounded-bubble look on content containers */
+    .rounded-2xl { border-radius: 6px !important; }
+    .rounded-xl  { border-radius: 4px !important; }
+    .rounded-full { border-radius: 9999px !important; }
+    .rounded-lg  { border-radius: 4px !important; }
+
+    /* Replace heavy shadows with hairline borders */
+    .shadow-card    { box-shadow: 0 0 0 1px rgba(203,213,225,0.9) !important; }
+    .shadow-card-lg { box-shadow: 0 1px 4px 0 rgba(0,0,0,0.06), 0 0 0 1px rgba(203,213,225,0.9) !important; }
+    .shadow-sm      { box-shadow: 0 0 0 1px rgba(203,213,225,0.8) !important; }
+    .shadow-md      { box-shadow: 0 1px 3px 0 rgba(0,0,0,0.06) !important; }
+    .shadow-lg      { box-shadow: 0 2px 6px 0 rgba(0,0,0,0.08) !important; }
+
     body::before {
       content: "";
       position: fixed;
@@ -225,7 +236,7 @@
       background-repeat: no-repeat;
       background-position: center center;
       background-size: 52vh;
-      opacity: 0.05;
+      opacity: 0.04;
       pointer-events: none;
       z-index: -1;
     }
