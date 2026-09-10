@@ -39,6 +39,9 @@ let isProcessing  = false;       // True while a fetch is in-flight
 let currentTenderData = null;    // Stores the last successful analysis result
 let jwtToken = null;             // Stores the authentication token
 let currentAnalysisData = null;  // Cached compliance analysis result
+// Officer identity captured at login so _getOfficerId() works even after
+// the login page (and its email input) has been hidden by _showDashboard().
+let _currentOfficerId = null;
 
 const ROLE_CONFIG = {
   officer: {
@@ -93,6 +96,11 @@ function handleLogin(event) {
     })
     .then(data => {
       jwtToken = data.access_token;
+      // Capture officer identity NOW, while emailInput.value is still readable,
+      // before _showDashboard() hides the login page.
+      _currentOfficerId = (emailInput && emailInput.value && emailInput.value.trim())
+        ? emailInput.value.trim()
+        : config.email;
       submitBtn.innerHTML = orig;
       submitBtn.disabled  = false;
       _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, avatarEl, subtitleEl, emailInput);
@@ -132,6 +140,10 @@ function handleSignup(event) {
   .then(data => {
     // Treat signup as auto-login
     jwtToken = data.access_token;
+    // Capture officer identity NOW, while emailInput.value is still readable.
+    _currentOfficerId = (emailInput && emailInput.value && emailInput.value.trim())
+      ? emailInput.value.trim()
+      : config.email;
     submitBtn.innerHTML = orig;
     submitBtn.disabled = false;
     const loginPage = document.getElementById('login-page');
@@ -2449,7 +2461,13 @@ document.addEventListener('DOMContentLoaded', () => {
 const MOCK_OFFICER_ID = 'user_123'; // mirrors backend MOCK_OFFICER_ID fallback
 
 function _getOfficerId() {
-  // TODO: Wire up to real auth context once Task 01 merges.
+  // Prefer the value captured at login time — this is reliable even after
+  // the login page has been hidden (which clears or hides the email input).
+  if (_currentOfficerId) {
+    return _currentOfficerId;
+  }
+  // Fallback: try reading the input directly (works when called before login
+  // page is hidden, e.g. on first page load with a pre-filled form).
   const emailInput = document.getElementById('email-input');
   if (emailInput && emailInput.value && emailInput.value.trim()) {
     return emailInput.value.trim();
