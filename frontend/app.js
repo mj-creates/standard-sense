@@ -60,6 +60,26 @@ const ROLE_CONFIG = {
 // ═══════════════════════════════════════════════════════════════════════════
 
 
+// ── Landing page → Login page transition ─────────────────────────────────
+/**
+ * Called by the "Get Started" button on the landing page.
+ * Hides the landing view and shows the login form — no state changes,
+ * no network calls.  All existing login/signup/dashboard logic is unchanged.
+ */
+function showLoginFromLanding() {
+  const landingPage = document.getElementById('landing-page');
+  const loginPage   = document.getElementById('login-page');
+  if (landingPage) {
+    landingPage.classList.add('hidden');
+    landingPage.classList.remove('flex');
+  }
+  if (loginPage) {
+    loginPage.classList.remove('hidden');
+    loginPage.classList.add('flex');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function handleLogin(event) {
   event.preventDefault();
   const config      = ROLE_CONFIG[selectedRole];
@@ -175,6 +195,13 @@ function _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, ava
   // Ensure default view is Upload view
   document.getElementById('upload-view')?.classList.remove('hidden');
   document.getElementById('results-view')?.classList.add('hidden');
+
+  // Show the navbar History button (was hidden until logged in)
+  const navHistBtn = document.getElementById('nav-history-btn');
+  if (navHistBtn) {
+    navHistBtn.classList.remove('hidden');
+    navHistBtn.classList.add('flex');
+  }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -831,6 +858,8 @@ function _renderComplianceResults(rag, ranking) {
   document.getElementById('download-pdf-btn')?.classList.add('flex');
   document.getElementById('view-analysis-btn')?.classList.remove('hidden');
   document.getElementById('view-analysis-btn')?.classList.add('flex');
+  // Show the "Log This Analysis" amber bar now that recommendations exist
+  document.getElementById('log-analysis-bar')?.classList.remove('hidden');
 
   // Smooth-scroll to first card
   setTimeout(() => {
@@ -1668,6 +1697,7 @@ function _resetResults() {
   document.getElementById('download-pdf-btn')?.classList.remove('flex');
   document.getElementById('view-analysis-btn')?.classList.add('hidden');
   document.getElementById('view-analysis-btn')?.classList.remove('flex');
+  document.getElementById('log-analysis-bar')?.classList.add('hidden');
 
   document
     .getElementById('results-section')
@@ -2679,7 +2709,7 @@ function historyNext() {
  * POST real data → immediately GET page 1 → new row appears in the table.
  */
 async function testLogAction() {
-  const btn = document.getElementById('history-test-btn');
+  const btn = document.getElementById('log-analysis-btn');
 
   // ── Build action payload from the live analysis result ──────────────────
   let action_type              = 'approved';
@@ -2958,6 +2988,201 @@ function _histShowToast(message, isError = false) {
     toast.classList.add('translate-y-2', 'opacity-0', 'pointer-events-none');
     toast.classList.remove('translate-y-0', 'opacity-100');
   }, 3000);
+}
+
+// ── View navigation: History panel & All Logs view ──────────────────────────
+
+/**
+ * Show the officer-history-section panel (recent mini-log) and hide the
+ * main dashboard content area.  Called by the navbar "History" button.
+ */
+function showHistoryView() {
+  document.getElementById('dashboard-view')?.classList.add('hidden');
+  const historySection = document.getElementById('officer-history-section');
+  if (historySection) {
+    historySection.classList.remove('hidden');
+    historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+/**
+ * Hide the officer-history-section and return to the main dashboard content.
+ * Called by the "Back to Analysis" button inside officer-history-section.
+ */
+function showDashboardView() {
+  document.getElementById('officer-history-section')?.classList.add('hidden');
+  document.getElementById('dashboard-view')?.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── All Logs View (separate paginated full-history table) ───────────────────
+// Uses its own offset/total vars so it doesn't interfere with the mini-panel.
+let _allLogsOffset = 0;
+let _allLogsTotal  = 0;
+const ALL_LOGS_LIMIT = 10;
+
+/**
+ * Navigate to the All Logs full-page view inside dashboard-view.
+ * Hides results-section / analysis-view, shows all-logs-view, and fetches page 1.
+ */
+function navigateToAllLogsView() {
+  // Hide sibling views inside dashboard-view
+  document.getElementById('results-section')?.classList.add('hidden');
+  document.getElementById('analysis-view')?.classList.add('hidden');
+  document.getElementById('upload-view')?.classList.add('hidden');
+  document.getElementById('empty-state')?.classList.add('hidden');
+
+  // Also hide officer-history-section if visible
+  document.getElementById('officer-history-section')?.classList.add('hidden');
+  document.getElementById('dashboard-view')?.classList.remove('hidden');
+
+  const view = document.getElementById('all-logs-view');
+  if (view) {
+    view.classList.remove('hidden');
+    view.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Load page 1
+  _allLogsOffset = 0;
+  _fetchAllLogs();
+}
+
+/**
+ * Go back from All Logs view to the results section (same as navigateToResultsView).
+ */
+function navigateBackFromLogs() {
+  document.getElementById('all-logs-view')?.classList.add('hidden');
+  document.getElementById('upload-view')?.classList.remove('hidden');
+
+  // If tender has been analysed, restore results view; otherwise show upload
+  if (currentTenderData) {
+    document.getElementById('upload-view')?.classList.add('hidden');
+    const resultsView = document.getElementById('results-view');
+    if (resultsView) resultsView.classList.remove('hidden');
+    const resultsSection = document.getElementById('results-section');
+    if (resultsSection) resultsSection.classList.remove('hidden');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Fetch one page of ALL history (independent of the mini-panel's state).
+ */
+async function _fetchAllLogs() {
+  const tbody      = document.getElementById('all-logs-tbody');
+  const emptyEl    = document.getElementById('all-logs-empty');
+  const loadingEl  = document.getElementById('all-logs-loading');
+  const pagEl      = document.getElementById('all-logs-pagination');
+  const errorEl    = document.getElementById('all-logs-error');
+  const pageInfoEl = document.getElementById('all-logs-page-info');
+  const prevBtn    = document.getElementById('all-logs-prev');
+  const nextBtn    = document.getElementById('all-logs-next');
+  const countBadge = document.getElementById('all-logs-count-badge');
+
+  if (!tbody) return;
+
+  // Reset UI
+  if (errorEl)   { errorEl.textContent = ''; errorEl.classList.add('hidden'); }
+  if (emptyEl)   emptyEl.classList.add('hidden');
+  if (pagEl)     pagEl.classList.add('hidden');
+  if (loadingEl) { loadingEl.classList.remove('hidden'); loadingEl.classList.add('flex'); }
+  tbody.innerHTML = '';
+
+  try {
+    const url = `${HISTORY_ENDPOINT}?limit=${ALL_LOGS_LIMIT}&offset=${_allLogsOffset}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'X-Officer-Id': _getOfficerId() },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    _allLogsTotal = data.total;
+
+    if (loadingEl) { loadingEl.classList.add('hidden'); loadingEl.classList.remove('flex'); }
+
+    if (countBadge) {
+      countBadge.textContent = `${_allLogsTotal} total action${_allLogsTotal !== 1 ? 's' : ''}`;
+    }
+
+    if (data.items.length === 0) {
+      if (emptyEl) { emptyEl.classList.remove('hidden'); emptyEl.classList.add('flex'); }
+      return;
+    }
+
+    // Badge / label maps — same as refreshHistory()
+    const BADGE_CLASS = {
+      approved:      'bg-green-100 text-green-700',
+      flagged:       'bg-red-100 text-red-700',
+      requested_fix: 'bg-amber-100 text-amber-700',
+    };
+    const BADGE_LABEL = {
+      approved:      'Approved',
+      flagged:       'Flagged',
+      requested_fix: 'Fix Requested',
+    };
+
+    tbody.innerHTML = data.items.map(item => {
+      const dt      = new Date(item.timestamp);
+      const dateStr = dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const timeStr = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const badge   = BADGE_CLASS[item.action_type] || 'bg-slate-100 text-slate-600';
+      const label   = BADGE_LABEL[item.action_type] || item.action_type;
+      const notes   = item.notes
+        ? `<span class="text-slate-600">${_histEscapeHtml(item.notes)}</span>`
+        : `<span class="text-slate-300 italic">—</span>`;
+
+      return `
+        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+          <td class="py-3 px-4 text-xs text-slate-500 whitespace-nowrap">
+            <div class="font-medium text-slate-700">${dateStr}</div>
+            <div class="text-slate-400">${timeStr}</div>
+          </td>
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${badge}">
+              ${label}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-xs text-slate-700 max-w-xs truncate"
+              title="${_histEscapeHtml(item.related_standard_or_spec)}">
+            ${_histEscapeHtml(item.related_standard_or_spec)}
+          </td>
+          <td class="py-3 px-4 text-xs">${notes}</td>
+        </tr>`;
+    }).join('');
+
+    // Pagination
+    if (pagEl) { pagEl.classList.remove('hidden'); pagEl.classList.add('flex'); }
+    const pageNum  = Math.floor(_allLogsOffset / ALL_LOGS_LIMIT) + 1;
+    const totalPgs = Math.ceil(_allLogsTotal   / ALL_LOGS_LIMIT) || 1;
+    if (pageInfoEl) pageInfoEl.textContent = `Page ${pageNum} of ${totalPgs} · ${_allLogsTotal} action${_allLogsTotal !== 1 ? 's' : ''}`;
+    if (prevBtn)    prevBtn.disabled = _allLogsOffset === 0;
+    if (nextBtn)    nextBtn.disabled = _allLogsOffset + ALL_LOGS_LIMIT >= _allLogsTotal;
+
+  } catch (err) {
+    if (loadingEl) { loadingEl.classList.add('hidden'); loadingEl.classList.remove('flex'); }
+    if (errorEl) {
+      errorEl.textContent = `Failed to load history: ${err.message}`;
+      errorEl.classList.remove('hidden');
+    }
+  }
+}
+
+function allLogsPrev() {
+  if (_allLogsOffset > 0) {
+    _allLogsOffset = Math.max(0, _allLogsOffset - ALL_LOGS_LIMIT);
+    _fetchAllLogs();
+  }
+}
+
+function allLogsNext() {
+  if (_allLogsOffset + ALL_LOGS_LIMIT < _allLogsTotal) {
+    _allLogsOffset += ALL_LOGS_LIMIT;
+    _fetchAllLogs();
+  }
 }
 
 // ── Auto-load history on login ──────────────────────────────────────────────

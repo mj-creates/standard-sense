@@ -210,6 +210,25 @@
       padding: 2px 7px; border-radius: 9999px;
       background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD;
     }
+
+    /* ── National Emblem watermark ────────────────────────────────────────
+       Sits behind every page view via a fixed pseudo-element on body.
+       z-index: -1 keeps it below all content including Tailwind's default
+       stacking (auto/0).  pointer-events: none ensures it never blocks
+       clicks, links, or form fields.
+       ────────────────────────────────────────────────────────────────── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("assets/emblem.png");
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: 52vh;
+      opacity: 0.05;
+      pointer-events: none;
+      z-index: -1;
+    }
   </style>
 </head>
 <body class="bg-grid min-h-screen flex flex-col">
@@ -263,9 +282,96 @@
   </nav>
 
   <!-- ══════════════════════════════════════════
+       LANDING PAGE (shown first on fresh load)
+  ══════════════════════════════════════════ -->
+  <div id="landing-page" class="flex flex-1 flex-col items-center justify-center px-4 py-16 sm:py-24">
+    <div class="w-full max-w-2xl animate-fadeInUp">
+
+      <!-- Top eyebrow badge -->
+      <div class="flex justify-center mb-8">
+        <span class="inline-flex items-center gap-2 bg-govorange/10 border border-govorange/30 text-govorange text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          Smart India Hackathon 2026 &nbsp;&middot;&nbsp; PS-1560
+        </span>
+      </div>
+
+      <!-- Product name + tagline -->
+      <div class="text-center mb-6">
+        <h1 class="text-govnavy font-extrabold text-5xl sm:text-6xl tracking-tight leading-none mb-3">
+          Standard<span class="text-govorange">Sense</span>
+        </h1>
+        <p class="text-slate-600 text-lg sm:text-xl font-medium leading-snug max-w-xl mx-auto">
+          AI-powered BIS standards compliance for government procurement
+        </p>
+      </div>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-4 my-6 max-w-xs mx-auto">
+        <div class="flex-1 h-px bg-slate-200"></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-govorange"></div>
+        <div class="flex-1 h-px bg-slate-200"></div>
+      </div>
+
+      <!-- Description card -->
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-card px-8 py-7 mb-8 text-center">
+        <p class="text-slate-600 text-sm leading-relaxed mb-4">
+          StandardSense automatically extracts technical specifications from procurement tender PDFs,
+          searches across <strong class="text-govnavy font-semibold">12,776 real IS codes</strong> using semantic AI,
+          and ranks applicable BIS standards by compliance — giving GeM procurement officers an instant,
+          auditable compliance verdict before tender release.
+        </p>
+        <!-- Three feature pills -->
+        <div class="flex flex-wrap justify-center gap-2 mt-4">
+          <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-govnavy inline-block"></span>
+            NLP Specification Extraction
+          </span>
+          <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-govnavy inline-block"></span>
+            FAISS Semantic Search
+          </span>
+          <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-govnavy inline-block"></span>
+            LLM Compliance Analysis
+          </span>
+          <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-govnavy inline-block"></span>
+            7 Procurement Departments
+          </span>
+        </div>
+      </div>
+
+      <!-- CTA button -->
+      <div class="flex flex-col items-center gap-3">
+        <button
+          id="landing-cta-btn"
+          onclick="showLoginFromLanding()"
+          class="inline-flex items-center gap-2.5 bg-govnavy hover:bg-govblue text-white font-semibold text-base px-10 py-3.5 rounded-xl shadow-card hover:shadow-card-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-govorange focus:ring-offset-2"
+        >
+          Get Started
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </button>
+        <p class="text-slate-400 text-xs">For authorised Government of India procurement officers</p>
+      </div>
+
+      <!-- Footer attribution inside landing -->
+      <div class="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-slate-400 text-xs">
+        <span>Ministry of Electronics &amp; IT</span>
+        <span class="text-slate-300">&middot;</span>
+        <span>Bureau of Indian Standards</span>
+        <span class="text-slate-300">&middot;</span>
+        <span>GeM Procurement Portal</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
        LOGIN PAGE
   ══════════════════════════════════════════ -->
-  <div id="login-page" class="flex-1 flex items-center justify-center px-4 py-12">
+  <div id="login-page" class="hidden flex-1 flex items-center justify-center px-4 py-12">
     <div class="animate-fadeInUp w-full max-w-md">
 
       <!-- Card header accent -->
@@ -820,6 +926,94 @@
         <div id="analysis-body" class="flex flex-col gap-6"></div>
       </div>
 
+      <!-- ═══════════════════════════════════════════════════════════════
+           VIEW 4: ALL LOGS VIEW (hidden by default)
+           ═══════════════════════════════════════════════════════════════ -->
+      <div id="all-logs-view" class="hidden mb-8">
+        <!-- Top nav bar — same pattern as analysis-view -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-slate-200 gap-4">
+          <div class="flex items-center gap-3">
+            <button
+              onclick="navigateBackFromLogs()"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+            >
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+              Back to Recommendations
+            </button>
+            <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div>
+              <h3 class="text-govnavy font-bold text-lg flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-govnavy rounded-full inline-block"></span>
+                Officer Action History
+              </h3>
+              <p class="text-xs text-slate-500">Complete procurement action log — paginated, newest first</p>
+            </div>
+          </div>
+          <span id="all-logs-count-badge" class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200"></span>
+        </div>
+
+        <!-- Table — same styling as existing officer-history-section table -->
+        <div class="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden">
+          <!-- Error banner -->
+          <p id="all-logs-error" class="hidden text-red-600 text-xs font-medium bg-red-50 border-b border-red-100 px-6 py-3"></p>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left" aria-label="All officer actions table">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-100">
+                  <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Date / Time</th>
+                  <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
+                  <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Standard / Spec</th>
+                  <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Notes</th>
+                </tr>
+              </thead>
+              <tbody id="all-logs-tbody">
+                <!-- Populated by _renderAllLogs() -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty state -->
+          <div id="all-logs-empty" class="hidden flex-col items-center justify-center py-12 text-center">
+            <svg class="w-10 h-10 text-slate-200 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            <p class="text-slate-400 text-sm font-medium">No actions logged yet</p>
+            <p class="text-slate-300 text-xs mt-1">Log a tender analysis to see it here.</p>
+          </div>
+
+          <!-- Loading row -->
+          <div id="all-logs-loading" class="hidden flex-col items-center justify-center py-10 text-center">
+            <svg class="w-5 h-5 text-govnavy animate-spin mb-2" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <p class="text-slate-400 text-xs">Loading…</p>
+          </div>
+
+          <!-- Pagination footer -->
+          <div id="all-logs-pagination" class="hidden items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50">
+            <span id="all-logs-page-info" class="text-slate-400 text-xs"></span>
+            <div class="flex items-center gap-2">
+              <button
+                id="all-logs-prev"
+                onclick="allLogsPrev()"
+                disabled
+                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >&#8592; Previous</button>
+              <button
+                id="all-logs-next"
+                onclick="allLogsNext()"
+                disabled
+                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >Next &#8594;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ EMPTY STATE (fallback) ═══════════════════════════════ -->
       <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center">
         <div class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
@@ -856,16 +1050,29 @@
                 title="Double-click to clear all history">Officer Action History</h2>
             <p class="text-slate-400 text-xs mt-0.5">Your recent procurement actions, newest first &nbsp;·&nbsp; <span class="text-slate-300">double-click a row to delete</span></p>
           </div>
-          <!-- Back to Dashboard -->
-          <button
-            onclick="showDashboardView()"
-            class="inline-flex items-center gap-1.5 text-slate-500 hover:text-govnavy text-xs font-medium border border-slate-200 hover:border-govnavy px-3 py-1.5 rounded-lg transition-colors"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
-            Back to Analysis
-          </button>
+          <!-- Action buttons -->
+          <div class="flex items-center gap-2">
+            <!-- View All Logs → opens all-logs-view inside dashboard-view -->
+            <button
+              onclick="navigateToAllLogsView()"
+              class="inline-flex items-center gap-1.5 bg-govnavy hover:bg-govblue text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+              </svg>
+              View All Logs
+            </button>
+            <!-- Back to Dashboard -->
+            <button
+              onclick="showDashboardView()"
+              class="inline-flex items-center gap-1.5 text-slate-500 hover:text-govnavy text-xs font-medium border border-slate-200 hover:border-govnavy px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+              Back to Analysis
+            </button>
+          </div>
         </div>
 
         <!-- Error banner (hidden by default) -->
