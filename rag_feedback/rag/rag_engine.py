@@ -172,6 +172,17 @@ def generate_explanation(spec_text: str, recommendation: dict[str, Any]) -> str:
             .replace("\u2011", "-")
         )
         if explanation:
+            # Strip raw Markdown bold/italic markers so callers never receive
+            # literal asterisks. The frontend's _formatExplanation() will apply
+            # HTML bold styling from the bullet text, but any non-HTML consumer
+            # (PDF export, plain-text copy) gets clean prose.
+            # Order matters: strip triple before double before single.
+            import re as _re
+            explanation = _re.sub(r'\*\*\*(.+?)\*\*\*', r'\1', explanation, flags=_re.DOTALL)
+            explanation = _re.sub(r'\*\*(.+?)\*\*',     r'\1', explanation, flags=_re.DOTALL)
+            explanation = _re.sub(r'\*(.+?)\*',          r'\1', explanation, flags=_re.DOTALL)
+            # Strip markdown headings (### Heading → Heading)
+            explanation = _re.sub(r'^#{1,6}\s+', '', explanation, flags=_re.MULTILINE)
             return explanation
     except Exception:
         # Gracefully fall back to the deterministic template explanation

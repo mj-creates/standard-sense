@@ -148,19 +148,6 @@ function handleSignup(event) {
     submitBtn.disabled = false;
   });
 }
-function handleLogout() {
-  // Clear the token and return to login page
-  jwtToken = null;
-  const loginPage = document.getElementById('login-page');
-  const dashPage = document.getElementById('dashboard-page');
-  dashPage.classList.add('hidden');
-  dashPage.classList.remove('flex');
-  loginPage.classList.remove('hidden');
-  loginPage.classList.add('flex');
-  // Optional: clear file input
-  _resetUploadState();
-}
-
 
 function _showDashboard(config, loginPage, dashPage, dashTitle, bannerTitle, avatarEl, subtitleEl, emailInput) {
   if (dashTitle)   dashTitle.textContent   = config.welcome;
@@ -1063,9 +1050,9 @@ function _buildResultCard(exp, rec, idx, specText = '') {
       ${
         fullExplanation
           ? `
-            <p id="short-explanation-${idx}" class="mt-3 text-slate-600 text-xs leading-relaxed" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
-              ${_escHtml(shortExplanation)}
-            </p>
+            <div id="short-explanation-${idx}" class="mt-3 text-slate-600 text-xs leading-relaxed line-clamp-3 overflow-hidden">
+              ${_formatExplanation(shortExplanation)}
+            </div>
           `
           : ''
       }
